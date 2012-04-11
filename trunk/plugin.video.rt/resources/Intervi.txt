@@ -1,0 +1,165 @@
+C:\temp>c:\apps\python27\python.exe "C:\Documents and Settings\user.BOZIC\Application Data\XBMC\addons\plugin.video.rt\r
+esources\scraper.py"
+(u'Keiser Report', u'http://rt.com/programs/keiser-report/', u'"Keiser Report" - Markets!  Finance!  Scandal!  Keiser Re
+port is a no holds barred look at the shocking scandals behind the global financial headlines.  From the collusion betwe
+en Wall Street and Capitol Hill to the latest banking crime wave, from bogus government economic statistics to rigged st
+ock markets, nothing escapes the eye of Max Keiser, a former stockbroker, inventor of the virtual specialist technology
+and co-founder of the Hollywood Stock Exchange.  With the help of Keiser\'s co-host, Stacy Herbert, and guests from arou
+nd the world, Keiser Report tells you what is really going on in the global economy.', u'http://rt.com/files/programs/ke
+iser-report/keiser-report.jpg')
+(u'CrossTalk', u'http://rt.com/programs/crosstalk/', u"CrossTalk is RT's flagship program. This TV debate experience pre
+sents hot-topic discussions on politics, business, newsmakers, global trends, present-day conflicts, and dangers and cha
+llenges facing our world. Host Peter Lavelle poses hard, straightforward questions to his guests, and demands concrete a
+nswers in response. Peter's guests are politicians, journalists, scientists and decision-makers of all sorts  anyone who
+ influences the decisions changing our world or plays a key role in forming public opinion.", u'http://rt.com/files/prog
+rams/crosstalk/crosstalk.jpg')
+(u'Prime Time Russia', u'http://rt.com/programs/prime-time-russia/', u'Prime Time Russia  the first TV show for an Engli
+sh-speaking  audience in Russia\nWeekdays from 8-9 pm\nThe latest news, politics, business, sport and cultural events di
+scussed live. A Russian survival guide,\t\t\t\t\tvenue reviews  even business start-up advice, daily on RT!\t\t\t\t\t',
+u'http://rt.com/files/programs/prime-time-russia/prime-time-russia.jpg')
+(u'Spotlight', u'http://rt.com/programs/spotlight/', u"Spotlight is a 26 minute, in-depth, daily interview programme whi
+ch focuses on current events in Russia and across the world. Respected Russian journalist Aleksandr Gurnov speaks to peo
+ple from a broad spectrum of professional backgrounds, including politics, academia, arts, and science.\nThe main object
+ive of Spotlight is to give RT's international audience an insight into Russia's stance on important issues related to b
+oth domestic and world affairs. At the same time, the programme's goal is to demonstrate that the Russian media has a tr
+ue forum in which it can voice its opinions.\nThe guests and their chosen subject matter are at the very heart of Spotli
+ght, which strives to inform and educate viewers about Russian history and culture. The programme also aims to reveal th
+e human side of life in Russia. Spotlight is a platform for expert opinions on both national and international issues.",
+ u'http://rt.com/files/programs/spotlight/spotlight.jpg')
+(u'Capital Account', u'http://rt.com/programs/capital-account/', u"At the intersection of markets, politics and the glob
+al economy is Capital Account with Lauren Lyster. Broadcasting live out of RT America's studios in Washington DC, Capita
+l Account brings you in-depth analysis and discussion of the most important financial and economic news from a perspecti
+ve you won't find in the mainstream media. \nCapital Account airs weekdays at 4:30pm (Eastern).", u'http://rt.com/files/
+programs/capital-account/380ff709d879c9c260a4d5d28da19a5a_capital-account-1.png')
+(u'Interview with Sophie Shevardnadze', u'http://rt.com/programs/interview/', u'Interviews are too often uncomfortable a
+nd artificial.\n\u201cInterview\u201d with Sophie Shevardnadze takes away the barriers and creates a more casual setting
+ where she meets with major newsmakers, leading politicians, international art figures, bright new thinkers, and innovat
+ors in science and technology.\nSophie travels the world to meet her guests where, relaxed and informal, she seeks out i
+mportant and interesting aspects of a person\u2019s life and work.\nHer interviews are exclusive to RT and you will find
+ them no where else on the planet.', u'http://rt.com/files/programs/interview/interview.jpg')
+(u'Technology Update', u'http://rt.com/programs/technology-update/', u"We travel across the biggest country in the world
+ to tell you all about the most important advances in science and technology on the planet, and we won't let anything ho
+ld us back.\nFrom the new generation of nuclear ships roaming the high seas, to innovative ways to walk our programme br
+ings you the cutting edge of tomorrow, today.\nTechnology Update on RT. We've got the future covered.", u'http://rt.com/
+files/programs/technology-update/technology-update.jpg')
+(u'The Alyona Show', u'http://rt.com/programs/alyona-show/', '', u'http://rt.com/files/programs/alyona-show/the-alyona-s
+how.jpg')
+(u'Documentary', u'http://rt.com/programs/documentary/', u"RT's documentaries give a varied and unique view on different
+ aspects of life worldwide. They expose outdated myths and stereotypes, reveal intriguing history and geography, showcas
+e varied wildlife and exquisite cuisines, introduce you to vibrant nightlife and curious customs. Original footage of hi
+storical events and sharp analysis of contemporary politics will give you a deeper understanding of what made history ta
+ke this or that turn. RT's documentaries go beyond the bare facts, thoroughly investigating the issues and giving the vi
+ewer a chance to see below the surface.", u'http://rt.com/files/programs/documentary/documentary.jpg')
+(u'Russia Close-Up', u'http://rt.com/programs/russia-close-up/', u"Vast and varied, Russia is simply too big for a whist
+le-stop tour to understand how it ticks. So let Russia Close-Up help. It's a unique series on RT, travelling to hard-to-
+reach places, revealing the answers to all your questions.\nWhat are the people like? How do they live? What special cus
+toms and traditions do they have? What are their hopes and fears? It's essential viewing for those who want an in-depth
+and personal understanding of the everyday life of local people, seen through their eyes and words.\nThe Russia Close-Up
+ team wants to make you feel at home in Russia's cities, towns and villages. So sit back and enjoy the ride, without the
+ airfare!", u'http://rt.com/files/programs/russia-close-up/russia-close-up.jpg')
+(u'The Big Picture', u'http://rt.com/programs/big-picture/', u"The hottest political show in the US finds new home with
+RT. The Big Picture with Thom Hartmann tackles the latest in political news, debates, commentary and more. From local, t
+o national and international nothing will escape Thom Hartmann view. Thom Hartmann is a NY Times bestselling  and 4-time
+s project Censored winning author of over twenty books and America's #1 progressive radio host. His program is heard dai
+ly on hundreds of stations; including SiriusXM, DirectTV, Dish Network, Dial-Global, Pacifica, and Free Speech TV,  broa
+dcast live from the US and on five continents.\nWatch The Big Picture with Thom Hartmann on RT America weeknights at 9:0
+0pm and 11:00pm Eastern.", u'http://rt.com/files/programs/big-picture/big_picture_logo.jpg')
+(u'Moscow Out', u'http://rt.com/programs/moscow-out/', u"The Russian capital is full of hidden thrills and wonders, and
+you can discover them all with RT's Moscow Out series. We scour the metropolis, uncovering every nook and cranny, bringi
+ng you the definitive guide to the city that never sleeps. Every weekend RT's veteran traveler Martyn Andrews takes you
+on a journey to a Moscow you've never seen before. Hang on to your hat!", u'http://rt.com/files/programs/moscow-out/mosc
+ow-out.jpg')
+(u'On the Money', u'http://rt.com/programs/money/', u'Program on business, economics and finance in new dynamic markets,
+ bringing challenges and opportunities to the emerging economies.', u'http://rt.com/files/programs/money/on-the-money3-7
+59.jpg')
+(u'Venice of the North', u'http://rt.com/programs/venice-of-the-north/', u'Welcome to "Venice of the North: A Season in
+St Petersburg". In yet more action packed cultural and historical programmes, RT\'s Martyn Andrews explores the former R
+ussian Capital. From lavish palaces to awe inspiring museums - this is a mini series not to be missed! We delve into the
+ city\'s beauty over the festive period and then continue through Russia\'s magical winter. We dig deep to bring you fiv
+e contemporary, exciting and informative reports.', u'http://rt.com/files/programs/venice-of-the-north/venice-of-the-nor
+th.jpg')
+(u'Golden Ring', u'http://rt.com/programs/golden-ring/', u"Summertime... and the living is easy! As temperatures reach t
+he mid thirties, RT's travel fanatic Martyn Andrews and his crew leave the busy capital in search of a time travelling r
+etreat \u2013 and where better than Russia's magnificent Golden Ring cities and towns? Historical, beautiful and bustlin
+g with traditions centuries gone by. Stunning monasteries, green vast landscapes, bright onion domes, weird and wonderfu
+l museums and rural life at its best. Don't miss Martyn's journey to the heart of Russia!", u'http://rt.com/files/progra
+ms/golden-ring/golden-ring.jpg')
+
+[(u'Keiser Report', u'http://rt.com/programs/keiser-report/', u'"Keiser Report" - Markets!  Finance!  Scandal!  Keiser R
+eport is a no holds barred look at the shocking scandals behind the global financial headlines.  From the collusion betw
+een Wall Street and Capitol Hill to the latest banking crime wave, from bogus government economic statistics to rigged s
+tock markets, nothing escapes the eye of Max Keiser, a former stockbroker, inventor of the virtual specialist technology
+ and co-founder of the Hollywood Stock Exchange.  With the help of Keiser\'s co-host, Stacy Herbert, and guests from aro
+und the world, Keiser Report tells you what is really going on in the global economy.', u'http://rt.com/files/programs/k
+eiser-report/keiser-report.jpg'), (u'CrossTalk', u'http://rt.com/programs/crosstalk/', u"CrossTalk is RT's flagship prog
+ram. This TV debate experience presents hot-topic discussions on politics, business, newsmakers, global trends, present-
+day conflicts, and dangers and challenges facing our world. Host Peter Lavelle poses hard, straightforward questions to
+his guests, and demands concrete answers in response. Peter's guests are politicians, journalists, scientists and decisi
+on-makers of all sorts  anyone who influences the decisions changing our world or plays a key role in forming public opi
+nion.", u'http://rt.com/files/programs/crosstalk/crosstalk.jpg'), (u'Prime Time Russia', u'http://rt.com/programs/prime-
+time-russia/', u'Prime Time Russia  the first TV show for an English-speaking  audience in Russia\nWeekdays from 8-9 pm\
+nThe latest news, politics, business, sport and cultural events discussed live. A Russian survival guide,\t\t\t\t\tvenue
+ reviews  even business start-up advice, daily on RT!\t\t\t\t\t', u'http://rt.com/files/programs/prime-time-russia/prime
+-time-russia.jpg'), (u'Spotlight', u'http://rt.com/programs/spotlight/', u"Spotlight is a 26 minute, in-depth, daily int
+erview programme which focuses on current events in Russia and across the world. Respected Russian journalist Aleksandr
+Gurnov speaks to people from a broad spectrum of professional backgrounds, including politics, academia, arts, and scien
+ce.\nThe main objective of Spotlight is to give RT's international audience an insight into Russia's stance on important
+ issues related to both domestic and world affairs. At the same time, the programme's goal is to demonstrate that the Ru
+ssian media has a true forum in which it can voice its opinions.\nThe guests and their chosen subject matter are at the
+very heart of Spotlight, which strives to inform and educate viewers about Russian history and culture. The programme al
+so aims to reveal the human side of life in Russia. Spotlight is a platform for expert opinions on both national and int
+ernational issues.", u'http://rt.com/files/programs/spotlight/spotlight.jpg'), (u'Capital Account', u'http://rt.com/prog
+rams/capital-account/', u"At the intersection of markets, politics and the global economy is Capital Account with Lauren
+ Lyster. Broadcasting live out of RT America's studios in Washington DC, Capital Account brings you in-depth analysis an
+d discussion of the most important financial and economic news from a perspective you won't find in the mainstream media
+. \nCapital Account airs weekdays at 4:30pm (Eastern).", u'http://rt.com/files/programs/capital-account/380ff709d879c9c2
+60a4d5d28da19a5a_capital-account-1.png'), (u'Interview with Sophie Shevardnadze', u'http://rt.com/programs/interview/',
+u'Interviews are too often uncomfortable and artificial.\n\u201cInterview\u201d with Sophie Shevardnadze takes away the
+barriers and creates a more casual setting where she meets with major newsmakers, leading politicians, international art
+ figures, bright new thinkers, and innovators in science and technology.\nSophie travels the world to meet her guests wh
+ere, relaxed and informal, she seeks out important and interesting aspects of a person\u2019s life and work.\nHer interv
+iews are exclusive to RT and you will find them no where else on the planet.', u'http://rt.com/files/programs/interview/
+interview.jpg'), (u'Technology Update', u'http://rt.com/programs/technology-update/', u"We travel across the biggest cou
+ntry in the world to tell you all about the most important advances in science and technology on the planet, and we won'
+t let anything hold us back.\nFrom the new generation of nuclear ships roaming the high seas, to innovative ways to walk
+ our programme brings you the cutting edge of tomorrow, today.\nTechnology Update on RT. We've got the future covered.",
+ u'http://rt.com/files/programs/technology-update/technology-update.jpg'), (u'The Alyona Show', u'http://rt.com/programs
+/alyona-show/', '', u'http://rt.com/files/programs/alyona-show/the-alyona-show.jpg'), (u'Documentary', u'http://rt.com/p
+rograms/documentary/', u"RT's documentaries give a varied and unique view on different aspects of life worldwide. They e
+xpose outdated myths and stereotypes, reveal intriguing history and geography, showcase varied wildlife and exquisite cu
+isines, introduce you to vibrant nightlife and curious customs. Original footage of historical events and sharp analysis
+ of contemporary politics will give you a deeper understanding of what made history take this or that turn. RT's documen
+taries go beyond the bare facts, thoroughly investigating the issues and giving the viewer a chance to see below the sur
+face.", u'http://rt.com/files/programs/documentary/documentary.jpg'), (u'Russia Close-Up', u'http://rt.com/programs/russ
+ia-close-up/', u"Vast and varied, Russia is simply too big for a whistle-stop tour to understand how it ticks. So let Ru
+ssia Close-Up help. It's a unique series on RT, travelling to hard-to-reach places, revealing the answers to all your qu
+estions.\nWhat are the people like? How do they live? What special customs and traditions do they have? What are their h
+opes and fears? It's essential viewing for those who want an in-depth and personal understanding of the everyday life of
+ local people, seen through their eyes and words.\nThe Russia Close-Up team wants to make you feel at home in Russia's c
+ities, towns and villages. So sit back and enjoy the ride, without the airfare!", u'http://rt.com/files/programs/russia-
+close-up/russia-close-up.jpg'), (u'The Big Picture', u'http://rt.com/programs/big-picture/', u"The hottest political sho
+w in the US finds new home with RT. The Big Picture with Thom Hartmann tackles the latest in political news, debates, co
+mmentary and more. From local, to national and international nothing will escape Thom Hartmann view. Thom Hartmann is a
+NY Times bestselling  and 4-times project Censored winning author of over twenty books and America's #1 progressive radi
+o host. His program is heard daily on hundreds of stations; including SiriusXM, DirectTV, Dish Network, Dial-Global, Pac
+ifica, and Free Speech TV,  broadcast live from the US and on five continents.\nWatch The Big Picture with Thom Hartmann
+ on RT America weeknights at 9:00pm and 11:00pm Eastern.", u'http://rt.com/files/programs/big-picture/big_picture_logo.j
+pg'), (u'Moscow Out', u'http://rt.com/programs/moscow-out/', u"The Russian capital is full of hidden thrills and wonders
+, and you can discover them all with RT's Moscow Out series. We scour the metropolis, uncovering every nook and cranny,
+bringing you the definitive guide to the city that never sleeps. Every weekend RT's veteran traveler Martyn Andrews take
+s you on a journey to a Moscow you've never seen before. Hang on to your hat!", u'http://rt.com/files/programs/moscow-ou
+t/moscow-out.jpg'), (u'On the Money', u'http://rt.com/programs/money/', u'Program on business, economics and finance in
+new dynamic markets, bringing challenges and opportunities to the emerging economies.', u'http://rt.com/files/programs/m
+oney/on-the-money3-759.jpg'), (u'Venice of the North', u'http://rt.com/programs/venice-of-the-north/', u'Welcome to "Ven
+ice of the North: A Season in St Petersburg". In yet more action packed cultural and historical programmes, RT\'s Martyn
+ Andrews explores the former Russian Capital. From lavish palaces to awe inspiring museums - this is a mini series not t
+o be missed! We delve into the city\'s beauty over the festive period and then continue through Russia\'s magical winter
+. We dig deep to bring you five contemporary, exciting and informative reports.', u'http://rt.com/files/programs/venice-
+of-the-north/venice-of-the-north.jpg'), (u'Golden Ring', u'http://rt.com/programs/golden-ring/', u"Summertime... and the
+ living is easy! As temperatures reach the mid thirties, RT's travel fanatic Martyn Andrews and his crew leave the busy
+capital in search of a time travelling retreat \u2013 and where better than Russia's magnificent Golden Ring cities and
+towns? Historical, beautiful and bustling with traditions centuries gone by. Stunning monasteries, green vast landscapes
+, bright onion domes, weird and wonderful museums and rural life at its best. Don't miss Martyn's journey to the heart o
+f Russia!", u'http://rt.com/files/programs/golden-ring/golden-ring.jpg')]
+
+C:\temp>
