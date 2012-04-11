@@ -1,50 +1,5 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
 <addons>
-  <!-- Australian Catchup TV Plugins -->
-  <addon id="plugin.video.sbs2" name="SBS2" version="1.0.2" provider-name="Denis">
-    <requires>
-      <import addon="xbmc.python" version="1.0" />
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-      <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata" library="default.py">
-      <summary>SBS 2</summary>
-      <description>Catch up TV content for SBS</description>
-      <provides>video</provides>
-      <platform>all</platform>
-      <disclaimer>You must be within Australia to use watch these videos.[CR]"SBS", SBS Logos and other works are copyright of their respective owners.</disclaimer>
-    </extension>
-  </addon>
-  <addon id="plugin.video.catchuptv.au.nten" name="Network Ten CatchUp TV" version="0.2.0" provider-name="adammw111">
-    <requires>
-      <import addon="xbmc.python" version="1.0" />
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="addon.py">
-      <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata">
-      <platform>all</platform>
-      <minversion>31542</minversion>
-      <summary>Network Ten CatchUp TV Video Player</summary>
-      <description>Watch latest episodes, sneak peeks, exclusive internet extras and other videos from Network Ten Online.</description>
-      <disclaimer>You must be within Australia to use watch these videos.[CR]"Network Ten", Ten Logos and other works are copyright of their respective owners.</disclaimer>
-    </extension>
-  </addon>
-  <addon id="plugin.video.plus72" name="Plus7 - 2" version="0.0.2" provider-name="Denis">
-    <requires>
-      <import addon="xbmc.python" version="1.0" />
-    </requires>
-    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
-      <provides>video</provides>
-    </extension>
-    <extension point="xbmc.addon.metadata" library="default.py">
-      <summary>Plus7 -2</summary>
-      <description>PLUS7 offers video streaming of full length episodes as seen on Seven, 7TWO and other content partners - just hit the play button and you can watch high quality, full screen videos straightaway without having to wait for downloads.</description>
-      <provides>video</provides>
-      <platform>all</platform>
-    </extension>
-  </addon>
+  
   <addon id="plugin.video.age_tv" name="The Age TV" version="1.0.1" provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0" />
@@ -59,7 +14,6 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <!-- Others -->
   <addon id="plugin.video.bloomberg" name="Bloomberg" version="1.0.3" provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0" />
@@ -73,6 +27,52 @@
       <description></description>
       <provides>video</provides>
       <platform>all</platform>
+    </extension>
+  </addon>
+  <addon id="plugin.video.c31" name="Channel 31" version="1.0.2" provider-name="Denis">
+    <requires>
+      <import addon="xbmc.python" version="1.0" />
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+      <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata" library="default.py">
+      <summary>Channel 31</summary>
+      <description></description>
+      <provides>video</provides>
+      <platform>all</platform>
+    </extension>
+  </addon>
+  <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+  <addon id="plugin.video.catchuptv.au.nten" name="Network Ten CatchUp TV" version="0.2.0" provider-name="adammw111">
+    <requires>
+      <import addon="xbmc.python" version="1.0" />
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="addon.py">
+      <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+      <platform>all</platform>
+      <minversion>31542</minversion>
+      <summary>Network Ten CatchUp TV Video Player</summary>
+      <description>Watch latest episodes, sneak peeks, exclusive internet extras and other videos from Network Ten Online.</description>
+      <disclaimer>You must be within Australia to use watch these videos.[CR]"Network Ten", Ten Logos and other works are copyright of their respective owners.</disclaimer>
+    </extension>
+  </addon>
+  <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+  <addon id="plugin.video.catchuptv.au.sbs" name="SBS CatchUp TV" version="0.1.1" provider-name="adammw111">
+    <requires>
+      <import addon="xbmc.python" version="1.0" />
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="addon.py">
+      <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+      <platform>all</platform>
+      <minversion>31542</minversion>
+      <summary>SBS CatchUp TV Video Player</summary>
+      <description>Watch latest episodes, sneak peeks, exclusive internet extras and other videos from SBS Online.</description>
+      <disclaimer>You must be within Australia to use watch these videos.[CR]"SBS", SBS Logos and other works are copyright of their respective owners.</disclaimer>
     </extension>
   </addon>
   <addon id="plugin.video.dtv" name="Deutsche Welle TV" version="1.0.1" provider-name="Denis">
@@ -104,6 +104,20 @@
       <platform>all</platform>
     </extension>
   </addon>
+  <addon id="plugin.video.plus72" name="Plus7 - 2" version="0.0.2" provider-name="Denis">
+    <requires>
+      <import addon="xbmc.python" version="1.0" />
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+      <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata" library="default.py">
+      <summary>Plus7 -2</summary>
+      <description>PLUS7 offers video streaming of full length episodes as seen on Seven, 7TWO and other content partners &#226;&#8364;&#8220; just hit the play button and you can watch high quality, full screen videos straightaway without having to wait for downloads.</description>
+      <provides>video</provides>
+      <platform>all</platform>
+    </extension>
+  </addon>
   <addon id="plugin.video.rt" name="RT" version="1.0.3" provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0" />
@@ -117,6 +131,21 @@
       <description></description>
       <provides>video</provides>
       <platform>all</platform>
+    </extension>
+  </addon>
+  <addon id="plugin.video.sbs2" name="SBS2" version="1.0.2" provider-name="Denis">
+    <requires>
+      <import addon="xbmc.python" version="1.0.2" />
+    </requires>
+    <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
+      <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata" library="default.py">
+      <summary>SBS 2</summary>
+      <description>Catch up TV content for SBS</description>
+      <provides>video</provides>
+      <platform>all</platform>
+      <disclaimer>You must be within Australia to use watch these videos.[CR]"SBS", SBS Logos and other works are copyright of their respective owners.</disclaimer>
     </extension>
   </addon>
 </addons>

@@ -1,22 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<addon
-  id="plugin.video.plus72"
-  name="Plus7 - 2"
-  version="0.0.2"
-  provider-name="Denis">
+<?xml version="1.0" encoding="utf-8"?>
+<addon id="plugin.video.plus72" name="Plus7 - 2" version="0.0.2" provider-name="Denis">
   <requires>
-    <import addon="xbmc.python" version="1.0"/>
+    <import addon="xbmc.python" version="1.0" />
   </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
+  <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
   </extension>
-  <extension 
-    point="xbmc.addon.metadata"
-    library="default.py">
+  <extension point="xbmc.addon.metadata" library="default.py">
     <summary>Plus7 -2</summary>
-    <description>PLUS7 offers video streaming of full length episodes as seen on Seven, 7TWO and other content partners – just hit the play button and you can watch high quality, full screen videos straightaway without having to wait for downloads.</description>
+    <description>PLUS7 offers video streaming of full length episodes as seen on Seven, 7TWO and other content partners &#226;&#8364;&#8220; just hit the play button and you can watch high quality, full screen videos straightaway without having to wait for downloads.</description>
     <provides>video</provides>
     <platform>all</platform>
   </extension>
