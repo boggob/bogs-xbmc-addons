@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon
+  id="plugin.video.khan_academy2"
+  name="Khan Academy2"
+  version="1.0.2"
+  provider-name="Denis">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+	<import addon="script.module.simplejson" version="2.0.10"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension 
+    point="xbmc.addon.metadata"
+    library="default.py">
+    <summary>Khan Academy</summary>
+    <description></description>
+    <provides>video</provides>
+    <platform>all</platform>
+  </extension>
+</addon>
