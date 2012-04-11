@@ -23,7 +23,7 @@
     <platform>all</platform>
 	<disclaimer>You must be within Australia to use watch these
       videos.[CR]"SBS", SBS Logos and other works are copyright of
-      their respective owners.</disclaime r>  
+      their respective owners.</disclaimer>	
   </extension>
 </addon>
   <addon id="plugin.video.catchuptv.au.nten" name="Network Ten CatchUp TV" version="0.2.0" provider-name="adammw111">
