@@ -96,7 +96,7 @@
     </extension>
     <extension point="xbmc.addon.metadata" library="default.py">
       <summary>Plus7 -2</summary>
-      <description>PLUS7 offers video streaming of full length episodes as seen on Seven, 7TWO and other content partners &#226;&#8364;&#8220; just hit the play button and you can watch high quality, full screen videos straightaway without having to wait for downloads.</description>
+      <description>Video streaming of full length episodes as seen on Seven, 7TWO and other content partners</description>
       <provides>video</provides>
       <platform>all</platform>
     </extension>
