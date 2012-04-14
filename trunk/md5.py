@@ -13,10 +13,11 @@ def main():
 			with open(fin + "/addon.xml", "r") as fi:
 				addons[fin] = fi.read()
 	
-	pprint.pprint( addons)
+	pprint.pprint(addons)
 	with open(di + "/addons.xml", "w") as fo:
 		fo.write("<addons>")	
 		for k,v in sorted(addons.iteritems()):
+			#"\n  <--%s>" % (k) + 
 			fo.write("\n  " + "\n".join("  " + st for st in v.replace('<?xml version="1.0" encoding="utf-8"?>', '').split("\n")).strip())	
 		fo.write("\n</addons>")	
 	
