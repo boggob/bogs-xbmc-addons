@@ -2,6 +2,7 @@ import hashlib
 import os.path,sys
 import glob
 import pprint
+import re
 
 def main():
 	di	= sys.path[0]
@@ -18,7 +19,7 @@ def main():
 		fo.write("<addons>")	
 		for k,v in sorted(addons.iteritems()):
 			#"\n  <--%s>" % (k) + 
-			fo.write("\n  " + "\n".join("  " + st for st in v.replace('<?xml version="1.0" encoding="utf-8"?>', '').split("\n")).strip())	
+			fo.write("\n  " + "\n".join("  " + st for st in re.sub(r'<\?.*\?>', '',  v).split("\n")).strip())	
 		fo.write("\n</addons>")	
 	
 	with open(di + "/addons.xml") as fi:	
