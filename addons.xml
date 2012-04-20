@@ -116,7 +116,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.sbs2" name="SBS2" version="1.0.6" provider-name="Denis">
+  <addon id="plugin.video.sbs2" name="SBS2" version="1.0.7" provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0.2" />
     </requires>
