@@ -1,0 +1,5 @@
+[B]Version 1.0.2[/B]
+- now works with the new ooyala api
+
+[B]Version 1.0.1[/B]
+- Initial version of Addon
