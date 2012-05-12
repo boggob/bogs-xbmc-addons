@@ -22,7 +22,7 @@ __addonid__			= __settings__.getAddonInfo('id')
 def addDir(params, folder = False, info = {}, still="DefaultFolder.png"):
 	name = params["name"]
 	url =  sys.argv[0] + "?" + "&".join(["%s=%s" % (urllib.quote_plus(k),urllib.quote_plus(str(v)))    for k, v in params.items()])
-	print "::", url,  params, info, "%%"
+	print ("::", url,  params, info, still, "%%")
 	liz=xbmcgui.ListItem(name, iconImage=still, thumbnailImage="")
 	if info:
 		liz.setInfo("video", info)
@@ -31,48 +31,35 @@ def addDir(params, folder = False, info = {}, still="DefaultFolder.png"):
 
 ##############################################################
 def INDEX(params):
-	path = params.get("path", None)
-	if path is None:
-		mode = "0"
-	else:
-		mode = "1"
-
+	mode = int(params.get("mode", "0"))
 	scraper = resources.scraper.SCRAPER
-	next, out = scraper.menu_main(path)
-	for title,url, img in sorted(next):
-		addDir({"path" : url, "name" : title, "url" : url, "mode" : "0"}, True, still = img)
-	for title,url, img in sorted(out):
-		addDir({"path" : url, "name" : title, "url" : url, "mode" : mode}, True, still = img)
+	out = scraper.menu_main(params, addDir)
+		
+
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_EPISODE )
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_UNSORTED )
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_RATING )
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_DATE )
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_PROGRAM_COUNT )
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_RUNTIME )
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_GENRE )	   
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
-def ITEMS(params):
-	path = params.get("path", None)
-	mode = "2"
-	scraper = resources.scraper.SCRAPER
-	nodes = scraper.menu_shows(path)
-
-	for node in sorted(nodes):
-		addDir({"path" : node["url"], "name" : node["title"], "url" : node["url"], "mode" : "2"}, False, info = node["info"], still = node["thumbnail"])
-	xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 	
 def play(params):
 	scraper = resources.scraper.SCRAPER
-	addon	= xbmcaddon.Addon( id=os.path.basename( os.getcwd() ) )
-	bitrate	= addon.getSetting( "vid_quality" )
-	objs		= scraper.menu_play(params["url"])
-	url = [obj for obj in objs if obj.split("_")[-1].split(".")[0] == bitrate][0]
-	print objs
-	print bitrate	
-	print "using:", url
-
-	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(url, xbmcgui.ListItem(params["name"]))
+	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(resources.scraper.SCRAPER.menu_play(params["url"])[0], xbmcgui.ListItem(params["name"]))
+	
+	
 
 ##############################################################
 MODE_MAP	= {
 	"0"	: lambda params:	INDEX(params),
-	"1"	: lambda params:	ITEMS(params),
-	"2"	: lambda url:		play(url)
+	"1"	: lambda params:	INDEX(params),
+	"2"	: lambda params:	INDEX(params),
+	"3"	: lambda url:		play(url)
 }
 
 

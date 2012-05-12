@@ -1,13 +1,17 @@
-import	urllib2 
+import	urllib2 ,urllib
 import	re
 from	time import localtime, strftime, gmtime
 from	BeautifulSoup import BeautifulStoneSoup,BeautifulSoup, NavigableString
+from resources.ooyala.ooyalaCrypto import ooyalaCrypto
+from ooyala.MagicNaming import MagicNaming
 
 
 def geturl(url):
+	print ("getting url", url)
 	return  urllib2.urlopen(urllib2.Request(url)).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
 
 def jsonc(st):
+	print ("getting json", st)
 	for i,o in (
 		('true', 'True'),
 		('false', 'False'),
@@ -19,72 +23,71 @@ def jsonc(st):
 
 class MenuItems(object):
 	def __init__(self):
-		self.base2				= 'http://www.theage.com.au/tv/type/show'
+		self.base2				= 'http://www.theage.com.au/tv/'
 
-	def menu_main(self, path):
-		next = []
+	def menu_main(self, params, addDir):
+		mode = params.get('mode', "0")
 		out = []
-		if path is None:
-			html = geturl(self.base2)
-			soup = BeautifulSoup(html)
-			for item in soup.findAll('div', "cN-groupNavigator open accessible simple"):
-				for sitem in item.findAll('a'):
-					print sitem
-					out.append((sitem.next, sitem["href"], "DefaultFolder.png"))
-		else:
-			print type(path), path
-			html = geturl(path)
-			soup = BeautifulSoup(html)
+		if mode =="0":
+			for item in  jsonc(geturl(self.base2 + 'genre/get_genre_json')):
+				rec = {
+					"title"	: item["name"], 
+					"url"	: (self.base2 + "genre/get_genre_data/" + urllib.quote(item["name"])), 
+					"still": "DefaultFolder.png",
+					"genre"		: item["name"] 
+				}
+				addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params.get("mode", "0")) + 1}, True, rec.get('info',{}), rec['still'])				
 			
-			for item in soup.findAll('li', attrs={'class' : "next"}):
-				for a in item.findAll('a'):
-					next.append(("Next->", a["href"],  "DefaultFolder.png"))
+		elif mode =="1":
+			for item in  jsonc(geturl(params["url"]))["item"]:
+				rec = {
+					"title"	: item["title"], 
+					"url"	: (self.base2 + "episode/getEpisodeRelated?showName=" + urllib.quote(item["title"])),
+					"still": ((item.get('largeThumb', "") or item.get('thumbnail', "") or "DefaultFolder.png") + ".jpg").replace(".jpg.jpg", ".jpg").replace('\\',''),
+					"info"	: {
+						"plot"		: item["description"],
+						"genre"		: item["genre"],
+						"duration"	: "%s:%s:00" % (item['duration'][1:-1].split(':')[0],item['duration'][1:-1].split(':')[1])
+					}
+				}
+				if "embedCode" in item:
+					rec["url"] =item["embedCode"] 
+					addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params["mode"]) + 2}, True, rec.get('info',{}), rec['still'])
+				else:
+					addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params["mode"]) + 1}, True, rec.get('info',{}), rec['still'])
+
+		elif mode =="2":		
+			print geturl(params["url"])
+			for item in  jsonc(geturl(params["url"])):
+				rec = {	
+					"title"	: item["title"], 
+					"url"	: item["embedCode"], 
+					"still": ((item.get('largeThumb', "") or item.get('thumbnail', "") or "DefaultFolder.png") + ".jpg").replace(".jpg.jpg", ".jpg").replace('\\',''),
+					"info"	: {
+						"playcount"	: item['playsTotal'],   
+						"season"	:	item["season"],
+						"episode " : item['episodeNumber'],
+						"plot"		: item["description"],
+						"genre"		: item["genre"],
+						"duration"	: "%s:%s:00" % (item['duration'][1:-1].split(':')[0],item['duration'][1:-1].split(':')[1])
+					}
+				}
+				addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params["mode"]) + 1}, False, rec.get('info',{}), rec['still'])				
 			
-			for item in soup.findAll('ul', attrs={'class' : "cN-listStoryTV"}):
-				for li in item.findAll('li'):
-					sers  = li.findAll('a', title = True)
-					if not sers:
-						continue
-					ser		= sers[0]
-					pic	= li.findAll('img')
-					if pic:
-						pic 		= pic[0]["src"]
-					else:
-						pic 		= 'DefaultVCD.png'	
-
-					out.append((ser["title"], ser["href"],  pic))
-					
-		return next,out				
-					
-	def menu_shows(self, path):
-		print path
-		html = geturl(path)
-		soup = BeautifulSoup(html)
-
-		info = {}
-		title, genre, description, ovation = soup.findAll('dd')
-		print genre
-		print genre.findAll("a")
-		info["genre"]	= ", ".join([a.next for a in genre.findAll("a")])
-		info["plot"]	= description.contents[0]
 		
-		for item in soup.findAll('ul', attrs={"id" : "paginationContent", 'class' : "cN-listStoryTV listStoryTVShort"}):
-			for sitem in item.findAll('li'):
-				for anc in sitem.findAll('a', attrs={'class' : "play-video "}):
-					temp	= {"info" : info}
-					temp["title"]		= anc["title"]
-					temp["thumbnail"]	= anc.next["src"]
-					temp["url"]			= anc["href"]
-				dur =  sitem.find('p')
-				temp["info"]["duration"]	= str(dur.next).strip()[1:-1]
-				print temp
-				yield temp
+		return out				
+					
+	def menu_play(self, page):
+		app			= "ondemand?_fcs_vhost=cp115717.edgefcs.net"
+		rtmp		= "rtmp://%s/%s" % (BeautifulSoup(geturl("http://cp115717.edgefcs.net/fcs/ident")).find("ip").string.strip(), app)
+		embed_code	= page
+		smil		= geturl('http://player.ooyala.com/nuplayer?autoplay=1&hide=all&embedCode=%s' % embed_code)
+		decry_smil	= ooyalaCrypto().ooyalaDecrypt(smil)
+		playpath	=  "mp4:%s" % (MagicNaming().getVideoUrl(decry_smil)[0].split(':')[-1])
+		return "%s app=%s playpath=%s" % (rtmp, app, playpath), (rtmp, app, playpath)
+
+
 			
-	def menu_play(self, path):
-		print path
-		html = geturl(path)
-		import re
-		return set(re.findall(r'"(rtmp://[^"]+)"', html))
 
 			
 
