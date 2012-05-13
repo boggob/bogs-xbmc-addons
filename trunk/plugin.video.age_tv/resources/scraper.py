@@ -32,14 +32,20 @@ class MenuItems(object):
 			for item in  jsonc(geturl(self.base2 + 'genre/get_genre_json')):
 				rec = {
 					"title"	: item["name"], 
-					"url"	: (self.base2 + "genre/get_genre_data/" + urllib.quote(item["name"])), 
+					"url"	: "{base}genre/get_genre_data/{genre}/{count}".format(base = self.base2,genre =  urllib.quote(item["name"].replace(' ' , '-')), count = 0), 
 					"still": "DefaultFolder.png",
 					"genre"		: item["name"] 
 				}
-				addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params.get("mode", "0")) + 1}, True, rec.get('info',{}), rec['still'])				
+				addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params.get("mode", "0")) + 1, "done" : 0}, True, rec.get('info',{}), rec['still'])				
 			
 		elif mode =="1":
-			for item in  jsonc(geturl(params["url"]))["item"]:
+			res = jsonc(geturl(params["url"]))
+			genres, counts,  = params["url"].split("/")[-2:]
+			done = int(params["done"]) + len(res["item"])
+			if res["totalResults"] > done:
+				addDir({"name" : "Next->{0}/{1}".format(done, res["totalResults"] ), "url" : "{base}genre/get_genre_data/{genre}/{count}".format(base = self.base2,genre =  genres, count = int(counts)+1) , "mode" : params["mode"], "done" : done}, True)
+		
+			for item in  res["item"]:
 				rec = {
 					"title"	: item["title"], 
 					"url"	: (self.base2 + "episode/getEpisodeRelated?showName=" + urllib.quote(item["title"])),
@@ -50,9 +56,8 @@ class MenuItems(object):
 						"duration"	: "%s:%s:00" % (item['duration'][1:-1].split(':')[0],item['duration'][1:-1].split(':')[1])
 					}
 				}
-				if "embedCode" in item:
-					rec["url"] =item["embedCode"] 
-					addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params["mode"]) + 2}, True, rec.get('info',{}), rec['still'])
+				if "embedCode" in item and item.get("getEpisodeRelated", None) is not None:
+					addDir({"name" : rec['title'], "url" : item["embedCode"] , "mode" : int(params["mode"]) + 2}, True, rec.get('info',{}), rec['still'])
 				else:
 					addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params["mode"]) + 1}, True, rec.get('info',{}), rec['still'])
 
