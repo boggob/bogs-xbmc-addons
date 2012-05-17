@@ -55,6 +55,12 @@ def play(params):
 	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(params["url"], xbmcgui.ListItem(params["name"]))
 
 def record(params):		
+	def rpt(c):
+		if c not in set(" %*^&$#@!~:"):
+			return c
+		else:
+			return "_"
+
 	print params
 	items = params["url"].split()
 	
@@ -66,13 +72,13 @@ def record(params):
 	
 	#outlog = open("%s.log" % (__settings__.getSetting( "path" )), 'w+')
 	try:
-		args = __settings__.getSetting( "rtmpdump" ), "-o%s%s.mp4" % (__settings__.getSetting( "path" ), params["name"]), "--rtmp=%s" % rtmp, "--playpath=%s" % playpath, "--swfVfy=%s" % swfurl, "--quiet"
+		args = __settings__.getSetting( "rtmpdump" ), '-o%s%s.mp4' % (__settings__.getSetting( "path" ), "".join(rpt(c) for c in str(params["name"]))), "--rtmp=%s" % rtmp, "--playpath=%s" % playpath, "--swfVfy=%s" % swfurl, "--quiet"
 		#, "--swfurl=%s" % swfurl, 
 		print args
 		startupinfo = None
 		if os.name == 'nt':
 			startupinfo = subprocess.STARTUPINFO()
-			startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW		
+			startupinfo.dwFlags |= 1#subprocess.STARTF_USESHOWWINDOW		
 		subprocess.call(args, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.STDOUT, shell= False, startupinfo=startupinfo)
 	except:
 		#outlog.close()

@@ -1,0 +1,5 @@
+[B]Version 0.0.3[/B]
+- got recording working with illegal characters in filenames
+
+[B]Version 1.0.1[/B]
+- Initial version of Addon
