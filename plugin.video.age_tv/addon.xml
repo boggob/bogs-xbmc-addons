@@ -2,7 +2,7 @@
 <addon
   id="plugin.video.age_tv"
   name="The Age TV"
-  version="1.0.2"
+  version="1.0.3"
   provider-name="Denis">
   <requires>
     <import addon="xbmc.python" version="1.0"/>

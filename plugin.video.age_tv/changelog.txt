@@ -1,3 +1,6 @@
+[B]Version 1.0.3[/B]
+- fixed bug in choosing between series and normal content
+
 [B]Version 1.0.2[/B]
 - now works with the new ooyala api
 

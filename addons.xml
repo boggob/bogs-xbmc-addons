@@ -3,7 +3,7 @@
   <addon
     id="plugin.video.age_tv"
     name="The Age TV"
-    version="1.0.2"
+    version="1.0.3"
     provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0"/>
@@ -95,7 +95,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.plus72" name="Plus7 - 2" version="0.0.2" provider-name="Denis">
+  <addon id="plugin.video.plus72" name="Plus7 - 2" version="0.0.3" provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0" />
     </requires>

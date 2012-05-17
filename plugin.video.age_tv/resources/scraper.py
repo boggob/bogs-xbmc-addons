@@ -56,7 +56,7 @@ class MenuItems(object):
 						"duration"	: "%s:%s:00" % (item['duration'][1:-1].split(':')[0],item['duration'][1:-1].split(':')[1])
 					}
 				}
-				if "embedCode" in item and item.get("getEpisodeRelated", None) is not None:
+				if "embedCode" in item and item.get("episodeLatestUID", None) is None:
 					addDir({"name" : rec['title'], "url" : item["embedCode"] , "mode" : int(params["mode"]) + 2}, True, rec.get('info',{}), rec['still'])
 				else:
 					addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params["mode"]) + 1}, True, rec.get('info',{}), rec['still'])
