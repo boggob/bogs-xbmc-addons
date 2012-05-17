@@ -87,11 +87,12 @@ class Scraper(object):
 			}
 		print "@@"	
 		soup = BeautifulStoneSoup(geturl("http://cosmos.bcst.yahoo.com/rest/v2/pops;id=%s;lmsoverride=1;element=stream;bw=1200" % id))
+		print soup
 		item = soup.channel.item.find('media:content')
 		val = {
 			"url"		: "%s playpath=%s swfurl=%s swfvfy=true" % (item['url'], item['path'], "http://d.yimg.com/m/up/ypp/au/player.swf"),
 			"duration"	: item['duration'],
-			"name"		: soup.channel.item.title.contents[0]
+			"name"		: re.sub(r'<!\[CDATA\[([^\]+])\]\]', '' , soup.channel.item.title.contents[0])
 		}
 		print ("@2"	,  val)
 		if "record" in params:
