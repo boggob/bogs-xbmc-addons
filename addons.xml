@@ -1,12 +1,12 @@
 <addons>
-  
   <addon
     id="plugin.video.age_tv"
     name="The Age TV"
-    version="1.0.3"
+    version="1.0.4"
     provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0"/>
+  	<import addon="script.module.cryptopy" version="1.2.6" />
     </requires>
     <extension point="xbmc.python.pluginsource"
                provides="video"
@@ -22,7 +22,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.bloomberg" name="Bloomberg" version="1.0.3" provider-name="Denis">
+  <addon id="plugin.video.bloomberg" name="Bloomberg" version="1.0.4" provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0" />
       <import addon="script.module.cryptopy" version="1.2.6" />
