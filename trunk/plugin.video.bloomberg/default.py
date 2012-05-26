@@ -45,7 +45,7 @@ def INDEX(params):
 		addDir({
 			"path"	: "",
 			"name"	: "Live Stream",
-			"url"	: "rtmp://cp87869.live.edgefcs.net/live app=live playpath=us_300@21006 pageURL=http://www.bloomberg.com/tv/  swfUrl=http://cdn.gotraffic.net/v/20110210_153738//flash/BloombergMediaPlayer.swf  swfVfy=true live=true",
+			"url"	: "rtmp://cp87869.live.edgefcs.net:1935/live app=live playpath=us_300@21006 pageURL=http://www.bloomberg.com/tv/  swfUrl=http://cdn.gotraffic.net/v/20110210_153738//flash/BloombergMediaPlayer.swf  swfVfy=true live=true",
 			"mode"	: "2"
 		}, False)
 
