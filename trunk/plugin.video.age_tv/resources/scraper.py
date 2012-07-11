@@ -44,18 +44,19 @@ class MenuItems(object):
 			done = int(params["done"]) + len(res["item"])
 			if res["totalResults"] > done:
 				addDir({"name" : "Next->{0}/{1}".format(done, res["totalResults"] ), "url" : "{base}genre/get_genre_data/{genre}/{count}".format(base = self.base2,genre =  genres, count = int(counts)+1) , "mode" : params["mode"], "done" : done}, True)
-		
 			for item in  res["item"]:
+				print item			
 				rec = {
 					"title"	: item["title"], 
 					"url"	: (self.base2 + "episode/getEpisodeRelated?showName=" + urllib.quote(item["title"])),
-					"still": ((item.get('largeThumb', "") or item.get('thumbnail', "") or "DefaultFolder.png") + ".jpg").replace(".jpg.jpg", ".jpg").replace('\\',''),
+					"still": ((item.get('largeThumb', "")  or item.get('thumbnail', "") or "DefaultFolder.png") ).replace(".jpg.jpg", ".jpg").replace('\\',''),
 					"info"	: {
 						"plot"		: item["description"],
 						"genre"		: item["genre"],
-						"duration"	: "%s:%s:00" % (item['duration'][1:-1].split(':')[0],item['duration'][1:-1].split(':')[1])
+						"duration"	: "%s:%s:00" %  (item['duration'][1:-1].split(':')[0],item['duration'][1:-1].split(':')[1]) if item['duration'] else ""
 					}
 				}
+				print "^^", rec
 				if "embedCode" in item and item.get("episodeLatestUID", None) is None:
 					addDir({"name" : rec['title'], "url" : item["embedCode"] , "mode" : int(params["mode"]) + 2}, True, rec.get('info',{}), rec['still'])
 				else:
@@ -67,7 +68,7 @@ class MenuItems(object):
 				rec = {	
 					"title"	: item["title"], 
 					"url"	: item["embedCode"], 
-					"still": ((item.get('largeThumb', "") or item.get('thumbnail', "") or "DefaultFolder.png") + ".jpg").replace(".jpg.jpg", ".jpg").replace('\\',''),
+					"still": ((item.get('largeThumb', "") or item.get('thumbnail', "") or "DefaultFolder.png")).replace(".jpg.jpg", ".jpg").replace('\\',''),
 					"info"	: {
 						"playcount"	: item['playsTotal'],   
 						"season"	:	item["season"],
@@ -77,6 +78,7 @@ class MenuItems(object):
 						"duration"	: "%s:%s:00" % (item['duration'][1:-1].split(':')[0],item['duration'][1:-1].split(':')[1])
 					}
 				}
+				print "^^", rec
 				addDir({"name" : rec['title'], "url" : rec["url"], "mode" : int(params["mode"]) + 1}, False, rec.get('info',{}), rec['still'])				
 			
 		

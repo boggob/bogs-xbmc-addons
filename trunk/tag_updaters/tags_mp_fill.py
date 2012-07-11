@@ -6,6 +6,7 @@ import os, sys
 
 ####################################
 PATH = r'C:\files\music\Assorted'
+PATH = r'C:\files\music\Classical'
 
 ################################################
 
@@ -120,9 +121,9 @@ def main():
 	files = sorted(glob.glob(PATH + '/*.mp3'))
 
 	for attrs in (
-		(
-			(u'MusicBrainz Album Id', 'TALB'),
-		),
+#		(
+#			(u'MusicBrainz Album Id', 'TALB'),
+#		),
 	
 		(
 			(u'MusicBrainz Artist Id', 'TPE1'),
