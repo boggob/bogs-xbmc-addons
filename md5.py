@@ -15,6 +15,9 @@ def main():
 			try:
 				with open(fin + "/addon.xml", "r") as fi:
 					addons[fin] = fi.read()
+#					with ZipFile('spam.zip', 'w') as myzip:
+#						myzip.write('eggs.txt')					
+					
 			except exceptions.IOError, e:
 				pass
 				
