@@ -3,6 +3,7 @@ import os.path,sys
 import glob
 import pprint
 import re
+import exceptions
 
 def main():
 	di	= sys.path[0]
@@ -11,9 +12,12 @@ def main():
 	for fin in sorted(glob.glob(di + "/*")):
 		print fin
 		if os.path.isdir(fin) and os.path.abspath(fin) != os.path.abspath(di):
-			with open(fin + "/addon.xml", "r") as fi:
-				addons[fin] = fi.read()
-	
+			try:
+				with open(fin + "/addon.xml", "r") as fi:
+					addons[fin] = fi.read()
+			except exceptions.IOError, e:
+				pass
+				
 	pprint.pprint(addons)
 	with open(di + "/addons.xml", "w") as fo:
 		fo.write("<addons>")	

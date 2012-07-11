@@ -19,16 +19,22 @@ _extr	= lambda attr: lambda ent : "\\".join([unicode(vl) if vl else None for vl 
 _extr2	= lambda attr: lambda ent : unicode(ent.get(attr, []))
 
 
+
+_upd	= lambda attr: lambda ent, val : ent.update(attr=val)
+
+
+
 EXT_MAPPING_ATTR = {
 	".mp3"	: {
-				"musicbrainz_albumid"		: ( _extr("TXXX:MusicBrainz Album Id") ,		lambda encoding, val: TXXX(encoding, "MusicBrainz Album Id", val)),
-				"musicbrainz_artistid"		: ( _extr("TXXX:MusicBrainz Artist Id"),		lambda encoding, val: TXXX(encoding, "MusicBrainz Artist Id", val)), 
-				"musicbrainz_albumartistid"	: ( _extr("TXXX:MusicBrainz Album Artist Id"),	lambda encoding, val: TXXX(encoding, "MusicBrainz Album Artist Id", val)),		
-				"asin"						: ( _extr("TXXX:ASIN"),							lambda encoding, val: TXXX(encoding, "ASIN", val)),
-				"artist"					: ( _extr2("TPE1"), 							lambda encoding, val: val),		
-				"albumartist"				: ( _extr2("TPE2"), 							lambda encoding, val: val),		
-				"album"						: ( _extr2("TALB"),								lambda encoding, val: val),		
-				"genre"						: ( _extr2("TCON"),								lambda encoding, val: val),		
+				"musicbrainz_albumid"		: ( _extr("TXXX:MusicBrainz Album Id") ,		None),
+				"musicbrainz_artistid"		: ( _extr("TXXX:MusicBrainz Artist Id"),		None), 
+				"musicbrainz_albumartistid"	: ( _extr("TXXX:MusicBrainz Album Artist Id"),	None),		
+				"asin"						: ( _extr("TXXX:ASIN"),							None),
+				"artist"					: ( _extr2("TPE1"), 							_upd("TPE1")),		
+				"albumartist"				: ( _extr2("TPE2"), 							_upd("TPE2")),		
+				"album"						: ( _extr2("TALB"),								_upd("TALB")),		
+				"genre"						: ( _extr2("TCON"),								_upd("TCON")),		
+				"label"						: ( _extr2("label"),							_upd("label")),		
 			},
 	".m4a"	: {
 
@@ -39,7 +45,7 @@ EXT_MAPPING_ATTR = {
 				"artist"					: ( _extr("\xa9ART"),											"©ART"),		
 				"albumartist"				: ( _extr("aART"),											"aART"),		
 				"album"						: ( _extr("\xa9alb"),											"©alb"),		
-				"genre"						: ( _extr("\xa9gen"),											"©gen"),		
+				"genre"						: ( _extr("\xa9gen"),											"©gen"),
 	},
 
 	".ape"	: {
