@@ -42,19 +42,24 @@ def INDEX(params):
 	scraper = resources.scraper.MenuItems()
 	if path is None:
 	
-		addDir({
-			"path"	: "",
-			"name"	: "Live Stream",
-			"url"	: "rtmp://cp87869.live.edgefcs.net:1935/live app=live playpath=us_300@21006 pageURL=http://www.bloomberg.com/tv/  swfUrl=http://cdn.gotraffic.net/v/20110210_153738//flash/BloombergMediaPlayer.swf  swfVfy=true live=true",
-			"mode"	: "2"
-		}, False)
+		#addDir({
+		#	"path"	: "",
+		#	"name"	: "Live Stream",
+		#	"url"	: "rtmp://cp87869.live.edgefcs.net:1935/live app=ondemand?_fcs_vhost=cp115717.edgefcs.net playpath=us_300@21006 pageURL=http://www.bloomberg.com/tv/  swfUrl=http://player.ooyala.com/static/cacheable/1c3d7af1e06c53793eb20187993e2276/player_v2.swf/[[DYNAMIC]]/1  swfVfy=true live=true",
+		#	"mode"	: "2"
+		#}, False)
+		addDir({"path" : "http://www.bloomberg.com/tv/", "name" : "Live Stream", "url" : "http://www.bloomberg.com/tv/", "mode" : "2"} , False)
 
 		
 		for title, id, desc, img in scraper.menu_main(path):
 			addDir({"path" : id, "name" : title, "url" : id, "mode" : "0"}, True, {"plot": desc}, img)
 	else:
-		for title, id, desc, img in scraper.menu_shows(path):
-			addDir({"path" : id, "name" : title, "url" : id, "mode" : "1"}, False, {"plot": desc}, img)
+		shows,pagination = scraper.menu_shows(path)
+		for (title, id) in pagination:
+			addDir({"path" : id, "name" : title, "url" : id, "mode" : "0"}, True, {})
+		 
+		for (title, id, desc, img,dur) in shows:
+			addDir({"path" : id, "name" : title, "url" : id, "mode" : "1"}, False, {"plot": desc, "duration":dur }, img)
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_UNSORTED )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )		
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -63,10 +68,13 @@ def INDEX(params):
 	
 def play(params):
 	scraper = resources.scraper.MenuItems()
-
 	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(scraper.menu_play(params["url"])[0], xbmcgui.ListItem(params["name"]))
+	
 def play2(params):
-	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(params["url"], xbmcgui.ListItem(params["name"]))
+	scraper = resources.scraper.MenuItems()
+	
+	rtmp		= "rtmp://%s/live?_fcs_vhost=cp116697.live.edgefcs.net/%s_640_360_1000@18679 live=true" % (scraper.rtmp_get(), scraper.embed_code_get(params["url"]))	
+	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(rtmp, xbmcgui.ListItem(params["name"]))
 
 def record(params):		
 	scraper = resources.scraper.MenuItems()

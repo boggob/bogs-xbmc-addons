@@ -7,6 +7,7 @@ import os, sys
 ####################################
 PATH = r'C:\files\music\Assorted'
 PATH = r'C:\files\music\Classical'
+#PATH = r'C:\temp\aaaa'
 
 ################################################
 
@@ -24,6 +25,17 @@ class flushfile(object):
 
 import sys
 sys.stdout = flushfile(sys.stdout)
+
+def sortorder_conv(name):
+	return " ".join(part.strip() for part in name.split(",")[::-1])
+	
+def get_all_artists(artist):
+	mult = artist.split("&")
+	
+	if len(mult) > 1:
+		return [sortorder_conv(v.strip()) for v in mult]
+	else:
+		return [sortorder_conv(artist)]
 
  
 def collect(files, attrs):
@@ -63,6 +75,7 @@ def collect(files, attrs):
 	
 	return arts, ids, filesm
 
+#force the MBID of all tracks to upper case
 def update(mapp, filesm, attrs):
 	for artist, vals in sorted(mapp.iteritems()):
 		vals = vals - set([None])
@@ -93,29 +106,53 @@ def update(mapp, filesm, attrs):
 	
 def lookup(mapp, filesm, attrs):
 	unknowns = set(['89AD4AC3-39F7-470E-963A-56509C546377', None])
-	for artist, vals in sorted(mapp.iteritems()):
-		if len(vals - unknowns) == 0:
-			try:
-				mbid = scrapers.brainz_lookup_artist_mb(artist, [], classical = False)	
-				if mbid:		
-					for fi in filesm[artist]:	
-						audio = MP3(fi)						
-						for attr, name in attrs:
-							mb = u"TXXX:" + attr
-							nma		=  audio.get(name, None)
-							if nma and nma.text[0] == artist:
-
-								audio[mb] = TXXX(1, attr, mbid.upper())		
-								audio.save()
-			except scrapers.ScaperException, e:
-				print e
-			except Exception, e:
-				import traceback
-				print traceback.format_exc()
-				print "**", repr(fi), repr(e)
-				#break
 
 	
+	lookfor = collections.defaultdict(set)
+	for artist, vals in sorted(mapp.iteritems()):
+		if len(vals - unknowns) == 0:
+			for artist_idv in get_all_artists(artist):
+				lookfor[artist_idv].add(artist)
+				
+
+	
+	lookfor_res  = {}
+	for artist_idv, artists in sorted(lookfor.iteritems()):
+		try:
+			mbid = scrapers.brainz_lookup_artist_mb(artist_idv, [], classical = False)
+			print "^!", repr(artist_idv), mbid
+			
+			if mbid:
+				lookfor_res[artist_idv] = mbid
+		except scrapers.ScaperException, e:
+			print e
+		except Exception, e:
+			import traceback
+			print traceback.format_exc()
+			print "**", repr(artist_idv), repr(e)
+			#break
+
+	lookfor_aggr = 	collections.defaultdict(list)
+	for artist, fi in filesm.iteritems():	
+		for artist_idv in get_all_artists(artist):
+			mbid = lookfor_res.get(artist_idv, "")
+			if mbid:
+				lookfor_aggr[artist].append(mbid)
+		
+	for artist, mbid in lookfor_aggr.iteritems():		
+		print "$$", repr(artist), mbid
+		for fi in filesm[artist]:	
+			audio = MP3(fi)						
+			for attr, name in attrs:
+				mb = u"TXXX:" + attr
+				nma		=  audio.get(name, None)
+				if nma and nma.text[0] == artist:
+ 
+					audio[mb] = TXXX(1, attr, "/".join(mbid).upper())		
+					audio.save()
+
+
+			
 def main():
 	print "starting"
 	files = sorted(glob.glob(PATH + '/*.mp3'))
@@ -136,7 +173,7 @@ def main():
 		print fix			
 		print"#" * 120				
 						
-		update(fix,filesm, attrs)
+		#update(fix,filesm, attrs)
 		lookup(fix,filesm, attrs)
 		
 		
