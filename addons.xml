@@ -22,7 +22,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.bloomberg" name="Bloomberg" version="1.0.4" provider-name="Denis">
+  <addon id="plugin.video.bloomberg" name="Bloomberg" version="1.0.5" provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0" />
       <import addon="script.module.cryptopy" version="1.2.6" />

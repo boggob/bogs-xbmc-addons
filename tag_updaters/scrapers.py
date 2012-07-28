@@ -560,7 +560,62 @@ def brainz_lookup_artist(artist, mbid, albums, classical = False):
 		return None, {}
 
 
+def brainz_album(album, mbid):
+	def cover_get(soup):
+		div = soup.find('div', {"class" : "cover-art"})
+		img =  div.img
+		if not img:
+			print "\t!!!!", repr(album)
+			return ""
+		else:
+			if u"src" in dict(img.attrs):
+				return img['src']
+			else:
+				return div.a['href']
 
+
+	data	=  geturl_delay("http://musicbrainz.org/release/{}".format(mbid))
+	if "Release Not Found" in data:
+		print "%%%Not found", album
+		inf = {}
+	else:
+		soup = BeautifulSoup(data)
+			
+		
+		artists = [a['title'] for a in soup.findAll('a', rel="foaf:maker")]
+		if len(set(artists[1:])) == 1:
+			album_artists = ", ".join(set(artists))
+		elif len(artists):
+			album_artists = artists[0]
+		elif len(artists) and artists[0]:
+			album_artists = artists[0]
+		else:
+			album_artists = ""
+
+		inf =  {
+					'album'		: dict((
+						('title',		escape(album)),
+						('artist',		escape(album_artists)),
+						('releasedate',	soup.find('span', property="dct:date")['content']),
+
+
+						('track',		 [
+											{
+												'title'		: escape(trk.find('span', property="dct:title rdfs:label")["content"]),
+												'position'	: extract(trk.find('span', property="mo:track_number")),
+												'duration'	: extract(trk.find('span', property="mo:duration")),
+											}
+											for trk in soup.findAll('tr', typeof="mo:Track")
+										]),
+						
+						
+
+						('thumb',		cover_get(soup)),
+					))
+				}
+	
+	return inf	
+	
 ##############################################################
 def aggregate(infs, fo, classical = False):
 		
@@ -776,14 +831,28 @@ def aggregate(infs, fo, classical = False):
 					print(str(thread.getName()) + ' could not be terminated')
 	print aggregated
 
-def scrape_albums(albums):
+def scrape_albums(albums, ofile):
 	import codecs
-	with codecs.open("C:/temp/albums.xml", "w", encoding='utf8') as fo:		
+	with codecs.open(ofile, "w", encoding='utf8') as fo:		
 		fo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
-		for album, mbid in albums.iteritems():
-			print clean(album)
-			tmp = lastfm_album(album, 	mbid)
-			fo.write(unquote(encode(tmp)))
+		for idx, (album, (mbid, artist)) in enumerate(sorted(albums.iteritems())):
+			print idx, len(albums), clean(album)
+			if mbid:
+				for scraper in (brainz_album, ):
+					try:
+						tmp = scraper(album, 	mbid)
+						if tmp and 'track' in tmp['album']:
+							#overwrite to ensure that the artist names stay the same!!
+							tmp['album']['artist'] = escape(artist)
+							fo.write(unquote(encode(tmp)))
+							#.encode("utf-8")
+							break
+						else:
+							"\tneed brainz!!"
+					except Exception, e:
+						print "^^^^", e
+						print traceback.format_exc()
+						
 			fo.flush()
 		fo.write("\n</musicdb>\n")
 
@@ -802,6 +871,8 @@ if __name__ == "__main__":
 	import sys
 	sys.stdout = flushfile(sys.stdout)
 	
+	print brainz_album('', 'bcd6ff29-490e-453e-808a-468115d4f53b')
+	raise 1
 	
 	pprint.pprint( lastfm_album(u'Communique', 	'e42b0f81-9191-389c-9ae7-0ad279674a64') )
 	
@@ -810,7 +881,6 @@ if __name__ == "__main__":
 	print brainz_lookup_release_mb('AC/DC', ['Back In Black', 'Dirty Deeds Done Cheap'], [])
 	raise 1
 	
-
 	if 0:
 		pprint.pprint(lastfm_artist('Birds of Tokyo', "8eec195f-d357-4e0a-bcc7-74fd5c462e6e"))
 		raise 1

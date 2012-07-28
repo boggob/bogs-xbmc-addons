@@ -53,30 +53,52 @@ class MenuItems(object):
 		print page			
 		val = BeautifulSoup(geturl(page))
 		
-		groups = val.findAll('div', {'class': 'component', "id" : "shows"})
-		if not groups:
-			groups = val.findAll('div', {'class': 'video_group clearfix items'})
-			
+		groups = val.find('div', id = "primary_content")
+		
+		
 		
 		out = []
-		for episode in (e for group in groups for e in group.findAll('li')):
+		for episode in groups.findAll('a'):
 			try:
+				print episode
 				img = episode.find('img')["src"]
 				title = episode.find('img')["alt"].strip()
-				url = self.base2  + episode.find('a')['href']
-				oo = (title, url, "", img)
+				url = self.base2  + episode['href']
+				dur = episode.find('span' ,{'class' : "duration"}).contents[0].strip()
+				oo = (title, url, "", img, dur)
 				print oo
 				out.append(oo) 
 
-			except:
+			except Exception,e:
+				print "**", e
+				import traceback
+				traceback.print_exc()
 				pass
-		return out
+		
+		pagination = []		
+		paginationd = val.find('div', {"class" :   "pagination collapse"})				
+		if paginationd:
+			for a in paginationd.findAll('a') :
+				label, href = a.string.strip().replace('&#8250;', '>').replace('&#8249;', '<'), a['href']
+				if (label, href) not in pagination:
+					pagination.append((label, href))
 
-	def menu_play(self, page):
-		app			= "ondemand?_fcs_vhost=cp115717.edgefcs.net"
-		rtmp		= "rtmp://%s/%s" % (BeautifulSoup(geturl("http://cp115717.edgefcs.net/fcs/ident")).find("ip").string.strip(), app)
+			
+
+		return out, pagination
+
+	def embed_code_get(self, page):
 		pagedata	=	geturl(page)
 		embed_code	= pagedata[pagedata.index("var live_embed_code = '"):].split("'")[1]
+		return embed_code
+	def rtmp_get(self):
+		return		 BeautifulSoup(geturl("http://cp115717.edgefcs.net/fcs/ident")).find("ip").string.strip()
+
+		
+	def menu_play(self, page, app = "ondemand?_fcs_vhost=cp115717.edgefcs.net"):
+		app			= app
+		rtmp		= "rtmp://%s/%s" % (self.rtmp_get(), app)
+		embed_code	= self.embed_code_get(page)
 		smil		= geturl('http://player.ooyala.com/nuplayer?autoplay=1&hide=all&embedCode=%s' % embed_code)
 		decry_smil	= ooyalaCrypto().ooyalaDecrypt(smil)
 		playpath	=  "mp4:%s" % (MagicNaming().getVideoUrl(decry_smil)[0].split(':')[-1])
