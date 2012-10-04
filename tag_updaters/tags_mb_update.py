@@ -17,8 +17,8 @@ sys.stdout = flushfile(sys.stdout)
 
  
  ####################################
-path = r'C:\files\music\Classical'
-#path = r'C:\files\music\Assorted'
+#path = r'C:\files\music\Classical'
+path = r'C:\files\music\Assorted'
 #path = r'C:\temp\aaaa'
 
 ################################################

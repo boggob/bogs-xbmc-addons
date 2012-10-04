@@ -29,6 +29,11 @@ class ScaperException(Exception):
 
 unquote = lambda st : st.replace('&quot;', '"')
 
+#def escape(st):
+#	parsed	= BeautifulSoup(st, convertEntities=BeautifulSoup.HTML_ENTITIES)
+#	return HTMLParser.unescape.__func__(HTMLParser, st)
+
+
 def clean(st, clip = False):
 	try:
 #		print type(st), repr(st)
@@ -166,7 +171,7 @@ def discogs_artist_scrape(url):
 					elif key == "Sites:":
 						profileso[key] = dict( (tidy(a), a['href']) for a in profiles[idx + 1].findAll('a'))
 					elif key == "Variations:":
-						profileso[key] = [tidy(a) for a in profiles[idx + 1].findAll('a')]
+						profileso[key] = [tidy(a) for a in profiles[idx + 1].findAll('a') if a.get('id', None) != "show-more-anvs"]
 					else:
 						profileso[key] = extract(profiles[idx + 1]	)
 			
@@ -178,7 +183,7 @@ def discogs_artist_scrape(url):
 					for it in item.find('table', {'class':  'discography'}).findAll('img', {'class':  'artwork'})
 				)
 			)
-			albums			= [tidy(it) for it in item.find('table', {'class':  'discography'}).findAll('a', {'href':  lambda h: h in set(hrefs)}) if it.string]
+			albums			= [tidy(it) for it in item.find('table', {'class':  'discography'}).findAll('a', {'href':  lambda h: h in set(hrefs)}) if it.string ]
 			profileso['Albums:'] = zip(albums,artwork)
 
 		#pprint.pprint(profileso)
@@ -191,7 +196,7 @@ def discogs_lookup_artist(artist, albums, url):
 		inf =  {
 			'artist'		: dict((
 				('name',		 artist),
-				('biography',	 (
+				('biography',	 escape(
 									"[B]Discogs[/B][CR]"
 									+
 									("[CR][B]Variations:[/B][CR]" + ", ".join(profileso["Variations:"]) if "Variations:" in profileso else "")
@@ -591,14 +596,30 @@ def brainz_album(album, mbid):
 			album_artists = artists[0]
 		else:
 			album_artists = ""
-
+		
+		def get_subs(tag):
+			res = tag.find('dl', {"class":"ars"})
+			if res:
+				return {extract(dt) : extract(dd) for dt,dd in zip(res.findAll('dt'), res.findAll('dd'))}
+			else:
+				return {}
+			
 		inf =  {
 					'album'		: dict((
 						('title',		escape(album)),
 						('artist',		escape(album_artists)),
 						('releasedate',	soup.find('span', property="dct:date")['content']),
-
-
+						('label',		tidy(soup.find('a', rel="mo:label"))),
+						('review',		 "[CR][CR]".join([
+											"[CR]".join((
+												"[B]{}[/B]:{}".format(attr , val)  
+												for attr, val in ([
+													(extract(trk.find('span', property="mo:track_number")), 		escape(trk.find('span', property="dct:title rdfs:label")["content"])),
+												] + get_subs(trk).items())
+												if val is not None
+											))
+											for trk in soup.findAll('tr', typeof="mo:Track")
+										])),
 						('track',		 [
 											{
 												'title'		: escape(trk.find('span', property="dct:title rdfs:label")["content"]),
@@ -640,9 +661,11 @@ def aggregate(infs, fo, classical = False):
 			return ret
 		except ScaperException,e:
 			print "**Exception**********", e
+			print args
 			return None
 		except Exception,e:
 			print "**Exception**********", e
+			print args
 			print traceback.format_exc()
 			return None
 	def dup_rem(itr):
@@ -870,8 +893,8 @@ if __name__ == "__main__":
 
 	import sys
 	sys.stdout = flushfile(sys.stdout)
-	
-	print brainz_album('', 'bcd6ff29-490e-453e-808a-468115d4f53b')
+	#print encode(discogs_lookup_artist("Chicago", "", "http://www.discogs.com/artist/Brother+Jack+McDuff"))
+	pprint.pprint( brainz_album('Ave Maria - Sacred Arias and Choruses', '01d0b5a9-c077-4141-8e23-614ecd9e166b'))
 	raise 1
 	
 	pprint.pprint( lastfm_album(u'Communique', 	'e42b0f81-9191-389c-9ae7-0ad279674a64') )
@@ -884,7 +907,7 @@ if __name__ == "__main__":
 	if 0:
 		pprint.pprint(lastfm_artist('Birds of Tokyo', "8eec195f-d357-4e0a-bcc7-74fd5c462e6e"))
 		raise 1
-		print encode(discogs_lookup_artist("Chicago", "", "http://www.discogs.com/artist/Chicago+(2)"))
+		print encode(discogs_lookup_artist("Chicago", "", "http://www.discogs.com/artist/Brother+Jack+McDuff"))
 		raise 1
 
 
