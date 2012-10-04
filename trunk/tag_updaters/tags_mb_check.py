@@ -14,7 +14,7 @@ import sys
 sys.stdout = flushfile(sys.stdout)
 
  
-path = r'C:\files\music\Classical'
+path = r'C:\files\music\Assorted'
 print "starting"
 
 
@@ -28,7 +28,7 @@ def handler(mapp):
 			
 			for attr, name in (
 				(u'MusicBrainz Artist Id', 'TPE1'),
-				(u'MusicBrainz Album Artist Id', 'TPE2')
+#				(u'MusicBrainz Album Artist Id', 'TPE2')
 			):
 				mb = u"TXXX:" + attr
 				id_a	=  audio.get(mb, None)
@@ -59,7 +59,7 @@ def handler(mapp):
 			print "**", repr(fi), repr(e)
 			for k,v in audio.iteritems():
 				print "\t","\t", repr(k), ':',  repr(v)
-			break
+			
 		
 	
 	return arts, ids

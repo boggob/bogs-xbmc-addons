@@ -16,6 +16,7 @@ EXT_MAPPING_OBJ = {
 }
 
 _extr	= lambda attr: lambda ent : "\\".join([unicode(vl) if vl else None for vl in ent.get(attr, [])])
+_extr3	= lambda attrs: lambda ent : "\\".join([unicode(vl) if vl else None for attr in attrs for vl in ent.get(attr, [])])
 _extr2	= lambda attr: lambda ent : unicode(ent.get(attr, []))
 
 
@@ -38,12 +39,12 @@ EXT_MAPPING_ATTR = {
 			},
 	".m4a"	: {
 
-				"musicbrainz_albumid"		: ( _extr("----:com.apple.iTunes:MUSICBRAINZ ALBUM ID"), 		"MusicBrainz Album Id"),
-				"musicbrainz_artistid"		: ( _extr("----:com.apple.iTunes:MUSICBRAINZ ARTIST ID"),		"MusicBrainz Artist Id"),		
-				"musicbrainz_albumartistid"	: ( _extr("----:com.apple.iTunes:MUSICBRAINZ ALBUM ARTIST ID"),	"MusicBrainz Album Artist Id"),		
+				"musicbrainz_albumid"		: ( _extr3(["----:com.apple.iTunes:MUSICBRAINZ ALBUM ID", "----:com.apple.iTunes:MusicBrainz Album Id"]), 		"MusicBrainz Album Id"),
+				"musicbrainz_artistid"		: ( _extr3(["----:com.apple.iTunes:MUSICBRAINZ ARTIST ID", "----:com.apple.iTunes:MusicBrainz Artist Id"]),		"MusicBrainz Artist Id"),		
+				"musicbrainz_albumartistid"	: ( _extr3(["----:com.apple.iTunes:MUSICBRAINZ ALBUM ARTIST ID", "----:com.apple.iTunes:MusicBrainz Album Artist Id"]),	"MusicBrainz Album Artist Id"),		
 				"asin"						: ( _extr("----:com.apple.iTunes:ASIN"),						"ASIN"),		
 				"artist"					: ( _extr("\xa9ART"),											"©ART"),		
-				"albumartist"				: ( _extr("aART"),											"aART"),		
+				"albumartist"				: ( _extr("aART"),												"aART"),		
 				"album"						: ( _extr("\xa9alb"),											"©alb"),		
 				"genre"						: ( _extr("\xa9gen"),											"©gen"),
 	},
@@ -60,9 +61,9 @@ EXT_MAPPING_ATTR = {
 
 	},
 	".mpc"	: {
-				"musicbrainz_albumid"		: (_extr2("MUSICBRAINZ ALBUM ID"), "MusicBrainz Album Id"),
-				"musicbrainz_artistid"		: (_extr2("MUSICBRAINZ ARTIST ID"), "MusicBrainz Artist Id"),		
-				"musicbrainz_albumartistid"	: (_extr2("MUSICBRAINZ ALBUMARTIST ID"), "MusicBrainz Album Artist Id"),		
+				"musicbrainz_albumid"		: (_extr2("MUSICBRAINZ_ALBUMID"), "MusicBrainz Album Id"),
+				"musicbrainz_artistid"		: (_extr2("MUSICBRAINZ_ARTIST_ID"), "MusicBrainz Artist Id"),		
+				"musicbrainz_albumartistid"	: (_extr2("MUSICBRAINZ_ALBUMARTIST_ID"), "MusicBrainz Album Artist Id"),		
 				"asin"						: (_extr2("ASIN"), "ASIN"),		
 				"artist"					: (_extr2("Artist"), "©ART"),		
 				"albumartist"				: (_extr2("Album Artist"), "aART"),		
@@ -72,9 +73,9 @@ EXT_MAPPING_ATTR = {
 	},
 
 	".flac"	: {
-				"musicbrainz_albumid"		: (_extr("MUSICBRAINZ ALBUM ID"), "MusicBrainz Album Id"),
-				"musicbrainz_artistid"		: (_extr("MUSICBRAINZ ARTIST ID"), "MusicBrainz Artist Id"),		
-				"musicbrainz_albumartistid"	: (_extr("MUSICBRAINZ ALBUMARTIST ID"), "MusicBrainz Album Artist Id"),		
+				"musicbrainz_albumid"		: (_extr("MUSICBRAINZ_ALBUMID"), "MusicBrainz Album Id"),
+				"musicbrainz_artistid"		: (_extr("MUSICBRAINZ_ARTIST_ID"), "MusicBrainz Artist Id"),		
+				"musicbrainz_albumartistid"	: (_extr("MUSICBRAINZ_ALBUMARTIST_ID"), "MusicBrainz Album Artist Id"),		
 				"asin"						: (_extr("ASIN"), "ASIN"),		
 				"artist"					: (_extr("ARTIST"), "©ART"),		
 				"albumartist"				: (_extr("ALBUMARTIST"), "aART"),		
@@ -91,7 +92,7 @@ def get_files(path):
 		if os.path.isdir(fi):
 			out.extend(get_files(fi))
 		else:
-			ext = os.path.splitext(fi)[-1]
+			ext = os.path.splitext(fi)[-1].lower()
 			fullpath = os.path.join(path, fi)
 			attr_map	= EXT_MAPPING_ATTR.get(ext, None)
 			obj_map		= EXT_MAPPING_OBJ.get(ext, None)

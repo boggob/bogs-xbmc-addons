@@ -6,7 +6,8 @@ import os, sys
 
 ####################################
 PATH = r'C:\files\music\Assorted'
-PATH = r'C:\files\music\Classical'
+#PATH = r'C:\files\music\Classical'
+#PATH = r'C:\files\music\World'
 #PATH = r'C:\temp\aaaa'
 
 ################################################

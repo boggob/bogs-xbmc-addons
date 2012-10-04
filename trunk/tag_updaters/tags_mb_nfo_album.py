@@ -19,35 +19,48 @@ import sys
 sys.stdout = flushfile(sys.stdout)
 
 ####################################
-PATH = r'C:\files\music\Assorted'
-#PATH = r'C:\files\music\Classical'
-#PATH = r'C:\temp\aaaa'
+if 1:
+	PATHS = [
+	 r'C:\files\music\Assorted',
+	 r'C:\files\music\Classical',
+	 r'C:\files\music\World',
+	 r'C:\files\music\Matilda',
+	 r'C:\files\music\musique_wog',
+	 r'C:\files\music\Jaz',
+	]
+	OUTFILE = "C:/temp/albums.xml"
+else:
+	PATHS = [
+	 r'C:\temp\aaaa',
+	]
+	OUTFILE = "C:/temp/albums_test.xml"
+	
 ####################################
 
 
 def handler():
 	arts		= collections.defaultdict(set)
-	
-	for fi, attr_map, of in tags.get_files(PATH):
-		print of
-		for attr, albumname, artist, albumartist  in (
-			('musicbrainz_albumid', 'album', 'artist', 'albumartist'),
-		):
-			id_a		= attr_map[attr][0](fi)
-			nma			= attr_map[albumname][0](fi)
-			art_album	= attr_map[albumartist][0](fi)
-			art_artist	= attr_map[artist][0](fi)
-			
-			art2		= art_album if (art_album and u'{}'.format(repr(art_album)) != "u'[]'") else  art_artist
-			
-			if nma and id_a:
-				arts[nma] = (id_a.upper().strip(), art2)
-				print "\t%%", nma.encode('utf8'),  id_a.upper().strip(), repr(art2), u'"{}"'.format(repr(art2)),  u'{}'.format(repr(art2)) == "u'[]'", repr(art_album), repr(art_artist)
-			else:	
-				print "$$", nma.encode('utf8') , id_a
+	for PATH in PATHS:
+		for fi, attr_map, of in tags.get_files(PATH):
+			print of
+			for attr, albumname, artist, albumartist  in (
+				('musicbrainz_albumid', 'album', 'artist', 'albumartist'),
+			):
+				id_a		= attr_map[attr][0](fi)
+				nma			= attr_map[albumname][0](fi)
+				art_album	= attr_map[albumartist][0](fi)
+				art_artist	= attr_map[artist][0](fi)
+				
+				art2		= art_album if (art_album and u'{}'.format(repr(art_album)) != "u'[]'") else  art_artist
+				
+				if nma and id_a:
+					arts[nma] = (id_a.upper().strip(), art2)
+					print "\t%%", nma.encode('utf8'),  id_a.upper().strip(), repr(art2), u'"{}"'.format(repr(art2)),  u'{}'.format(repr(art2)) == "u'[]'", repr(art_album), repr(art_artist)
+				else:	
+					print "$$", nma.encode('utf8') , id_a, repr(nma)
 	import pprint
 	pprint.pprint(arts)
-	scrapers.scrape_albums(arts, "C:/temp/albums.xml")
+	scrapers.scrape_albums(arts, OUTFILE)
 	#brainz_album
 
 
