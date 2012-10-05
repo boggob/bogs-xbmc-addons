@@ -92,8 +92,9 @@ var naxos_headers = function(el) {
 		
 		var z = text_node_to_text(this, false).join(' ').trim().replace( /\n/, '' ).split(":"); 
 		console.log(z);
-
-		y[z[0].trim()] = z[1].trim().split(" ; "); 
+		if (z.length == 2) {
+			y[z[0].trim()] = z[1].trim().split(" ; "); 
+		}
 	});	  
 	
 	y['Composer(s)']	= artist_sort_order(y['Composer(s)']);
@@ -112,14 +113,15 @@ var naxos_works = function() {
 		work["composers"]	= jQuery(para).prevAll('p.composers').eq(0).find('a').map(function () {return artist_sort_order(text_node_to_text(this, true))}).get();
 		work["performers"]	= jQuery(para).next('div.performers').find('td:has(>a)').map(
 								function () {
-									var xx = new Array(text_node_to_text(this, true));
-									xx[0] = artist_sort_order(new Array(xx[0][0]));
-									if (xx[0].length == 1) {
-										xx[0].push("");
+									var xx = text_node_to_text(this, true);
+									if (xx.length == 1) {
+										xx.push("");
 									} else {
-										xx[0][1] = xx[0][1].replace(',',"").trim();
+										xx[1] = xx[1].replace(',',"").trim();
 									}
-									return xx;
+									xx[0] = artist_sort_order(new Array(xx[0]))[0];									
+									console.log(xx);									
+									return new Array(xx);
 								}
 							).get();
 		
@@ -150,8 +152,10 @@ var  musicbrainz_add = function(scape)  {
 	add_field("labels.0.name", 				scape['headers']['Label'][0]);
 	add_field("barcode", 					scape['headers']['Barcode'][0]);
 	add_field('labels.0.catalog_number',	scape['headers']['Catalogue No'][0]);
-	add_field("date.year", 					scape['headers']['Physical Release'][0].split('/')[1]),
-	add_field("date.month", 				scape['headers']['Physical Release'][0].split('/')[0]),
+	if (scape['headers'].hasOwnProperty('Physical Release')) {
+		add_field("date.year", 					scape['headers']['Physical Release'][0].split('/')[1]);
+		add_field("date.month", 				scape['headers']['Physical Release'][0].split('/')[0]);
+	}
 	
 	add_field("language_id", 				"120");
 	add_field("script_id", 					"28");
