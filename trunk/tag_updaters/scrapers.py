@@ -29,6 +29,7 @@ class ScaperException(Exception):
 
 unquote = lambda st : st.replace('&quot;', '"')
 
+
 #def escape(st):
 #	parsed	= BeautifulSoup(st, convertEntities=BeautifulSoup.HTML_ENTITIES)
 #	return HTMLParser.unescape.__func__(HTMLParser, st)
@@ -43,7 +44,7 @@ def clean(st, clip = False):
 #			print ("@", type(st), st)
 			#parsed	= BeautifulSoup(st, convertEntities=BeautifulSoup.HTML_ENTITIES)
 			#parsed	= HTMLParser.unescape.__func__(HTMLParser, st)
-			parsed = st.replace('&quot;', '"')
+			parsed = st.replace('quot;', '"')
 			#parsed	= st
 			#upped	= unicode(parsed)
 			#downed	= unicodedata.normalize('NFKD', upped)
@@ -59,6 +60,19 @@ def clean(st, clip = False):
 def mt():
 	ts = time.localtime(time.time())
 	return "{0}:{1}:{2}".format(ts.tm_hour, ts.tm_min, ts.tm_sec)
+	
+def geturlbin(url, timeout = 30):
+	try:
+		print "\tgetting: %s - %s" % (mt(), url)
+		req = urllib2.Request(url)
+		req.add_header('User-Agent', "bog's_xbmc_scraper/0.0 bog.gob@gmail.com")
+		return urllib2.urlopen(req, timeout = timeout).read()
+	except urllib2.HTTPError,e:
+		return None
+	except urllib2.URLError,e:
+		return urllib2.urlopen(req, timeout = timeout).read()
+	
+	
 def geturl(url, timeout = 30):
 	try:
 		print "\tgetting: %s - %s" % (mt(), url)
@@ -81,10 +95,11 @@ nested = lambda: collections.defaultdict(nested)
 def tidy(el):
 	return "" if not el or not el.string else el.string.strip()
 
-def extract(dat):
-	def sub(dat):
-		return "".join(( content.string if isinstance(content,NavigableString) else sub(BeautifulSoup(content.renderContents()))  for content in dat.contents))
+def sub(dat):
+	return "".join(( content.string if isinstance(content,NavigableString) else sub(BeautifulSoup(content.renderContents()))  for content in dat.contents))
 	
+	
+def extract(dat):
 	return escape(sub(dat))
 
 #extract = lambda dat: "".join(( clean(content.string) if isinstance(content,NavigableString) else clean(content.renderContents())  for content in dat.contents))
@@ -230,6 +245,9 @@ def discogs_lookup_artist(artist, albums, url):
 #lastfm
 #Your API Key is 6a95f3c9de1a78a960f62d7d76cc94c1
 
+#http://htbackdrops.com/api/7681a907c805e0670330c694e788e8e8/searchXML?mbid=c130b0fb-5dce-449d-9f40-1437f889f7fe&amp;aid=1,5,26
+#http://htbackdrops.com/api/7681a907c805e0670330c694e788e8e8/download/14355/fullsize 
+
 def lastfm_artist(artist, albums, mbid):
 	data	=  geturl_delay("http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&mbid={0}&api_key=6a95f3c9de1a78a960f62d7d76cc94c1&format=json".format(mbid))
 	try:
@@ -241,8 +259,9 @@ def lastfm_artist(artist, albums, mbid):
 	#pprint.pprint(res)
 	if "error" in res:
 		inf = {}
+		print "\t\t**", res
 	else:
-		bio1	= "[B]Lastfm[/B][CR]" + extract(BeautifulSoup(res["artist"]["bio"]["content"])) 
+		bio1	= "[B]Lastfm[/B][CR]" + sub(BeautifulSoup(res["artist"]["bio"]["content"])) 
 		sim_arts = ""
 		sim = res['artist'].get('similar', {})
 		if isinstance(sim, dict):
@@ -255,7 +274,8 @@ def lastfm_artist(artist, albums, mbid):
 		bio2	= ("\n[CR][B]Similar Artists:[/B][CR]" + sim_arts) if sim_arts else ""
 		enclose = lambda  x: [x] if isinstance(x, dict) else x
 		inf =  {
-					'artist'		: dict((
+					'artist'		: collections.OrderedDict((
+						('mbid',		 mbid),
 						('name',		 artist),
 						('genre',		 [
 											tag['name']
@@ -264,11 +284,15 @@ def lastfm_artist(artist, albums, mbid):
 												{'tag' : []} 
 											)['tag'])
 										]),
-						('mbid',		 mbid),
-						('biography',	 HTMLParser.unescape.__func__(HTMLParser, bio1 + bio2)),
+						
+						('biography',	 HTMLParser.unescape.__func__(HTMLParser, bio2 + bio1)),
 						('thumb',		sorted([img['#text'] for img in res['artist']['image'] if img['#text']], key = lambda img: "{0:0>10}".format(img.split('/')[-2] if len(img.split('/')) else "0"), reverse = True)),
+						('formed', 		res['artist'].get('yearformed', "")), 
 					))
 				}
+				
+		for k,v in inf["artist"].iteritems():
+			inf["artist"][k] = escape(v) if isinstance(v, basestring)  else [escape(vv) for vv in v]
 	return inf
 	
 def lastfm_album(album, mbid):
@@ -282,6 +306,7 @@ def lastfm_album(album, mbid):
 	#pprint.pprint(res)
 	if "error" in res:
 		inf = {}
+		print "\t", res
 	else:
 		enclose = lambda  x: [x] if isinstance(x, dict) else x
 		inf =  {
@@ -327,12 +352,14 @@ def lastfm_album(album, mbid):
 	thumbs = inf.get('thumb', [])			
 	if thumbs:
 		inf['thumb'] = thumbs[0]
+
 	return inf	
 	
 
 ##############################################################
 #http://musicbrainz.org/doc/XML_Web_Service/Version_2
 LUCENE_ESCAPED = set('+ - && || ! ( ) { } [ ] ^ " ~ * ? : \\'.split())
+
 def lucene_format(st):
 	return "".join(c if c not in LUCENE_ESCAPED else "\\{0}".format(c)  for c in st ).lower()
 
@@ -605,7 +632,8 @@ def brainz_album(album, mbid):
 				return {}
 			
 		inf =  {
-					'album'		: dict((
+					'album'		: collections.OrderedDict((
+						('mbid',		mbid),
 						('title',		escape(album)),
 						('artist',		escape(album_artists)),
 						('releasedate',	soup.find('span', property="dct:date")['content']),
@@ -756,7 +784,7 @@ def aggregate(infs, fo, classical = False):
 	q_o_lfm	= Queue.Queue()
 	terminate = Queue.Queue()
 	
-	print "&&" 
+	print "" 
 	print terminate.empty()
 	print "$$$$$$"
 
@@ -871,7 +899,7 @@ def scrape_albums(albums, ofile):
 							#.encode("utf-8")
 							break
 						else:
-							"\tneed brainz!!"
+							print "\tneed brainz!!", album
 					except Exception, e:
 						print "^^^^", e
 						print traceback.format_exc()
@@ -894,15 +922,17 @@ if __name__ == "__main__":
 	import sys
 	sys.stdout = flushfile(sys.stdout)
 	#print encode(discogs_lookup_artist("Chicago", "", "http://www.discogs.com/artist/Brother+Jack+McDuff"))
-	pprint.pprint( brainz_album('Ave Maria - Sacred Arias and Choruses', '01d0b5a9-c077-4141-8e23-614ecd9e166b'))
-	raise 1
 	
-	pprint.pprint( lastfm_album(u'Communique', 	'e42b0f81-9191-389c-9ae7-0ad279674a64') )
-	
-	print "??"
-	print
-	print brainz_lookup_release_mb('AC/DC', ['Back In Black', 'Dirty Deeds Done Cheap'], [])
-	raise 1
+	if 0:
+		pprint.pprint( brainz_album('Ave Maria - Sacred Arias and Choruses', '01d0b5a9-c077-4141-8e23-614ecd9e166b'))
+		raise 1
+		
+		pprint.pprint( lastfm_album(u'Communique', 	'e42b0f81-9191-389c-9ae7-0ad279674a64') )
+		
+		print "??"
+		print
+		print brainz_lookup_release_mb('AC/DC', ['Back In Black', 'Dirty Deeds Done Cheap'], [])
+		raise 1
 	
 	if 0:
 		pprint.pprint(lastfm_artist('Birds of Tokyo', "8eec195f-d357-4e0a-bcc7-74fd5c462e6e"))

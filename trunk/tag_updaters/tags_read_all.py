@@ -5,8 +5,8 @@ import collections
 import os, sys
 
 ####################################
-PATH = r'C:\files\music\Classical'
-#PATH = r'C:\temp\aaaa'
+#PATH = r'C:\files\music\Classical'
+PATH = r'C:\temp\aaaa'
 ################################################
 
 pt =  os.path.split(__file__)[0]
@@ -15,7 +15,9 @@ sys.path.append(pt)
 import scrapers
 import tags
 
-
+"""
+reads all tags from all files
+"""
 
  
 def collect():
@@ -24,15 +26,12 @@ def collect():
 
 	filesm		= collections.defaultdict(set)
 	
-	for obj, attr, fi  in tags.get_files(PATH):
+	for fi, attr_map, of in sorted(tags.get_files(PATH)):
 		try:
-			publisher = obj.get('LABEL', None)
-			if publisher:
-				if os.path.splitext(fi)[-1] == ".m4a":
-					print fi, publisher				
-					obj['----:com.apple.iTunes:LABEL'] = publisher
-					del obj['LABEL']				
-					obj.save()
+			print repr(of)
+			print fi
+			for k,v in  {k : attr_map[k][0](fi) for k in attr_map}.iteritems():
+				print '\t', k, repr(v)
 			
 		except Exception, e:
 			import traceback

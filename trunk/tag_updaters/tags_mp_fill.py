@@ -4,8 +4,24 @@ import glob
 import collections
 import os, sys
 
+"""
+reads artist and albumartist IDs from musicbrainz and updates files
+"""
+
 ####################################
-PATH = r'C:\files\music\Assorted'
+PATHS = [
+	 r'C:\files\music\Assorted\A-H',
+	 r'C:\files\music\Assorted\I-Z',
+	 r'C:\files\music\Assorted\No Album',
+	 r'C:\files\music\Assorted\Tripple J',
+#	 r'C:\files\music\Assorted',
+	 r'C:\files\music\Classical',
+	 r'C:\files\music\World',
+	 r'C:\files\music\Matilda',
+	 r'C:\files\music\musique_wog',
+	 r'C:\files\music\Jaz',
+	]
+
 #PATH = r'C:\files\music\Classical'
 #PATH = r'C:\files\music\World'
 #PATH = r'C:\temp\aaaa'
@@ -156,8 +172,11 @@ def lookup(mapp, filesm, attrs):
 			
 def main():
 	print "starting"
-	files = sorted(glob.glob(PATH + '/*.mp3'))
-
+	files = []
+	for PATH in PATHS:
+		files += glob.glob(PATH + '/*.mp3')
+	files = sorted(files)
+	
 	for attrs in (
 #		(
 #			(u'MusicBrainz Album Id', 'TALB'),

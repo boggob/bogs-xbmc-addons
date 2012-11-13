@@ -21,14 +21,18 @@ sys.stdout = flushfile(sys.stdout)
 ####################################
 if 1:
 	PATHS = [
-	 r'C:\files\music\Assorted',
+	 r'C:\files\music\Assorted\A-H',
+	 r'C:\files\music\Assorted\I-Z',
+	 r'C:\files\music\Assorted\No Album',
+	 r'C:\files\music\Assorted\Tripple J',
+#	 r'C:\files\music\Assorted',
 	 r'C:\files\music\Classical',
 	 r'C:\files\music\World',
 	 r'C:\files\music\Matilda',
 	 r'C:\files\music\musique_wog',
 	 r'C:\files\music\Jaz',
 	]
-	OUTFILE = "C:/temp/albums.xml"
+	OUTFILE = "C:/files/music/art/albums.xml"
 else:
 	PATHS = [
 	 r'C:\temp\aaaa',
