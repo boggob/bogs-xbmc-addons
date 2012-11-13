@@ -15,8 +15,8 @@ EXT_MAPPING_OBJ = {
 	".flac"	: FLAC,
 }
 
-_extr	= lambda attr: lambda ent : "\\".join([unicode(vl) if vl else None for vl in ent.get(attr, [])])
-_extr3	= lambda attrs: lambda ent : "\\".join([unicode(vl) if vl else None for attr in attrs for vl in ent.get(attr, [])])
+_extr	= lambda attr: lambda ent : "\\".join([unicode(vl) for vl in ent.get(attr, []) if vl])
+_extr3	= lambda attrs: lambda ent : "\\".join([unicode(vl) if vl else "" for attr in attrs for vl in ent.get(attr, []) if attr])
 _extr2	= lambda attr: lambda ent : unicode(ent.get(attr, []))
 
 
@@ -89,11 +89,11 @@ EXT_MAPPING_ATTR = {
 def get_files(path):
 	out = []
 	for fi in sorted(os.listdir(path)):
-		if os.path.isdir(fi):
-			out.extend(get_files(fi))
+		fullpath = os.path.join(path, fi)
+		if os.path.isdir(fullpath):
+			out.extend(get_files(fullpath))
 		else:
 			ext = os.path.splitext(fi)[-1].lower()
-			fullpath = os.path.join(path, fi)
 			attr_map	= EXT_MAPPING_ATTR.get(ext, None)
 			obj_map		= EXT_MAPPING_OBJ.get(ext, None)
 			if obj_map:

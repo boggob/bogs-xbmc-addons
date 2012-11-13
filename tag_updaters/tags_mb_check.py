@@ -1,6 +1,11 @@
+################################################################################################
+#Fills out missing MBID for artist and album artist based on data already in the collection
+################################################################################################
+
 from mutagen.mp3 import MP3
 from mutagen.id3 import TXXX
 import glob
+import pprint
 import collections
 
 class flushfile(object):
@@ -14,28 +19,43 @@ import sys
 sys.stdout = flushfile(sys.stdout)
 
  
-path = r'C:\files\music\Assorted'
+PATHS = [
+	 r'C:\files\music\Assorted\A-H',
+	 r'C:\files\music\Assorted\I-Z',
+	 r'C:\files\music\Assorted\No Album',
+	 r'C:\files\music\Assorted\Tripple J',
+#	 r'C:\files\music\Assorted',
+	 r'C:\files\music\Classical',
+	 r'C:\files\music\World',
+	 r'C:\files\music\Matilda',
+	 r'C:\files\music\musique_wog',
+	 r'C:\files\music\Jaz',
+	]
 print "starting"
 
 
 def handler(mapp):
 	arts		= collections.defaultdict(set)
 	ids			= collections.defaultdict(set)
-	
-	for fi in sorted(glob.glob(path + '/*.mp3')):
+	files = []
+	for PATH in PATHS:
+		files += glob.glob(PATH + '/*.mp3')
+	files = sorted(files)
+
+	for fi in files:
 		try:
 			audio = MP3(fi)
 			
 			for attr, name in (
 				(u'MusicBrainz Artist Id', 'TPE1'),
-#				(u'MusicBrainz Album Artist Id', 'TPE2')
+				(u'MusicBrainz Album Artist Id', 'TPE2')
 			):
 				mb = u"TXXX:" + attr
 				id_a	=  audio.get(mb, None)
 				nma		=  audio.get(name, None)
 				if not nma:
 					if id_a:
-						print "%%", fi
+						print "%%", repr(fi)
 				else:
 					nm	= nma.text[0]
 					if id_a:
@@ -45,7 +65,7 @@ def handler(mapp):
 							ids[id_t].add(nm)
 					else:
 						if nm in mapp:
-							print "!!", nm
+							print "!!", repr(nm)
 							audio[mb] = TXXX(1, attr, mapp[nm])	
 							audio.save()
 						else:
@@ -55,10 +75,8 @@ def handler(mapp):
 
 		except Exception, e:
 			import traceback
-			traceback.print_exc()
+			#traceback.print_exc()
 			print "**", repr(fi), repr(e)
-			for k,v in audio.iteritems():
-				print "\t","\t", repr(k), ':',  repr(v)
 			
 		
 	
@@ -78,7 +96,7 @@ def main():
 				print repr(k), repr(v)
 	
 	print"#" * 120					
-	print fix			
+	pprint.pprint(fix)
 	print"#" * 120				
 					
 	for k,v in ids.iteritems():
