@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon
+  id="plugin.video.rageagain"
+  name="Rage Again"
+  version="1.0"
+  provider-name="boggob">
+  <requires>
+    <import addon="xbmc.python" version="1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension 
+    point="xbmc.addon.metadata"
+    library="default.py">
+    <summary>Rage Again</summary>
+    <description>Since 1998 rage has posted all their episode playlists online. This website combines these playlists with YouTube allowing you to travel back through time and re-experience rage's recent history.</description>
+    <provides>video</provides>
+    <platform>all</platform>
+  </extension>
+</addon>
