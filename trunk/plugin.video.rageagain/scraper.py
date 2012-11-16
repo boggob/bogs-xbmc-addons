@@ -16,7 +16,8 @@ def strings(node):
 def jsonc(st):
 	for i,o in (
 		('true', 'True'),
-		('false', 'False')
+		('false', 'False'),
+		('null', 'None')
 	):
 		st = st.replace(i,o)
 	return eval(st)
@@ -44,10 +45,10 @@ class Scraper(object):
 		out = [
 				#/episode/top200/1
 			{ 
-				"url"	: self.URLS['base']+ "tracks/getByPlaylistId/{0}.json".format('top200'), 
+				"url"	: self.URLS['base']+ "tracks/getTop200.json", 
 				"title"	: 'Top 200', 
 				"folder"	: True,
-				"path"	: "browse",
+				"path"	: "browse2",
 			}
 		]
 		
@@ -63,10 +64,10 @@ class Scraper(object):
 			out.append(val)
 		self.folders(out)
 	
-
-	
 	def browse(self, params):
-		tracks		= jsonc(geturl(params['url']))
+		dat		= geturl(params['url'])
+		print dat
+		tracks		= jsonc(dat)
 		pprint.pprint(tracks)
 		
 		out = []
@@ -77,6 +78,26 @@ class Scraper(object):
 				"title"	: data.get("artist", "") + ":" + data.get("track",""), 
 				"folder"	: False,
 				"info"		: {"duration": ":".join(data.get("timeslot", "").split(":")[:-1])},
+				"path"	: "details",
+			}
+			print val
+			out.append(val)
+		self.folders(out)
+	
+	def browse2(self, params):
+		dat		= geturl(params['url'])
+		print dat
+		tracks		= jsonc(dat)
+		pprint.pprint(tracks)
+		
+		out = []
+		for data in sorted(tracks["tracks"]):
+			print data
+			val = { 
+				"url"	: self.URLS['base']+ "youtube/get_sources.json?track_artist={0}&track_name={1}&track_label={2}".format(urllib.quote(data['artist'] or ""), urllib.quote(data['track'] or ""),urllib.quote(data['label'] or "")), 
+				"title"	: data.get("artist", "") + ":" + data.get("track",""), 
+				"folder"	: False,
+#				"info"		: {"duration": ":".join(data.get("timeslot", "").split(":")[:-1])},
 				"path"	: "details",
 			}
 			print val
