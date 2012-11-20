@@ -17,9 +17,18 @@ sys.stdout = flushfile(sys.stdout)
 
  
  ####################################
-#path = r'C:\files\music\Classical'
-path = r'C:\files\music\Assorted'
-#path = r'C:\temp\aaaa'
+PATHS = [
+	 r'C:\files\music\Assorted\A-H',
+	 r'C:\files\music\Assorted\I-Z',
+	 r'C:\files\music\Assorted\No Album',
+	 r'C:\files\music\Assorted\Tripple J',
+#	 r'C:\files\music\Assorted',
+	 r'C:\files\music\Classical',
+	 r'C:\files\music\World',
+	 r'C:\files\music\Matilda',
+	 r'C:\files\music\musique_wog',
+	 r'C:\files\music\Jaz',
+	]
 
 ################################################
 
@@ -27,48 +36,54 @@ path = r'C:\files\music\Assorted'
 
 print "starting"
 
-for fi in sorted(glob.glob(path + '/*.mp3')):
-	try:
-		audio = MP3(fi)
+for fi in sorted(
+		fi
+		for path in PATHS
+		for fi in glob.glob(path.decode('utf8') + '/*.mp3')
+	):
+	
+		try:
+			audio = MP3(fi)
 
-		if 1:
-			
-			for sattr in (
-				u'MusicBrainz Artist Id',
-				u'MusicBrainz Album Artist Id',
-				u'MusicBrainz Album Id',
-				u'albumartist',
-			):
-				attr = u'TXXX:' + sattr
-				attru = attr.upper()
+			if 1:
 				
-				if attru in audio:
-					#If normal case tag is not present - replace uppercase verison with the correct case
-					if attr not in audio:
-						audio[attr] = TXXX(audio[attru].encoding, sattr, audio[attru].text)
-						del audio[attru]
-					#If normal case tag is not blank - replace uppercase verison with the correct case
-					elif not audio[attr].text[0].upper().strip():
-						audio[attr] = TXXX(audio[attru].encoding, sattr, audio[attru].text)
-						del audio[attru]	
-					#If uppercase tag data is blank - remove it
-					elif not audio[attru].text[0].upper().strip():
-						del audio[attru]	
-					#If uppercase tag data is != normal case tag data - remove it	
-					elif audio[attr].text[0].upper().strip() != audio[attru].text[0].upper().strip():
-						print "??", repr(fi), attr, "\t", audio[attr],  "\t",audio[attru]
-						del audio[attru]	
-					#Remove uppercase tag data
-					else:
-						del audio[attru]	
-				
-					audio.save()
+				for sattr in (
+					u'MusicBrainz Artist Id',
+					u'MusicBrainz Album Artist Id',
+					u'MusicBrainz Album Id',
+					u'albumartist',
+				):
+					attr = u'TXXX:' + sattr
+					
+					for attru in (attr.upper(), attr.lower()):
+						if  attr != attru and attru in audio:
+							print "??", repr(fi), "\t", attr, "\t", attru, "\t",audio[attru]
+							#If normal case tag is not present - replace uppercase verison with the correct case
+							if attr not in audio:
+								audio[attr] = TXXX(audio[attru].encoding, sattr, audio[attru].text)
+								del audio[attru]
+							#If normal case tag is not blank - replace uppercase verison with the correct case
+							elif not audio[attr].text[0].upper().strip():
+								audio[attr] = TXXX(audio[attru].encoding, sattr, audio[attru].text)
+								del audio[attru]	
+							#If uppercase tag data is blank - remove it
+							elif not audio[attru].text[0].upper().strip():
+								del audio[attru]	
+							#If uppercase tag data is != normal case tag data - remove it	
+							elif audio[attr].text[0].upper().strip() != audio[attru].text[0].upper().strip():
+								print "\t", audio[attr],  "\t",audio[attru]
+								del audio[attru]	
+							#Remove uppercase tag data
+							else:
+								del audio[attru]	
+					
+						audio.save()
 
 
-		if 0:
-			print fi
-			for k,v in audio.iteritems():
-				print "\t", repr(k), ':',  repr(v)
-			print
-	except Exception, e:
-		print "**", repr(fi), e
+			if 0:
+				print fi
+				for k,v in audio.iteritems():
+					print "\t", repr(k), ':',  repr(v)
+				print
+		except Exception, e:
+			print "**", repr(fi), e

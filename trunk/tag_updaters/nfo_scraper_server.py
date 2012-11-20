@@ -124,7 +124,7 @@ def xml_decode2(fname):
 			#parent.removeChild(thumb)
 
 		if filename:		
-			rec[mbid, filename].append(parent.toxml("utf-8"))		
+			rec[filename].append((mbid, parent.toxml("utf-8")))		
 		
 	print "Reading XML", fname
 	dom1 = parse(fname)
@@ -157,24 +157,34 @@ def update(fname_in):
 
 	rec = xml_decode2(fname_in)
 
+	new_name = lambda fname_dir, mbid:  r'%s/%s.jpg' % (fname_dir, mbid.replace('/','-'))
 	with codecs.open(fname_out, "w", encoding='utf8') as foo:		
 		foo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
 
-		for (mbid, filename), items in sorted(rec.iteritems()):
-			print mbid, filename
-			fname_new = r'%s/%s.jpg' % (fname_dir, mbid)
+		for idx, (filename, items) in enumerate(sorted(rec.iteritems())):
+			if not all(
+				os.path.exists(new_name(fname_dir, mbid)) 
+				for mbid, itemo in items
+			):
+				contents = scrapers.geturlbin(filename)
+				if contents:
+					with open(fname_new, 'wb') as fo:
+						fo.write(contents)
+			else:
+				contents = True
 			
-			contents = scrapers.geturlbin(filename)
-			if contents:
-				with open(fname_new, 'wb') as fo:
-					fo.write(contents)
-				for itemo in items:
-					nn = itemo.decode('utf8').replace(filename, fname_new)
-					#print type(nn)
-					#print repr(nn)
-					foo.write(nn)
-					foo.write("\n")
-					foo.flush()
+			for mbid, itemo in items:
+				fname_new = new_name(fname_dir, mbid)
+				print "\t",  idx, mbid, filename, fname_new
+					
+				nn = itemo.decode('utf8')
+				if contents and len(fname_new) <= 128:			
+					nn = nn.replace(filename, fname_new)
+				#print type(nn)
+				#print repr(nn)
+				foo.write(nn)
+				foo.write("\n")
+				foo.flush()
 		foo.write("\n</musicdb>\n")			
 
 
