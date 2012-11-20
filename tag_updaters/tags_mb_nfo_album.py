@@ -44,8 +44,8 @@ else:
 
 def handler():
 	arts		= collections.defaultdict(set)
-	for PATH in PATHS:
-		for fi, attr_map, of in tags.get_files(PATH):
+	for path in PATHS:
+		for fi, attr_map, of in tags.get_files(path.decode('utf8')):
 			print of
 			for attr, albumname, artist, albumartist  in (
 				('musicbrainz_albumid', 'album', 'artist', 'albumartist'),

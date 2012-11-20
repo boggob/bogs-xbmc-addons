@@ -1,11 +1,10 @@
 import time
 import exceptions
-import re
 import threading
 import Queue
 import urllib2, urllib
 import json
-import unicodedata
+#import unicodedata
 import collections
 import pprint
 import traceback
@@ -67,9 +66,9 @@ def geturlbin(url, timeout = 30):
 		req = urllib2.Request(url)
 		req.add_header('User-Agent', "bog's_xbmc_scraper/0.0 bog.gob@gmail.com")
 		return urllib2.urlopen(req, timeout = timeout).read()
-	except urllib2.HTTPError,e:
+	except urllib2.HTTPError:
 		return None
-	except urllib2.URLError,e:
+	except urllib2.URLError:
 		return urllib2.urlopen(req, timeout = timeout).read()
 	
 	
@@ -79,9 +78,9 @@ def geturl(url, timeout = 30):
 		req = urllib2.Request(url)
 		req.add_header('User-Agent', "bog's_xbmc_scraper/0.0 bog.gob@gmail.com")
 		return urllib2.urlopen(req, timeout = timeout).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
-	except urllib2.HTTPError,e:
+	except urllib2.HTTPError:
 		return ""
-	except urllib2.URLError,e:
+	except urllib2.URLError:
 		return urllib2.urlopen(req, timeout = timeout).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
 		
 
@@ -248,20 +247,19 @@ def discogs_lookup_artist(artist, albums, url):
 #http://htbackdrops.com/api/7681a907c805e0670330c694e788e8e8/searchXML?mbid=c130b0fb-5dce-449d-9f40-1437f889f7fe&amp;aid=1,5,26
 #http://htbackdrops.com/api/7681a907c805e0670330c694e788e8e8/download/14355/fullsize 
 
-def lastfm_artist(artist, albums, mbid):
+def lastfm_artist(artists, albums, mbid):
 	data	=  geturl_delay("http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&mbid={0}&api_key=6a95f3c9de1a78a960f62d7d76cc94c1&format=json".format(mbid))
 	try:
 		res		= json.loads(data)
-	except exceptions.ValueError,e:
+	except exceptions.ValueError:
 		print ("JSON::", data)
 		raise
-		
-	#pprint.pprint(res)
+	#pprint.pprint(res)	
 	if "error" in res:
-		inf = {}
 		print "\t\t**", res
+		return {}
 	else:
-		bio1	= "[B]Lastfm[/B][CR]" + sub(BeautifulSoup(res["artist"]["bio"]["content"])) 
+	
 		sim_arts = ""
 		sim = res['artist'].get('similar', {})
 		if isinstance(sim, dict):
@@ -270,13 +268,20 @@ def lastfm_artist(artist, albums, mbid):
 				sim_arts = ", ".join((other['name'] for other in sim_art))
 			elif isinstance(sim_art, dict):	
 				sim_arts = sim_art['name']
+
+
+		bio1	= u"[B]{}[/B]{}[CR]{}".format(
+			res["artist"]["name"], 
+			("\n[CR][B]Similar Artists:[/B]" + sim_arts) if sim_arts else "",			
+			sub(BeautifulSoup(res["artist"]["bio"]["content"])),
+		) 
 				
-		bio2	= ("\n[CR][B]Similar Artists:[/B][CR]" + sim_arts) if sim_arts else ""
+		
 		enclose = lambda  x: [x] if isinstance(x, dict) else x
 		inf =  {
 					'artist'		: collections.OrderedDict((
 						('mbid',		 mbid),
-						('name',		 artist),
+						('name',		 res["artist"]["name"]),
 						('genre',		 [
 											tag['name']
 											for tag in enclose((
@@ -285,7 +290,7 @@ def lastfm_artist(artist, albums, mbid):
 											)['tag'])
 										]),
 						
-						('biography',	 HTMLParser.unescape.__func__(HTMLParser, bio2 + bio1)),
+						('biography',	 HTMLParser.unescape.__func__(HTMLParser, bio1)),
 						('thumb',		sorted([img['#text'] for img in res['artist']['image'] if img['#text']], key = lambda img: "{0:0>10}".format(img.split('/')[-2] if len(img.split('/')) else "0"), reverse = True)),
 						('formed', 		res['artist'].get('yearformed', "")), 
 					))
@@ -293,13 +298,14 @@ def lastfm_artist(artist, albums, mbid):
 				
 		for k,v in inf["artist"].iteritems():
 			inf["artist"][k] = escape(v) if isinstance(v, basestring)  else [escape(vv) for vv in v]
-	return inf
+
+		return inf
 	
 def lastfm_album(album, mbid):
 	data	=  geturl_delay("http://ws.audioscrobbler.com/2.0/?method=album.getinfo&mbid={0}&api_key=6a95f3c9de1a78a960f62d7d76cc94c1&format=json".format(mbid))
 	try:
 		res		= json.loads(data)
-	except exceptions.ValueError,e:
+	except exceptions.ValueError:
 		print ("JSON::", data)
 		raise
 		
@@ -308,7 +314,6 @@ def lastfm_album(album, mbid):
 		inf = {}
 		print "\t", res
 	else:
-		enclose = lambda  x: [x] if isinstance(x, dict) else x
 		inf =  {
 					'album'		: dict((
 						('title',		 escape(album)),

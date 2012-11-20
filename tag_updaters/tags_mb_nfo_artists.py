@@ -45,46 +45,56 @@ else:
 
 def handler():
 	arts		= collections.defaultdict(set)
+	artsr		= collections.defaultdict(list)
 	for path in PATHS:
-		for fi, attr_map, of in tags.get_files(path):
-			print " %%", of
+		for fi, attr_map, of in tags.get_files(path.decode('utf8')):
+			print " %%", repr(of)
 			for attr, name in (
 				('musicbrainz_artistid', 'artist'),
 				('musicbrainz_albumartistid', 'albumartist'),
 			):
-				id_as	= attr_map[attr][0](fi).strip()
-				nma		= attr_map[name][0](fi).strip()
+				id_as	= attr_map[attr][0](fi).strip().upper()
+				nma		= attr_map[name][0](fi).strip().upper()
 				
 				if nma and id_as:
 					for spl in ('/', ';', '\\'):
-						spl1	= set(id_as.split(spl)) 
+						spl1	= list(x.strip() for x in id_as.split(spl)) 
 						if len(spl1) > 1:
 							break
 					
 					for id_a in spl1:
-						arts[nma.upper()].add((nma,id_a.upper()))
-					print nma.encode('utf8'),  id_a.upper()
+						if id_a not in artsr[nma]:											
+							artsr[nma].append(id_a)  
+						arts[id_a].add(nma)
+
+					print nma.encode('utf8'),  id_a
 	import pprint
 	pprint.pprint(dict(arts))
-	cleaned = {}
-	for artist, mbid in sorted(arts.iteritems()):
-		if len(mbid) == 1:
-			cleaned[artist] = list(mbid)[0]
-		else:
-			print "!!!Non Unique MBID", repr(artist), repr(mbid)
-			cleaned[artist] = list(mbid)[0]
+
+	collected = {}
+	for idx, (mbid, artist) in enumerate(sorted(arts.iteritems())):
+		print "\tArtist", idx, len(arts), repr(artist) 
+		collected[mbid] =  scrapers.lastfm_artist(artist,[],mbid)
+
+	
 	
 	with codecs.open(OUTFILE, "w", encoding='utf8') as fo:		
-		#scrapers.aggregate(((artist,mbid, []) for artist, mbid in sorted(cleaned.iteritems())), fo, classical = True)
 		fo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
-		for idx, (key, (artist,mbid)) in enumerate(sorted(cleaned.iteritems())):
-			print "\tArtist", idx, len(cleaned), repr(artist) 
-			tmp = scrapers.lastfm_artist(artist,[],mbid) 
-			import pprint
-			#pprint.pprint(tmp)
-			#pprint.pprint(scrapers.encode(tmp))
-			fo.write(scrapers.unquote(scrapers.encode(tmp)))
+
+		for idx, (artists, mbids) in enumerate(sorted(artsr.iteritems())):
+			dat = [collected[mbid]['artist'] for mbid in mbids if collected[mbid]]
+			if dat:
+				curr = {'artist' : collections.OrderedDict()}
+				curr['artist']['mbid']			= "/".join(d['mbid'] for d in dat)
+				curr['artist']['name']			= scrapers.escape(artists)
+				curr['artist']['genre']			= sorted(set(sum((d['genre'] for d in dat), [])))
+				curr['artist']['biography']		= "\n\n[CR]".join(d['biography'] for d in dat)
+				curr['artist']['thumb']			= sum((d['thumb'] for d in dat),[])
+				curr['artist']['formed']		= dat[0]['formed']
+				
+				fo.write(scrapers.unquote(scrapers.encode(curr)))
 			fo.flush()
+				
 		fo.write("\n</musicdb>\n")			
 
 
