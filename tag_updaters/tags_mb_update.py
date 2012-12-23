@@ -57,7 +57,7 @@ for fi in sorted(
 					
 					for attru in (attr.upper(), attr.lower()):
 						if  attr != attru and attru in audio:
-							print "??", repr(fi), "\t", attr, "\t", attru, "\t",audio[attru]
+							print "\t??", repr(fi), "\t", attr, "\t", attru, "\t",audio[attru]
 							#If normal case tag is not present - replace uppercase verison with the correct case
 							if attr not in audio:
 								audio[attr] = TXXX(audio[attru].encoding, sattr, audio[attru].text)
