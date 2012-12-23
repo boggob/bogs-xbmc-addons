@@ -3,3 +3,5 @@
 
 [B]Version 1.0.1[/B]
 - Initial version of Addon
+[B]Version 1.0.3[/B]
+- deal with new yahoo protocol
