@@ -4,6 +4,11 @@ import	collections
 from	BeautifulSoup import BeautifulStoneSoup,BeautifulSoup, NavigableString
 import threading
 import pprint
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
  
 
 def geturl(url):
@@ -75,34 +80,27 @@ class Scraper(object):
 
 	def playitems(self, params):
 		print params
-		print "@1"	
-		soup = BeautifulSoup(geturl(params['url']))
-		id = dict(it.split('=',1) for it in urllib.unquote(soup.find("embed")['flashvars']).split('&'))['vid']
-		if 0:
-			soup = BeautifulStoneSoup(geturl("http://cosmos.bcst.yahoo.com/rest/v2/pops;id=%s;lmsoverride=1" % id))
-			val = {
-				"title" : soup.channel.item.title,
-				"descr"	: soup.channel.item.description,
-				"date"	: soup.channel.item.find("media:pubStart"),
-			}
-		print "@@"	
-		soup = BeautifulStoneSoup(geturl("http://cosmos.bcst.yahoo.com/rest/v2/pops;id=%s;lmsoverride=1;element=stream;bw=1200" % id))
-		print soup
-		item = soup.channel.item.find('media:content')
+		html = geturl(params['url'])
+		id =  re.findall(r'mediaItems": \[ {"id":"([^"]+)"', html)[0]
+		url = """http://video.query.yahoo.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.media.video.streams%20WHERE%20id%3D%22{0}%22%20AND%20format%3D%22mp4%2Cflv%22%20AND%20protocol%3D%22rtmp%2Chttp%22%20AND%20plrs%3D%22xTpWh6wmyPBDXqHw0H0TcW%22%20AND%20offnetwork%3D%22false%22%20AND%20site%3D%22autv_plus7%22%20AND%20lang%3D%22en-AU%22%20AND%20region%3D%22AU%22%20AND%20override%3D%22none%22%3B&env=prod&format=json&callback=YUI.Env.JSONP.yui_3_4_1_4_1356123537781_541""".format(id)
+		print url
+		vid_json = geturl(url)
+		print vid_json
+		item = json.loads(re.sub(r'^[^(]+\((.*)\);', r'\1', vid_json))
+		mediaObj	= item['query']['results']['mediaObj'][0]
+		stream		= mediaObj['streams'][0]
+		
 		val = {
-			"url"		: "%s playpath=%s swfurl=%s swfvfy=true" % (item['url'], item['path'], "http://d.yimg.com/m/up/ypp/au/player.swf"),
-			"duration"	: item['duration'],
-			"name"		: re.sub(r'<!\[CDATA\[([^\]+])\]\]', '' , soup.channel.item.title.contents[0])
+			"url"		: '%s playpath=%s swfurl=%s swfvfy=true buffer=60000' % (stream['host'], stream['path'], "http://l.yimg.com/rx/builds/3.6.6.8916/assets/player.swf"),
+			"duration"	: int(stream['duration']),
+			"name"		: mediaObj['meta']['title']
 		}
 		print ("@2"	,  val)
 		if "record" in params:
 			self.record(val)
 		else:
 			self.play(val)
-		
 
-		
-		
 
 if __name__ == "__main__":
 	pass

@@ -4,15 +4,19 @@ import threading
 import Queue
 import urllib2, urllib
 import json
+import socket
 #import unicodedata
 import collections
 import pprint
 import traceback
+import codecs
 
 
 import iso_3166_1
 from HTMLParser import HTMLParser
 from xml.sax.saxutils import escape
+
+import xml_decode
 
 
 
@@ -60,30 +64,55 @@ def mt():
 	ts = time.localtime(time.time())
 	return "{0}:{1}:{2}".format(ts.tm_hour, ts.tm_min, ts.tm_sec)
 	
-def geturlbin(url, timeout = 30):
+def geturlbin(url, timeout = 60):
 	try:
 		print "\tgetting: %s - %s" % (mt(), url)
 		req = urllib2.Request(url)
 		req.add_header('User-Agent', "bog's_xbmc_scraper/0.0 bog.gob@gmail.com")
 		return urllib2.urlopen(req, timeout = timeout).read()
 	except urllib2.HTTPError:
-		return None
-	except urllib2.URLError:
-		return urllib2.urlopen(req, timeout = timeout).read()
+		raise
+	except urllib2.URLError, e:
+		if isinstance(e.reason, socket.timeout):
+			return geturlbin(url, timeout)
+		else:
+			raise
 	
 	
-def geturl(url, timeout = 30):
-	try:
-		print "\tgetting: %s - %s" % (mt(), url)
-		req = urllib2.Request(url)
-		req.add_header('User-Agent', "bog's_xbmc_scraper/0.0 bog.gob@gmail.com")
-		return urllib2.urlopen(req, timeout = timeout).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
-	except urllib2.HTTPError:
-		return ""
-	except urllib2.URLError:
-		return urllib2.urlopen(req, timeout = timeout).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
-		
+def geturl(url, timeout = 30, tries = 6):
+	delay =1 
+	def inner(number):
+		try:
+			print "\tgetting: %s - %s" % (mt(), url)
+			req = urllib2.Request(url)
+			req.add_header('User-Agent', "bog's_xbmc_scraper/0.0 bog.gob@gmail.com")
+			return urllib2.urlopen(req, timeout = timeout).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
+		except urllib2.HTTPError:
+			if number > 0:			
+				time.sleep(delay)			
+				return inner(number - 1)
+			else:
+				raise
+		except urllib2.URLError, e:
+			if isinstance(e.reason, socket.timeout):
+				if number > 0:			
+					time.sleep(delay)			
+					return inner(number - 1)
+				else:
+					raise
+			else:
+				raise
+		except socket.timeout:
+			if number > 0:			
+				time.sleep(delay)			
+				return inner(number - 1)
+			else:
+				raise
 
+	start = time.clock()
+	ret = inner(tries)
+	print "\t", (time.clock() - start)
+	return ret
 
 def geturl_delay(url, delay = 1):
 	time.sleep(delay)
@@ -239,13 +268,36 @@ def discogs_lookup_artist(artist, albums, url):
 			))
 		}
 	return inf
+##############################################################
+#API Key bd22c2254b47244cc33603a17659b6d2
+#http://htbackdrops.com/api/bd22c2254b47244cc33603a17659b6d2/download/12580/fullsize
+#http://htbackdrops.com/api/bd22c2254b47244cc33603a17659b6d2/searchXML?mbid=c130b0fb-5dce-449d-9f40-1437f889f7fe&amp;aid=1,5,26
 
+def backdrops_artist(artists, albums, mbid):
+	data = geturl_delay("http://htbackdrops.com/api/bd22c2254b47244cc33603a17659b6d2/searchXML?mbid={0}&amp;aid=1,5,26".format(mbid))
+	
+	soup = BeautifulStoneSoup(data)
+	try:
+		inf =  {
+						'artist'		: collections.OrderedDict((
+							('mbid',		 mbid),
+							('name',		 ", ".join(artists)),
+							('fanart',		["http://htbackdrops.com/api/bd22c2254b47244cc33603a17659b6d2/download/{0}/fullsize".format(image.id.string) for image in soup.findAll('image')]),
+						))
+				}
+		print inf
+	except Exception,e:
+		print "***", e
+		import traceback
+		traceback.print_exc()
+		print soup
+		inf = {}
+		
+	return inf		
+				
 ##############################################################
 #lastfm
 #Your API Key is 6a95f3c9de1a78a960f62d7d76cc94c1
-
-#http://htbackdrops.com/api/7681a907c805e0670330c694e788e8e8/searchXML?mbid=c130b0fb-5dce-449d-9f40-1437f889f7fe&amp;aid=1,5,26
-#http://htbackdrops.com/api/7681a907c805e0670330c694e788e8e8/download/14355/fullsize 
 
 def lastfm_artist(artists, albums, mbid):
 	data	=  geturl_delay("http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&mbid={0}&api_key=6a95f3c9de1a78a960f62d7d76cc94c1&format=json".format(mbid))
@@ -595,7 +647,9 @@ def brainz_lookup_artist(artist, mbid, albums, classical = False):
 		 return brainz_lookup_artist_by_mb(artist, mbid, classical)
 	else:
 		return None, {}
-
+def printer(a):
+	print a
+	return a
 
 def brainz_album(album, mbid):
 	def cover_get(soup):
@@ -652,7 +706,19 @@ def brainz_album(album, mbid):
 												if val is not None
 											))
 											for trk in soup.findAll('tr', typeof="mo:Track")
-										])),
+										] + [
+											"[CR]".join((
+												"[I]{}[/I]:{}".format(escape(tr.th.string) ,escape( a["title"]))  
+												
+												for it in soup.findAll("h2", {"class" : "relationships"})
+												for tb in [it.findNext('table', {"class":"details"})]
+												if tb
+												for tr in tb.findAll('tr')
+												for a in tr.findAll(lambda tag: "title" in dict(tag.attrs))
+											))
+											#if printer(a)
+										])
+						),
 						('track',		 [
 											{
 												'title'		: escape(trk.find('span', property="dct:title rdfs:label")["content"]),
@@ -887,20 +953,33 @@ def aggregate(infs, fo, classical = False):
 					print(str(thread.getName()) + ' could not be terminated')
 	print aggregated
 
-def scrape_albums(albums, ofile):
-	import codecs
+def scrape_albums(albums, ofile, translate):
+	start = time.clock()
+	
+	############################################
+	#xml info
+	try:
+		mbid_xml_map = {item['album']['mbid'].upper() : item for item in xml_decode.xml_decode(ofile)['musicdb']}
+	except:
+		mbid_xml_map = {}
+		
+	
 	with codecs.open(ofile, "w", encoding='utf8') as fo:		
 		fo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
-		for idx, (album, (mbid, artist)) in enumerate(sorted(albums.iteritems())):
-			print idx, len(albums), clean(album)
+		for idx, ((album,mbid), artist) in enumerate(sorted(albums.iteritems())):
+			print idx, len(albums), clean(album), mbid
 			if mbid:
 				for scraper in (brainz_album, ):
 					try:
-						tmp = scraper(album, 	mbid)
+						xml_item =   mbid_xml_map.get(mbid.upper(), None)
+						if not xml_item or xml_item['album']['artist'].strip() != escape(artist).strip():
+							tmp = scraper(album, mbid)
+						else:
+							tmp = xml_item
 						if tmp and 'track' in tmp['album']:
 							#overwrite to ensure that the artist names stay the same!!
 							tmp['album']['artist'] = escape(artist)
-							fo.write(unquote(encode(tmp)))
+							fo.write(translate(unquote(encode(tmp))))
 							#.encode("utf-8")
 							break
 						else:
@@ -911,12 +990,73 @@ def scrape_albums(albums, ofile):
 						
 			fo.flush()
 		fo.write("\n</musicdb>\n")
+	print "\ttime:", (time.clock() - start)
 
 
+def scrape_artists(artsr, outfile, translate):
+	start = time.clock()
+	arts	= collections.defaultdict(set)
+	for k,v in artsr.iteritems():
+		for vv in v:
+			arts[vv].add(k)
+	
+	
+	try:
+		mbid_xml_map = {mbid : item for item in xml_decode.xml_decode(outfile)['musicdb'] for mbid in item['artist']['mbid'].upper().split('/')}
+	except:
+		mbid_xml_map = {}
+	
+	print "%%%%", mbid_xml_map	
+	############################################
+	#Collect artist info
+	collected = {}
+	for idx, (mbid, artist) in enumerate(sorted(arts.iteritems())):
+		print "\tArtist", idx, len(arts), repr(artist) 
+		
+		xml_item =   mbid_xml_map.get(mbid.upper(), None)
+		if not xml_item:
+			rec = lastfm_artist(artist,[],mbid)
+			if "artist" in rec:
+				rec["artist"]["fanart"]  = backdrops_artist(artist,[],mbid)["artist"].get("fanart", [])
+			collected[mbid] =  rec	
+		else:
+			for attr in ('genre', 'thumb'):
+				a = xml_item['artist'].get(attr, [])
+				if isinstance(a, basestring):
+					xml_item['artist'][attr] = [a]
+			collected[mbid] = xml_item
+
+	############################################	
+	#Aggregate and write to disk
+	with codecs.open(outfile, "w", encoding='utf8') as fo:		
+		fo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
+
+		for idx, (artists, mbids) in enumerate(sorted(artsr.iteritems())):
+			try:
+				dat = [collected[mbid]['artist'] for mbid in mbids if collected[mbid]]
+				if dat:
+					curr = {'artist' : collections.OrderedDict()}
+					curr['artist']['mbid']			= "/".join(d['mbid'] for d in dat)
+					curr['artist']['name']			= escape(artists)
+					curr['artist']['genre']			= sorted(set(sum((d.get('genre',[]) for d in dat), [])))
+					curr['artist']['biography']		= "\n\n[CR]".join(d['biography'] for d in dat)
+					curr['artist']['thumb']			= sum((d.get('thumb',[]) for d in dat),[])
+					curr['artist']['formed']		= dat[0].get('formed', "")
+					curr['artist']['fanart']		= sum((d.get('fanart',[]) for d in dat),[])
+					fo.write(translate(unquote(encode(curr))))
+				fo.flush()
+			except Exception,e:
+				print "***"
+				print dat			
+				print e
+				import traceback
+				traceback.print_exc()
+				
+		fo.write("\n</musicdb>\n")		
+	print "\ttime:", (time.clock() - start)		
 ##############################################################
 
 if __name__ == "__main__":
-	import codecs
 	class flushfile(object):
 		def __init__(self, f):
 			self.f = f
@@ -928,8 +1068,17 @@ if __name__ == "__main__":
 	sys.stdout = flushfile(sys.stdout)
 	#print encode(discogs_lookup_artist("Chicago", "", "http://www.discogs.com/artist/Brother+Jack+McDuff"))
 	
-	if 0:
-		pprint.pprint( brainz_album('Ave Maria - Sacred Arias and Choruses', '01d0b5a9-c077-4141-8e23-614ecd9e166b'))
+	if 1:
+		pprint.pprint(backdrops_artist(['Mozart'], '!!!', 'b972f589-fb0e-474e-b64a-803b0364fa75'))
+		raise 1
+
+		pprint.pprint( brainz_album('!!!', 'aa92e166-10d9-4ec6-ba2f-79aa7dce586b'))
+		print
+		pprint.pprint( brainz_album('!!!', '20F7924D-8ADE-4F32-BE01-68471C5CEA86'))
+		print
+		pprint.pprint( brainz_album('!!!', '44070763-68BD-4406-AC9D-3CBA9972F8C3'))
+		print
+		
 		raise 1
 		
 		pprint.pprint( lastfm_album(u'Communique', 	'e42b0f81-9191-389c-9ae7-0ad279674a64') )

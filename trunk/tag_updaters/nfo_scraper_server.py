@@ -7,6 +7,7 @@ import os.path
 
 import user_input
 import scrapers
+import tags_config
 
 #################################################
 class flushfile(object):
@@ -157,7 +158,13 @@ def update(fname_in):
 
 	rec = xml_decode2(fname_in)
 
-	new_name = lambda fname_dir, mbid:  r'%s/%s.jpg' % (fname_dir, mbid.replace('/','-'))
+	def new_name(fname_dir, mbid):
+		stub = mbid.replace('/','-')
+		if len(stub) > 100:
+			stub = stub[:100]
+		ret=  r'%s\%s.jpg' % (fname_dir, stub)
+		return ret
+			
 	with codecs.open(fname_out, "w", encoding='utf8') as foo:		
 		foo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
 
@@ -166,20 +173,31 @@ def update(fname_in):
 				os.path.exists(new_name(fname_dir, mbid)) 
 				for mbid, itemo in items
 			):
-				contents = scrapers.geturlbin(filename)
-				if contents:
-					with open(fname_new, 'wb') as fo:
-						fo.write(contents)
+				try:
+					contents = scrapers.geturlbin(filename)
+				except Exception,e:
+					contents = False
+					print
+					print "^^^", e
+					print filename,items
+					import traceback
+					print traceback.format_exc()
+				
 			else:
 				contents = True
 			
 			for mbid, itemo in items:
+				nn = itemo.decode('utf8')
 				fname_new = new_name(fname_dir, mbid)
 				print "\t",  idx, mbid, filename, fname_new
-					
-				nn = itemo.decode('utf8')
-				if contents and len(fname_new) <= 128:			
+
+				if contents:
+					if contents != True:
+						with open(fname_new, 'wb') as fo:
+							fo.write(contents)				
 					nn = nn.replace(filename, fname_new)
+				nn = tags_config.translate(nn)
+					#print nn
 				#print type(nn)
 				#print repr(nn)
 				foo.write(nn)
@@ -191,6 +209,6 @@ def update(fname_in):
 		
 if __name__ == "__main__":
 	#server(user_input.input_file())
-	#update(r'C:\files\music\art\albums.xml')
+	update(r'C:\files\music\art\albums.xml')
 	update(r'C:\files\music\art\artists.xml')
 
