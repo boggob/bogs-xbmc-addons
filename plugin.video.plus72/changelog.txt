@@ -1,7 +1,10 @@
-[B]Version 0.0.3[/B]
-- got recording working with illegal characters in filenames
+[B]Version 0.0.4[/B]
+- added beautiful soup to the package
 
-[B]Version 1.0.1[/B]
-- Initial version of Addon
-[B]Version 1.0.3[/B]
+[B]Version 0.0.3[/B]
 - deal with new yahoo protocol
+
+[B]Version 0.0.1[/B]
+- Initial version of Addon
+
+

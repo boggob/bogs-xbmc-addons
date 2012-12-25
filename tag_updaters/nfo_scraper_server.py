@@ -1,13 +1,13 @@
 import collections
-from xml.dom.minidom import parse, parseString
+from xml.dom.minidom import parse
 import BaseHTTPServer
 import urllib
 import codecs
 import os.path
 
-import user_input
 import scrapers
 import tags_config
+import xml_decode
 
 #################################################
 class flushfile(object):
@@ -86,7 +86,7 @@ def getText(nodelist):
             rc.append(node.data)
     return ''.join(rc)
 
-def xml_decode(fname):
+def xml_decodef(fname):
 	rec = collections.defaultdict(list)
 
 	print "Reading XML", fname
@@ -138,7 +138,7 @@ def xml_decode2(fname):
 	
 
 def server(fname):
-	rec = xml_decode(fname)
+	rec = xml_decodef(fname)
 			
 	if 1:
 		for title, album in sorted(rec.iteritems()):
@@ -147,7 +147,7 @@ def server(fname):
 			print
 	myserver(rec)		
 
-def update(fname_in):
+def update(fname_in, typ):
 	
 	dirn, filen	= os.path.split(fname_in)
 	prefn, sufn	= os.path.splitext(filen)
@@ -155,8 +155,15 @@ def update(fname_in):
 	fname_out	= os.path.join(dirn, "{}_cached{}".format(prefn, sufn))
 	
 	print "using\t", fname_in, fname_dir, fname_out
+	
+	rec = collections.defaultdict(list)
+	for item in xml_decode.xml_decode(fname_in)['musicdb']:
+		thumb =  item[typ].get('thumb', [])
+		if isinstance(thumb, basestring):
+			thumb = [thumb]
+		item[typ]['thumb'] = thumb	
+		rec[thumb[0] if thumb else None].append(item)
 
-	rec = xml_decode2(fname_in)
 
 	def new_name(fname_dir, mbid):
 		stub = mbid.replace('/','-')
@@ -169,38 +176,37 @@ def update(fname_in):
 		foo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
 
 		for idx, (filename, items) in enumerate(sorted(rec.iteritems())):
-			if not all(
-				os.path.exists(new_name(fname_dir, mbid)) 
-				for mbid, itemo in items
-			):
-				try:
-					contents = scrapers.geturlbin(filename)
-				except Exception,e:
-					contents = False
-					print
-					print "^^^", e
-					print filename,items
-					import traceback
-					print traceback.format_exc()
-				
+			if filename:
+				if  not all(
+					os.path.exists(new_name(fname_dir, item[typ]['mbid'])) 
+					for item in items
+					
+				):
+					try:
+						contents = scrapers.geturlbin(filename)
+					except Exception,e:
+						contents = False
+						print
+						print "^^^", e
+						print filename,items
+						import traceback
+						print traceback.format_exc()
+					
+				else:
+					contents = True
 			else:
-				contents = True
+				contents = False
 			
-			for mbid, itemo in items:
-				nn = itemo.decode('utf8')
-				fname_new = new_name(fname_dir, mbid)
-				print "\t",  idx, mbid, filename, fname_new
-
+			for item in items:
 				if contents:
+					fname_new = new_name(fname_dir, item[typ]['mbid'])
+					print "\t",  idx, item[typ]['mbid'], filename, fname_new
+
 					if contents != True:
 						with open(fname_new, 'wb') as fo:
 							fo.write(contents)				
-					nn = nn.replace(filename, fname_new)
-				nn = tags_config.translate(nn)
-					#print nn
-				#print type(nn)
-				#print repr(nn)
-				foo.write(nn)
+					item[typ]['thumb'] = [fname_new] + item[typ]['thumb']
+				foo.write(tags_config.translate(scrapers.unquote(scrapers.encode(item))))		
 				foo.write("\n")
 				foo.flush()
 		foo.write("\n</musicdb>\n")			
@@ -209,6 +215,6 @@ def update(fname_in):
 		
 if __name__ == "__main__":
 	#server(user_input.input_file())
-	update(r'C:\files\music\art\albums.xml')
-	update(r'C:\files\music\art\artists.xml')
+	update(r'C:\files\music\art\albums.xml', 'album')
+	update(r'C:\files\music\art\artists.xml', 'artist')
 
