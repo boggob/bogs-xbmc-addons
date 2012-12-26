@@ -100,7 +100,7 @@ def get_files(path):
 				try:
 					out.append((obj_map(fullpath), attr_map, fi))
 				except Exception,e:
-					print "***", e
+					print "***", e, fullpath
 			else:
 				print "??", fullpath
 	return out

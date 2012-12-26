@@ -1015,15 +1015,30 @@ def scrape_artists(artsr, outfile, translate):
 		
 		xml_item =   mbid_xml_map.get(mbid.upper(), None)
 		if not xml_item:
-			rec = lastfm_artist(artist,[],mbid)
-			if "artist" in rec:
-				rec["artist"]["fanart"]  = backdrops_artist(artist,[],mbid)["artist"].get("fanart", [])
-			collected[mbid] =  rec	
+			try:
+				rec = lastfm_artist(artist,[],mbid)
+				if "artist" in rec:
+					rec["artist"]["fanart"] = {}
+					rec["artist"]["fanart"]["thumb"]  = backdrops_artist(artist,[],mbid)["artist"].get("fanart", [])
+				collected[mbid] =  rec	
+			except Exception, e:
+				print e
+				import traceback
+				print traceback.format_exc()				
+				collected['mbid'] = {}
+				
 		else:
-			for attr in ('genre', 'thumb'):
-				a = xml_item['artist'].get(attr, [])
+			#change single items to a list
+			for attrs in (('genre',), ('thumb',), ('fanart', 'thumb')):
+				a		= xml_item['artist']
+				save	= xml_item['artist']
+				for attr in attrs:
+					if a:
+						save	= a
+						a		= dat.get(attr, [])
+
 				if isinstance(a, basestring):
-					xml_item['artist'][attr] = [a]
+					save[attr] = [a]
 			collected[mbid] = xml_item
 
 	############################################	
@@ -1036,13 +1051,17 @@ def scrape_artists(artsr, outfile, translate):
 				dat = [collected[mbid]['artist'] for mbid in mbids if collected[mbid]]
 				if dat:
 					curr = {'artist' : collections.OrderedDict()}
-					curr['artist']['mbid']			= "/".join(d['mbid'] for d in dat)
-					curr['artist']['name']			= escape(artists)
-					curr['artist']['genre']			= sorted(set(sum((d.get('genre',[]) for d in dat), [])))
-					curr['artist']['biography']		= "\n\n[CR]".join(d['biography'] for d in dat)
-					curr['artist']['thumb']			= sum((d.get('thumb',[]) for d in dat),[])
-					curr['artist']['formed']		= dat[0].get('formed', "")
-					curr['artist']['fanart']		= sum((d.get('fanart',[]) for d in dat),[])
+					curr['artist']['mbid']				= "/".join(d['mbid'] for d in dat)
+					curr['artist']['name']				= escape(artists)
+					curr['artist']['genre']				= sorted(set(sum((d.get('genre',[]) for d in dat), [])))
+					curr['artist']['biography']			= "\n\n[CR]".join(d['biography'] for d in dat)
+					curr['artist']['thumb']				= sum((d.get('thumb',[]) for d in dat),[])
+					curr['artist']['fanart']			= {}
+					print [d["fanart"] for d in dat]
+					curr['artist']['fanart']["thumb"]	= sum((d["fanart"]['thumb'] for d in dat if 'fanart' in d),[])
+					if dat[0].get('formed', ""):
+						curr['artist']['formed']		= dat[0].get('formed', "")
+					
 					fo.write(translate(unquote(encode(curr))))
 				fo.flush()
 			except Exception,e:
@@ -1050,7 +1069,7 @@ def scrape_artists(artsr, outfile, translate):
 				print dat			
 				print e
 				import traceback
-				traceback.print_exc()
+				print traceback.format_exc()
 				
 		fo.write("\n</musicdb>\n")		
 	print "\ttime:", (time.clock() - start)		
