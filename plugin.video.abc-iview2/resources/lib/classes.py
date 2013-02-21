@@ -62,9 +62,9 @@ class Series(object):
 			then a 0 will be returned.
 		"""
 		season = re.search('^.* Series (?P<season>\d+)$', self.get_title())
-		if title is None:
+		if season is None:
 			return 0
-		return int(series.group('season'))
+		return int(season.group('season'))
 
 	def get_num_episodes(self):
 		return self.num_episodes
