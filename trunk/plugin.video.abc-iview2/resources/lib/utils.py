@@ -23,7 +23,6 @@ import sys
 import traceback
 import re
 import htmlentitydefs
-import cgi
 import unicodedata
 import urllib
 

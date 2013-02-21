@@ -19,7 +19,7 @@
 #	along with this plugin. If not, see <http://www.gnu.org/licenses/>.
 #
 
-import comm
+
 import config
 import classes
 import utils
@@ -94,8 +94,7 @@ def parse_auth(soup, iview_config):
 		token = token.replace('&amp;', '&') # work around BeautifulSoup bug
 	
 	except:
-		d = xbmcgui.Dialog()
-		d.ok('iView Error', 'There was an iView handshake error.', 'Please try again later')
+		raise 'There was an iView handshake error.'
 		return None
 
 	return {
