@@ -56,7 +56,7 @@ def play(params):
 
 def record(params):		
 	def rpt(c):
-		if c not in set(" %*^&$#@!~:"):
+		if c not in set("/\\ %*^&$#@!~:"):
 			return c
 		else:
 			return "_"
@@ -72,6 +72,7 @@ def record(params):
 	
 	#outlog = open("%s.log" % (__settings__.getSetting( "path" )), 'w+')
 	try:
+		
 		args = __settings__.getSetting( "rtmpdump" ), '-o%s%s.mp4' % (__settings__.getSetting( "path" ), "".join(rpt(c) for c in str(params["name"]))), "--rtmp=%s" % rtmp, "--playpath=%s" % playpath, "--swfVfy=%s" % swfurl, "--quiet"
 		#, "--swfurl=%s" % swfurl, 
 		print args
