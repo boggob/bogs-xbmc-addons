@@ -68,13 +68,13 @@ class Scraper(object):
 		out = []
 		for p in programs:
 			#Folders
-		
+			print "$$$", p.get_list_title()
 			val = { 
 				"url"		: p.make_xbmc_url(), 
 				"title"		: p.get_list_title(),
 				"path"		: "playitems",
 				"still"		: p.get_thumbnail(),
-				"info"		: {"plot" : p.get_xbmc_list_item()},
+				"info"		: p.get_xbmc_list_item(),
 				"folder"	: False,
 			}
 			out.append(val)
@@ -105,7 +105,7 @@ class Scraper(object):
 		val = {
 			"url"		: rtmp_url,
 			"duration"	: int(p.duration),
-			"name"		: p.get_list_title()
+			"name"		: params['name']#p.get_list_title()
 		}
 		print ("@2"	,  val)
 		if "record" in params:
