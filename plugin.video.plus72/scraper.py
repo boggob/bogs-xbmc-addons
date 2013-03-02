@@ -45,7 +45,7 @@ class Scraper(object):
 				}
 				print val
 				out.append(val)
-		self.folders(out)
+		return self.folders(out)
 	
 
 	
@@ -55,8 +55,8 @@ class Scraper(object):
 		ginf = {}
 		hd = str(soup.find('div', {"class" :"mod tv-plus7-info"})).replace('\n', '')
 		print ("Y1", hd)
-		ginf['genre'] =  re.findall("Genre: *<strong>(.*?)</strong>", hd)[0]
-		ginf['mpaa'] =  re.findall("Classified: *<strong>(.*?)</strong>", hd)[0]
+		ginf['genre'] =  re.findall(r"Genre:\s*<strong>(.*?)</strong>", str(soup))[0]
+		ginf['mpaa'] =  re.findall(r"Classified:\s*<strong>(.*?)</strong>", str(soup))[0]
 		print ("info11", ginf)
 		out = []
 		for item in soup.find("ul", {"id": "related-episodes", "class" : "featlist"}).findAll("li", {"class" : "clearfix"}):
@@ -75,7 +75,7 @@ class Scraper(object):
 			out.append(val)
 				
 		
-		self.folders(out)
+		return self.folders(out)
 
 
 	def playitems(self, params):
@@ -97,9 +97,9 @@ class Scraper(object):
 		}
 		print ("@2"	,  val)
 		if "record" in params:
-			self.record(val)
+			return self.record(val)
 		else:
-			self.play(val)
+			return self.play(val)
 
 
 if __name__ == "__main__":

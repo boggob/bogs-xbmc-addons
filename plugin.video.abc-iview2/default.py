@@ -52,6 +52,7 @@ def folders(params):
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def play(params):
+	print params
 	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(params["url"], xbmcgui.ListItem(params["name"]))
 
 def record(params):		
