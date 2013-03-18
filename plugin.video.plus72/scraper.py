@@ -81,7 +81,7 @@ class Scraper(object):
 	def playitems(self, params):
 		print params
 		html = geturl(params['url'])
-		id =  re.findall(r'mediaItems": \[ {"id":"([^"]+)"', html)[0]
+		id =  re.findall(r'mediaItems": *\[ *{"id":"([^"]+)"', html)[0]
 		url = """http://video.query.yahoo.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.media.video.streams%20WHERE%20id%3D%22{0}%22%20AND%20format%3D%22mp4%2Cflv%22%20AND%20protocol%3D%22rtmp%2Chttp%22%20AND%20plrs%3D%22xTpWh6wmyPBDXqHw0H0TcW%22%20AND%20offnetwork%3D%22false%22%20AND%20site%3D%22autv_plus7%22%20AND%20lang%3D%22en-AU%22%20AND%20region%3D%22AU%22%20AND%20override%3D%22none%22%3B&env=prod&format=json&callback=YUI.Env.JSONP.yui_3_4_1_4_1356123537781_541""".format(id)
 		print url
 		vid_json = geturl(url)

@@ -1,5 +1,8 @@
 
-[B]Version 0.0.5[/B]
+[B]Version 0.0.7[/B]
+- deal with html changes in pages
+
+[B]Version 0.0.6[/B]
 - deal with html changes in pages
 
 [B]Version 0.0.5[/B]
