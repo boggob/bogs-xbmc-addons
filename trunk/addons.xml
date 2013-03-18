@@ -129,7 +129,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.plus72" name="Plus7 - 2" version="0.0.6" provider-name="Denis">
+  <addon id="plugin.video.plus72" name="Plus7 - 2" version="0.0.7" provider-name="Denis">
     <requires>
       <import addon="xbmc.python" version="1.0" />
     </requires>
