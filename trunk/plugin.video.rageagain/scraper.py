@@ -34,10 +34,11 @@ class Scraper(object):
 		"base"		: "http://rageagain.com/",
 	}
 	
-	def __init__(self, folders, play, record):
+	def __init__(self, folders, play, record, notify):
 		self.folders	= folders
 		self.play		= play
 		self.record		= record
+		self.notify		= notify
 		
 	def menu(self, params):
 		contents =  geturl(self.URLS['base'] + "#/home")
@@ -108,30 +109,34 @@ class Scraper(object):
 		track		= jsonc(geturl(params['url']))
 		pprint.pprint(track)
 		
-		out = []
-		youtube_dat	= geturl("http://www.youtube.com/get_video_info?el=embedded&splay=1&video_id={0}&eurl=http%3A%2F%2Frageagain.com%2F&asv=3&hl=en_GB".format(track["sources"][0]["id"]))
-		resp		= dict([(k,urllib.unquote(v)) for p in youtube_dat.split('$')[-1].split('&') for k,v in [p.split('=')] ])
-		print "*" *80
-		pprint.pprint(resp)
-		outs		= resp["url_encoded_fmt_stream_map"].split(',')
-		
-		print "!" *80
-		pprint.pprint(outs)
-		out			= outs[1]
-		outd		= dict([(k,urllib.unquote(v)) for p in out.split('&') for k,v in [p.split('=')]])
-		
-		print "~" *80
-		pprint.pprint(outd) 
-		ret			= outd['url']
-		
-		val = {
-			"url"		: ret + '&signature=' + outd['sig'],
-			"duration"	: track['sources'][0]["duration"],
-			"name"		: track['sources'][0]["title"],
-		}
-		print val
-		self.play(val)
-		
+		if "error" in track:
+			self.notify('RageAgain Error', ['This track is not contained on the RageAgain site.'])
+			return params
+		else:
+			out = []
+			youtube_dat	= geturl("http://www.youtube.com/get_video_info?el=embedded&splay=1&video_id={0}&eurl=http%3A%2F%2Frageagain.com%2F&asv=3&hl=en_GB".format(track["sources"][0]["id"]))
+			resp		= dict([(k,urllib.unquote(v)) for p in youtube_dat.split('$')[-1].split('&') for k,v in [p.split('=')] ])
+			print "*" *80
+			pprint.pprint(resp)
+			outs		= resp["url_encoded_fmt_stream_map"].split(',')
+			
+			print "!" *80
+			pprint.pprint(outs)
+			out			= outs[1]
+			outd		= dict([(k,urllib.unquote(v)) for p in out.split('&') for k,v in [p.split('=')]])
+			
+			print "~" *80
+			pprint.pprint(outd) 
+			ret			= outd['url']
+			
+			val = {
+				"url"		: ret + '&signature=' + outd['sig'],
+				"duration"	: track['sources'][0]["duration"],
+				"name"		: track['sources'][0]["title"],
+			}
+			print val
+			self.play(val)
+			
 
 
 	def playitems(self, params):

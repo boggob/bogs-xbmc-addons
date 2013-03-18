@@ -34,7 +34,9 @@ def addDir(params, folder = False, info = {}, still="DefaultFolder.png"):
 
 ##############################################################
 
-	
+def notify(title, msgs):
+	d = xbmcgui.Dialog()
+	return d.ok(title, *msgs)
 
 
 def folders(params):
@@ -104,7 +106,7 @@ def main():
 	print "##", sys.argv, params
 	mode	= params.get("path", "menu")
 	print "$$", mode
-	sc = scraper.Scraper(folders, play, record)
+	sc = scraper.Scraper(folders, play, record, notify)
 	getattr(sc, mode)(params)
 
 
