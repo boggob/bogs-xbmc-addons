@@ -88,6 +88,12 @@ class Scraper(object):
 		iview_config = comm.get_config()
 		auth = comm.get_auth(iview_config)
 
+		if auth['rtmp_url'].startswith('http://'):
+			auth['rtmp_url'] = iview_config['rtmp_url'] or config.akamai_fallback_server
+			auth['playpath_prefix'] = config.akamai_playpath_prefix
+			print ("Adobe HDS Not Supported, using fallback server %s" % auth['rtmp_url'])
+		
+		
 		p = classes.Program()
 		p.parse_xbmc_url(params['url'])
 		playpath = auth['playpath_prefix'] + p.url

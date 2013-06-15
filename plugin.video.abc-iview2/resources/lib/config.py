@@ -40,6 +40,7 @@ config_url = 'http://www.abc.net.au/iview/xml/config.xml?r=%d' % api_version
 auth_url   = 'http://tviview.abc.net.au/iview/auth/?v2'
 series_url = 'http://www.abc.net.au/iview/api/series_mrss.htm?id=%s'
 
+akamai_fallback_server = 'rtmp://cp53909.edgefcs.net/ondemand'
 akamai_playpath_prefix = 'flash/playback/_definst_/'
 
 # Used for "SWF verification", a stream obfuscation technique
