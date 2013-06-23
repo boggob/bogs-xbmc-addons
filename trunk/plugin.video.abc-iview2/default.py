@@ -53,7 +53,7 @@ def folders(params):
 
 def play(params):
 	print params
-	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(params["url"], xbmcgui.ListItem(params["name"]))
+	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play("{0} buffer={1}".format(params["url"], __settings__.getSetting('buffer')), xbmcgui.ListItem(params["name"]))
 
 def record(params):		
 	def rpt(c):
