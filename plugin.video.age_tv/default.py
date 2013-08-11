@@ -2,10 +2,10 @@ import sys, os
 import collections
 import urllib
 import re
+import subprocess
 import xbmc, xbmcgui, xbmcaddon, xbmcplugin
 
-from resources.BeautifulSoup import BeautifulStoneSoup,NavigableString
-import resources.scraper
+import scraper
 
 
 ##############################################################
@@ -21,22 +21,27 @@ __addonid__			= __settings__.getAddonInfo('id')
 
 def addDir(params, folder = False, info = {}, still="DefaultFolder.png"):
 	name = params["name"]
+	liz=xbmcgui.ListItem(name, iconImage=still, thumbnailImage=still)
 	url =  sys.argv[0] + "?" + "&".join(["%s=%s" % (urllib.quote_plus(k),urllib.quote_plus(str(v)))    for k, v in params.items()])
-	print ("::", url,  params, info, still, "%%")
-	liz=xbmcgui.ListItem(name, iconImage=still, thumbnailImage="")
+	print ("::", url,  params, info, folder, "%%")		
 	if info:
 		liz.setInfo("video", info)
+	if not folder:
+		liz.addContextMenuItems( [("Record to disk", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url + "&record=1"))] )
+		
 	ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=liz,isFolder=folder)
 	return ok
 
 ##############################################################
-def INDEX(params):
-	mode = int(params.get("mode", "0"))
-	scraper = resources.scraper.SCRAPER
-	out = scraper.menu_main(params, addDir)
-		
 
-	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_EPISODE )
+	
+
+
+def folders(params):
+	for param in params:
+		print "@@",param
+		addDir({"name" : param['title'], "url" : param["url"], "path" : param["path"]}, param["folder"], info = param.get("info", {}), still = param.get("still", "DefaultFolder.png"))
+
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_UNSORTED )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_RATING )
@@ -46,21 +51,42 @@ def INDEX(params):
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_GENRE )	   
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
-
-	
 def play(params):
-	scraper = resources.scraper.SCRAPER
-	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(resources.scraper.SCRAPER.menu_play(params["url"])[0], xbmcgui.ListItem(params["name"]))
-	
-	
+	print params
+	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play("{0} buffer={1}".format(params["url"], __settings__.getSetting('buffer')), xbmcgui.ListItem(params["name"]))
 
+def record(params):		
+	def rpt(c):
+		if c not in set("/\\ %*^&$#@!~:"):
+			return c
+		else:
+			return "_"
+
+	print params
+	items = params["url"].split()
+	
+	rtmp		= items[0]
+	playpath	= items[1].split("=",1)[-1]
+	swfurl		= items[2].split("=",1)[-1]
+	swfvfy		= items[3].split("=",1)[-1]
+	
+	
+	#outlog = open("%s.log" % (__settings__.getSetting( "path" )), 'w+')
+	try:
+		
+		args = __settings__.getSetting( "rtmpdump" ), '-o%s%s.mp4' % (__settings__.getSetting( "path" ), "".join(rpt(c) for c in str(params["name"]))), "--rtmp=%s" % rtmp, "--playpath=%s" % playpath, "--swfVfy=%s" % swfurl, "--quiet"
+		#, "--swfurl=%s" % swfurl, 
+		print args
+		startupinfo = None
+		if os.name == 'nt':
+			startupinfo = subprocess.STARTUPINFO()
+			startupinfo.dwFlags |= 1#subprocess.STARTF_USESHOWWINDOW		
+		subprocess.call(args, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.STDOUT, shell= False, startupinfo=startupinfo)
+	except:
+		#outlog.close()
+		raise
+	
 ##############################################################
-MODE_MAP	= {
-	"0"	: lambda params:	INDEX(params),
-	"1"	: lambda params:	INDEX(params),
-	"2"	: lambda params:	INDEX(params),
-	"3"	: lambda url:		play(url)
-}
 
 
 def parse_args(args):
@@ -71,13 +97,19 @@ def parse_args(args):
 			items = item.split("=")
 			k,v = items[0], "=".join(items[1:])
 			out[k] = urllib.unquote_plus(v)
+
 	return out
 
 
 def main():
 	params = parse_args(sys.argv)
 	print "##", sys.argv, params
-	MODE_MAP[params.get("mode", "0")](params)
+	mode	= params.get("path", "menu")
+	print "$$", mode
+	sc = scraper.Scraper(folders, play, record)
+	getattr(sc, mode)(params)
+
+
 
 
 main()

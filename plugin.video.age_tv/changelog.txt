@@ -1,11 +1,43 @@
-[B]Version 1.0.5[/B]
-- deal with missing dates, updated to deal with new thumbnails
+[B]Version 1.0.6[/B]
+- Deal with 0 durations
 
-[B]Version 1.0.3[/B]
-- fixed bug in choosing between series and normal content
+[B]Version 1.0.5[/B]
+- Added buffering options
+
+[B]Version 1.3.0[/B]
+- Redirected to rtmp
+
+[B]Version 1.2.0[/B]
+- Top level categories
+- Series thumbnails
+
+[B]Version 1.1.0[/B]
+- Use iView API 384
+- Now using JSON series list for faster show listings
 
 [B]Version 1.0.2[/B]
-- now works with the new ooyala api
+- Accept compressed payload from ABC to fix problem downloading index
 
 [B]Version 1.0.1[/B]
+- Updated to iView API 374
+- Updated handshake URL
+- Fixed import errors
+
+[B]Version 0.0.8[/B]
+- Updated to iView API 362
+- Updated handshake URL
+- Fixed non-ascii char problem when passing program details
+
+
+[B]Version 0.0.7[/B]
 - Initial version of Addon
+- Better URL handling
+- Information dialogs
+- Auth token is generate at play time
+
+Credits
+================
+Created by Andy Botting (andybz)
+iView parsing code is thanks to Jeremy Visser.
+Thanks also to contributors:
+- Stephen Thirlwall (sdt)
