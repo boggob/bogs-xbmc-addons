@@ -110,7 +110,7 @@ class Scraper(object):
 		
 		val = {
 			"url"		: rtmp_url,
-			"duration"	: int(p.duration),
+			"duration"	: int(p.duration or 0),
 			"name"		: params['name']#p.get_list_title()
 		}
 		print ("@2"	,  val)

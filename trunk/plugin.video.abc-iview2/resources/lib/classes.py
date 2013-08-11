@@ -167,7 +167,7 @@ class Program(object):
 		""" Return a string representing the duration of the program.
 			E.g. 00:30 (30 minutes)
 		"""
-		seconds = int(self.duration)
+		seconds = int(self.duration or 0)
 		hours = seconds / 3600
 		seconds -= 3600*hours
 		minutes = seconds / 60
