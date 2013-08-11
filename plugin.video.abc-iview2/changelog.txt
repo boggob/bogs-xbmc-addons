@@ -1,3 +1,7 @@
+[B]Version 1.0.6/B]
+- Deal with 0 durations
+
+
 [B]Version 1.0.5[/B]
 - Added buffering options
 
