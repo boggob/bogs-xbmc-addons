@@ -4,6 +4,8 @@ import	collections
 from	BeautifulSoup import BeautifulStoneSoup,BeautifulSoup, NavigableString
 import threading
 import pprint
+import helpers.brightcovehelper
+	
 
 try:
     import json
@@ -24,10 +26,11 @@ class Scraper(object):
 		"base"		: "http://au.tv.yahoo.com",
 	}
 	
-	def __init__(self, folders, play, record):
+	def __init__(self, folders, play, record,playbrowser):
 		self.folders	= folders
 		self.play		= play
 		self.record		= record
+		self.playbrowser= playbrowser
 		
 	def menu(self, params):
 		contents =  geturl(self.URLS['base'] + "/plus7/browse/")
@@ -81,25 +84,80 @@ class Scraper(object):
 	def playitems(self, params):
 		print params
 		html = geturl(params['url'])
-		id =  re.findall(r'mediaItems": *\[ *{"id":"([^"]+)"', html)[0]
-		url = """http://video.query.yahoo.com/v1/public/yql?q=SELECT%20*%20FROM%20yahoo.media.video.streams%20WHERE%20id%3D%22{0}%22%20AND%20format%3D%22mp4%2Cflv%22%20AND%20protocol%3D%22rtmp%2Chttp%22%20AND%20plrs%3D%22xTpWh6wmyPBDXqHw0H0TcW%22%20AND%20offnetwork%3D%22false%22%20AND%20site%3D%22autv_plus7%22%20AND%20lang%3D%22en-AU%22%20AND%20region%3D%22AU%22%20AND%20override%3D%22none%22%3B&env=prod&format=json&callback=YUI.Env.JSONP.yui_3_4_1_4_1356123537781_541""".format(id)
-		print url
-		vid_json = geturl(url)
-		print vid_json
-		item = json.loads(re.sub(r'^[^(]+\((.*)\);', r'\1', vid_json))
-		mediaObj	= item['query']['results']['mediaObj'][0]
-		stream		= mediaObj['streams'][0]
 		
-		val = {
-			"url"		: '%s playpath=%s swfurl=%s swfvfy=true buffer=60000' % (stream['host'], stream['path'], "http://l.yimg.com/rx/builds/3.6.6.8916/assets/player.swf"),
-			"duration"	: int(stream['duration']),
-			"name"		: mediaObj['meta']['title']
-		}
-		print ("@2"	,  val)
-		if "record" in params:
-			return self.record(val)
-		else:
-			return self.play(val)
+		soup = BeautifulSoup(html)
+		
+		if 1:
+			name		= soup.find('meta', {"property" :"og:title"})['content']
+			
+			playerKey	= soup.find('param', {"name" :"playerKey"})['value']
+			contentId	= soup.find('param', {"name" :"playerID"})['value']
+			key			= soup.find('param', {"name" :"@videoPlayer"})['value'].split(':')[-1]
+			seed		= 'ff51606519f716952a8db17f076fad130f8d2337'
+			amfHelper	= helpers.brightcovehelper.BrightCoveHelper({}, playerKey, contentId, params['url'], seed,  contentRefId = key)
+			
+			amfHelper.GetStreamInfo()
+			
+			
+			
+			print "$" * 120
+			import pprint
+			print pprint.pformat(amfHelper.full_response)
+			print "!" * 120	
+			
+			
+			val = [
+				{
+					'url'		: chosen['defaultURL'],
+					"name"		: name,
+					'rate'		: chosen['encodingRate']
+				}
+				for chosen in amfHelper.full_response["programmedContent"]["videoPlayer"]["mediaDTO"]["IOSRenditions"]
+				if not chosen['audioOnly']
+			]
+	
+			if "record" in params:
+				return self.record(val)
+			else:
+				return self.play(val)
+
+	
+			
+			
+		
+		if 0:
+			swfurl = soup.find('meta', {"property" :"og:video"})['content'] + "&autoStart=true&startTime=0" 
+			print swfurl
+			return self.playbrowser(swfurl)
+			
+		if 0:
+			name		= soup.find('meta', {"property" :"og:title"})['content']
+			
+			playerKey	= soup.find('param', {"name" :"playerKey"})['value']
+			contentId	= soup.find('param', {"name" :"playerID"})['value']
+			key			= soup.find('param', {"name" :"@videoPlayer"})['value'].split(':')[-1]
+			seed		= 'ff51606519f716952a8db17f076fad130f8d2337'
+			amfHelper	= helpers.brightcovehelper.BrightCoveHelper({}, playerKey, contentId, params['url'], seed,  contentRefId = key)
+			ret = amfHelper.GetStreamInfo()[0][0]
+			head, tail	= ret.split('/&',1)
+			playpath,back	= tail.split('?')
+			url				= "{0}?{1}".format(head, back)
+
+			import pprint
+			print pprint.pformat(amfHelper.full_response)
+			
+			#ret = ret['programmedContent']['videoPlayer']['mediaDTO']
+			val = {
+				#'url'		: 'rtmp://cp229456.edgefcs.net:1935/ondemand?videoId=2517716637001&lineUpId=&pubId=2376984108001&playerId=2377058551001&affiliateId= playpath=mp4:videos/2376984108001/201306/1537/2376984108001_2517773007001_seven-0707-place-to-call-home-s1ep11-1200-18svqdb.mp4?videoId=2517716637001&lineUpId=&pubId=2376984108001&playerId=2377058551001&affiliateId=',
+				'url'		: '%s playpath=%s' % (url,playpath),
+				"name"		: name
+			}
+		
+			print ("@2"	,  val)
+			if "record" in params:
+				return self.record(val)
+			else:
+				return self.play(val)
 
 
 if __name__ == "__main__":
