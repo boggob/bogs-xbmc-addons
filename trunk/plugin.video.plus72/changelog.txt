@@ -1,3 +1,5 @@
+[B]Version 0.0.10[/B]
+- seems to work with Gotham (not Frodo)
 
 [B]Version 0.0.8[/B]
 - deal with brightcove

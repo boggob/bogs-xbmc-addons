@@ -16,7 +16,7 @@ except ImportError:
 def geturl(url):
 	#, headers = {"Accept-Encoding":"gzip"}
 	print "getting: %s" % url
-	return  urllib2.urlopen(urllib2.Request(url)).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
+	return  urllib2.urlopen(urllib2.Request(url),timeout=60).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
 
 def pretty(st):
 	return BeautifulSoup(st, convertEntities=BeautifulSoup.HTML_ENTITIES).prettify().strip()
