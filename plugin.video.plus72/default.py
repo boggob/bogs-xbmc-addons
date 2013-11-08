@@ -9,8 +9,9 @@ import scraper
 
 
 ##############################################################
+ID = 'plugin.video.plus72' #os.path.basename(os.getcwd())
 __XBMC_Revision__	= xbmc.getInfoLabel('System.BuildVersion')
-__settings__		= xbmcaddon.Addon( id=os.path.basename(os.getcwd())) #xbmcaddon.Addon(id='plugin.video.sbs2')
+__settings__		= xbmcaddon.Addon( id=ID) #xbmcaddon.Addon(id='plugin.video.sbs2')
 __language__		= __settings__.getLocalizedString
 __version__			= __settings__.getAddonInfo('version')
 __cwd__				= __settings__.getAddonInfo('path')
@@ -52,7 +53,22 @@ def folders(params):
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def play(params):
-	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play(params["url"], xbmcgui.ListItem(params["name"]))
+	addon	= xbmcaddon.Addon( id=ID )
+	bitrate	= int(addon.getSetting( "vid_quality" ))
+
+	chosen = sorted(params, key=lambda rendition: abs(bitrate - (rendition['rate']/1024)))[0]
+	xbmc.Player().play(chosen['url'])
+	
+	
+	
+def playbrowser(swfurl):
+	import subprocess
+	subprocess.call([
+		__settings__.getSetting( "browser" ), 
+		swfurl
+
+	])
+	
 
 def record(params):		
 	def rpt(c):
@@ -104,7 +120,7 @@ def main():
 	print "##", sys.argv, params
 	mode	= params.get("path", "menu")
 	print "$$", mode
-	sc = scraper.Scraper(folders, play, record)
+	sc = scraper.Scraper(folders, play, record, playbrowser)
 	getattr(sc, mode)(params)
 
 

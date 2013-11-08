@@ -1,4 +1,7 @@
 
+[B]Version 0.0.8[/B]
+- deal with brightcove
+
 [B]Version 0.0.7[/B]
 - deal with html changes in pages
 
