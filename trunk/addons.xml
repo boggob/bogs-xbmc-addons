@@ -17,9 +17,9 @@
     </extension>
   </addon>
   <addon
-    id="plugin.video.abc-iview2" name="ABC iView 2" version="1.0.8" provider-name="boggob">
+    id="plugin.video.abc-iview2" name="ABC iView 2" version="1.0.9" provider-name="boggob">
     <requires>
-      <import addon="xbmc.python"/>
+       <import addon="xbmc.python" version="2.1.0" />
       <import addon="script.module.simplejson"/>
       <import addon="script.module.beautifulsoup"/>
     </requires>
