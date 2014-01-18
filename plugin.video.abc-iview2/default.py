@@ -10,7 +10,7 @@ import scraper
 
 ##############################################################
 __XBMC_Revision__	= xbmc.getInfoLabel('System.BuildVersion')
-__settings__		= xbmcaddon.Addon( id=os.path.basename(os.getcwd())) #xbmcaddon.Addon(id='plugin.video.sbs2')
+__settings__		= xbmcaddon.Addon( id=scraper.ADDON_ID)
 __language__		= __settings__.getLocalizedString
 __version__			= __settings__.getAddonInfo('version')
 __cwd__				= __settings__.getAddonInfo('path')

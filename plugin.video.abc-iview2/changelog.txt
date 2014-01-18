@@ -1,5 +1,9 @@
+[B]Version 1.0.10/B]
+- Deal with changes xbmc plugin
+
+
 [B]Version 1.0.7/B]
-- Deal with changes to abs web interface
+- Deal with changes to abc's web interface
 
 [B]Version 1.0.6/B]
 - Deal with 0 durations

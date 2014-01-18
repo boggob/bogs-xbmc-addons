@@ -8,7 +8,7 @@ import collections
 import resources.lib.comm as comm, resources.lib.classes as classes, resources.lib.config as config
 
 
-
+ADDON_ID='plugin.video.abc-iview2'
 
 
 
