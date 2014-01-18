@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon id="plugin.video.rt" name="RT" version="1.0.3" provider-name="Denis">
+<addon id="plugin.video.rt" name="RT" version="1.0.3" provider-name="bog.gob">
   <requires>
     <import addon="xbmc.python" version="1.0" />
     <import addon="script.module.simplejson" version="2.0.10" />
