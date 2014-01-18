@@ -33,7 +33,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.bloomberg" name="Bloomberg" version="1.0.5" provider-name="Denis">
+  <addon id="plugin.video.bloomberg" name="Bloomberg" version="1.0.5" provider-name="bog.gob">
     <requires>
       <import addon="xbmc.python" version="1.0" />
       <import addon="script.module.cryptopy" version="1.2.6" />
@@ -48,7 +48,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.c31" name="Channel 31" version="1.0.4" provider-name="Denis">
+  <addon id="plugin.video.c31" name="Channel 31" version="1.0.5" provider-name="bog.gob">
     <requires>
       <import addon="xbmc.python" version="2.1.0" />
     </requires>
@@ -77,7 +77,7 @@
       <disclaimer>You must be within Australia to use watch these videos.[CR]"Network Ten", Ten Logos and other works are copyright of their respective owners.</disclaimer>
     </extension>
   </addon>
-  <addon id="plugin.video.dtv" name="Deutsche Welle TV" version="1.0.1" provider-name="Denis">
+  <addon id="plugin.video.dtv" name="Deutsche Welle TV" version="1.0.1" provider-name="bog.gob">
     <requires>
       <import addon="xbmc.python" version="2.1.0" />
     </requires>
@@ -142,7 +142,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.rt" name="RT" version="1.0.3" provider-name="Denis">
+  <addon id="plugin.video.rt" name="RT" version="1.0.3" provider-name="bog.gob">
     <requires>
       <import addon="xbmc.python" version="1.0" />
       <import addon="script.module.simplejson" version="2.0.10" />
@@ -157,7 +157,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.sbs2" name="SBS2" version="1.0.13" provider-name="Denis">
+  <addon id="plugin.video.sbs2" name="SBS2" version="1.0.13" provider-name="bog.gob">
     <requires>
       <import addon="xbmc.python" version="2.1.0" />
     </requires>

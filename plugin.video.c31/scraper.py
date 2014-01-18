@@ -48,7 +48,7 @@ class Scraper(object):
 					
 					}
 				)
-		
+		self.folders(out)
 
 	
 	def browse(self, params):
