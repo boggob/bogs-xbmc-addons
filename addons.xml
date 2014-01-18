@@ -48,9 +48,9 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.c31" name="Channel 31" version="1.0.2" provider-name="Denis">
+  <addon id="plugin.video.c31" name="Channel 31" version="1.0.4" provider-name="Denis">
     <requires>
-      <import addon="xbmc.python" version="1.0" />
+      <import addon="xbmc.python" version="2.1.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
       <provides>video</provides>
@@ -64,7 +64,7 @@
   </addon>
   <addon id="plugin.video.catchuptv.au.nten" name="Network Ten CatchUp TV" version="0.2.0" provider-name="adammw111">
     <requires>
-      <import addon="xbmc.python" version="1.0" />
+      <import addon="xbmc.python" version="2.1.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" library="addon.py">
       <provides>video</provides>
@@ -79,7 +79,7 @@
   </addon>
   <addon id="plugin.video.dtv" name="Deutsche Welle TV" version="1.0.1" provider-name="Denis">
     <requires>
-      <import addon="xbmc.python" version="1.0" />
+      <import addon="xbmc.python" version="2.1.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
       <provides>video</provides>
@@ -108,7 +108,7 @@
   </addon>
   <addon id="plugin.video.plus72" name="Plus7 - 2" version="0.0.10" provider-name="boggob">
     <requires>
-      <import addon="xbmc.python" version="1.0" />
+      <import addon="xbmc.python" version="2.1.0" />
     </requires>
     <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
       <provides>video</provides>
@@ -126,7 +126,7 @@
     version="1.0.2"
     provider-name="boggob">
     <requires>
-      <import addon="xbmc.python" version="1.0"/>
+      <import addon="xbmc.python" version="2.1.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource"
                provides="video"
@@ -177,7 +177,7 @@
          version="1.2.6"
          provider-name="cryptopy.sourceforge.net">
     <requires>
-      <import addon="xbmc.python" version="1.0"/>
+      <import addon="xbmc.python" version="2.1.0"/>
     </requires>
     <extension point="xbmc.python.module"
                library="lib" />

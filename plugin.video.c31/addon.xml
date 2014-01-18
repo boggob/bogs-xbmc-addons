@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<addon id="plugin.video.c31" name="Channel 31" version="1.0.2" provider-name="Denis">
+<addon id="plugin.video.c31" name="Channel 31" version="1.0.4" provider-name="Denis">
   <requires>
-    <import addon="xbmc.python" version="1.0" />
+    <import addon="xbmc.python" version="2.1.0" />
   </requires>
   <extension point="xbmc.python.pluginsource" provides="video" library="default.py">
     <provides>video</provides>
