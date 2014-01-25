@@ -1,6 +1,6 @@
-<addon id="plugin.video.catchuptv.au.nten" name="Network Ten CatchUp TV" version="1.0.1" provider-name="boggob">
+<addon id="plugin.video.catchuptv.au.nten" name="Network Ten CatchUp TV" version="1.0.2" provider-name="boggob">
   <requires>
-    <import addon="xbmc.python" version="1.0" />
+    <import addon="xbmc.python" version="2.1.0" />
   </requires>
   <extension point="xbmc.python.pluginsource" library="default.py">
     <provides>video</provides>
