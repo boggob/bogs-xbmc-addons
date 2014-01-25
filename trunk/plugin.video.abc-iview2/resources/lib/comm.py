@@ -18,7 +18,7 @@
 #	You should have received a copy of the GNU General Public License
 #	along with this plugin. If not, see <http://www.gnu.org/licenses/>.
 #
-
+import httplib
 import urllib2
 import config
 import parse
@@ -33,18 +33,31 @@ def fetch_url(url):
 		An exception is raised if an error (e.g. 404) occurs.
 	"""
 	utils.log("Fetching URL: %s" % url)
-	http = urllib2.urlopen(
-		urllib2.Request(url, None, {
-			'User-Agent' : config.user_agent,
-			'Accept-Encoding' : 'gzip'
-		})
-	)
-	headers = http.info()
+	
+	try:
+		http = urllib2.urlopen(
+			urllib2.Request(url, None, {
+				'User-Agent' : config.user_agent,
+				'Accept-Encoding' : 'gzip'
+			})
+		)
+		headers = http.info()	
+		data = http.read()
+	except httplib.IncompleteRead, e:
+		http = urllib2.urlopen(
+				urllib2.Request(url, None, {
+					'User-Agent' : config.user_agent,
+					
+				})
+			)		
+		headers = http.info()				
+		data = http.read()
+		print repr(data)
+		
 	if 'content-encoding' in headers.keys() and headers['content-encoding'] == 'gzip':
-		data = StringIO(http.read())
-		return gzip.GzipFile(fileobj=data).read()
+		return gzip.GzipFile(fileobj=StringIO(data)).read()
 	else:
-		return http.read()
+		return data
 
 
 def get_config():

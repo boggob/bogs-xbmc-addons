@@ -184,6 +184,8 @@ def parse_series_items(soup):
 	for item_ in series_json:
 	
 		series_id = item_['a']
+		if series_id in ('9900019', '1000'):
+			continue
 		# Roary The Racing Car Series 2
 		series_title = item_['b']
 		series_thumb = item_['d']

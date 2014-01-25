@@ -6,6 +6,7 @@
     <string id="30102">512000</string>
     <string id="30103">1000000</string>
 	<string id="30104">1500000</string>
+	<string id="30105">3000000</string>
     <string id="30150">Prompt for Quality Selection before each video</string>
 
     <!-- category & label separators -->
