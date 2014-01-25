@@ -69,37 +69,43 @@ def playbrowser(swfurl):
 
 	])
 	
-
 def record(params):		
 	def rpt(c):
 		if c not in set(" %*^&$#@!~:"):
 			return c
 		else:
 			return "_"
-
 	print params
-	items = params["url"].split()
 	
-	rtmp		= items[0]
-	playpath	= items[1].split("=",1)[-1]
-	swfurl		= items[2].split("=",1)[-1]
-	swfvfy		= items[3].split("=",1)[-1]
+	addon	= xbmcaddon.Addon( id=ID )
+	bitrate	= int(addon.getSetting( "vid_quality" ))
+	chosen = sorted(params, key=lambda rendition: abs(bitrate - (rendition['rate']/1024)))[0]
+
+	name= '%s%s.mp4' % (
+			__settings__.getSetting( "path" ), 
+			"".join(rpt(c) for c in str(chosen["name"])),
+			
+		)
+	args = (
+		__settings__.getSetting( "ffmpeg" ), 
+		'-i',  chosen["url"],
+		"-vcodec", "copy",
+		"-acodec", "copy", 
+		name
+	)
+	startupinfo = None
+	if os.name == 'nt':
+		startupinfo = subprocess.STARTUPINFO()
+		startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW		
 	
-	
-	#outlog = open("%s.log" % (__settings__.getSetting( "path" )), 'w+')
+	print " ".join(args)
+	sout = open(name+".fmpeg.out", "w")
+	serr = open(name+".ffmpeg.err", "w")
 	try:
-		args = __settings__.getSetting( "rtmpdump" ), '-o%s%s.mp4' % (__settings__.getSetting( "path" ), "".join(rpt(c) for c in str(params["name"]))), "--rtmp=%s" % rtmp, "--playpath=%s" % playpath, "--swfVfy=%s" % swfurl, "--quiet"
-		#, "--swfurl=%s" % swfurl, 
-		print args
-		startupinfo = None
-		if os.name == 'nt':
-			startupinfo = subprocess.STARTUPINFO()
-			startupinfo.dwFlags |= 1#subprocess.STARTF_USESHOWWINDOW		
-		subprocess.call(args, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.STDOUT, shell= False, startupinfo=startupinfo)
-	except:
-		#outlog.close()
-		raise
-	
+		xx = subprocess.call(args, stdin= subprocess.PIPE, stdout= sout, stderr= serr,shell= False, startupinfo=startupinfo)
+	finally:
+		sout.close()
+		serr.close()	
 ##############################################################
 
 

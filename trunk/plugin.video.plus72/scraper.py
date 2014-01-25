@@ -148,7 +148,6 @@ class Scraper(object):
 			
 			#ret = ret['programmedContent']['videoPlayer']['mediaDTO']
 			val = {
-				#'url'		: 'rtmp://cp229456.edgefcs.net:1935/ondemand?videoId=2517716637001&lineUpId=&pubId=2376984108001&playerId=2377058551001&affiliateId= playpath=mp4:videos/2376984108001/201306/1537/2376984108001_2517773007001_seven-0707-place-to-call-home-s1ep11-1200-18svqdb.mp4?videoId=2517716637001&lineUpId=&pubId=2376984108001&playerId=2377058551001&affiliateId=',
 				'url'		: '%s playpath=%s' % (url,playpath),
 				"name"		: name
 			}
