@@ -121,42 +121,6 @@ class Scraper(object):
 			else:
 				return self.play(val)
 
-	
-			
-			
-		
-		if 0:
-			swfurl = soup.find('meta', {"property" :"og:video"})['content'] + "&autoStart=true&startTime=0" 
-			print swfurl
-			return self.playbrowser(swfurl)
-			
-		if 0:
-			name		= soup.find('meta', {"property" :"og:title"})['content']
-			
-			playerKey	= soup.find('param', {"name" :"playerKey"})['value']
-			contentId	= soup.find('param', {"name" :"playerID"})['value']
-			key			= soup.find('param', {"name" :"@videoPlayer"})['value'].split(':')[-1]
-			seed		= 'ff51606519f716952a8db17f076fad130f8d2337'
-			amfHelper	= helpers.brightcovehelper.BrightCoveHelper({}, playerKey, contentId, params['url'], seed,  contentRefId = key)
-			ret = amfHelper.GetStreamInfo()[0][0]
-			head, tail	= ret.split('/&',1)
-			playpath,back	= tail.split('?')
-			url				= "{0}?{1}".format(head, back)
-
-			import pprint
-			print pprint.pformat(amfHelper.full_response)
-			
-			#ret = ret['programmedContent']['videoPlayer']['mediaDTO']
-			val = {
-				'url'		: '%s playpath=%s' % (url,playpath),
-				"name"		: name
-			}
-		
-			print ("@2"	,  val)
-			if "record" in params:
-				return self.record(val)
-			else:
-				return self.play(val)
 
 
 if __name__ == "__main__":
