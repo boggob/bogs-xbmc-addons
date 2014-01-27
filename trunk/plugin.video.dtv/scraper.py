@@ -83,7 +83,8 @@ class Scraper(object):
 		xx = re.sub(r'<p>(.*)</p>', r'<div class="p">\1</div>', contents2, re.MULTILINE)
 		soup = BeautifulSoup(xx)
 		out = []
-		for ul, dt in [(x.findParent('a'),x) for x in soup.findAll("span", {'class' : 'date'})]:
+		soup2= soup.find("div", {"id":"bodyContent"})
+		for ul, dt in [(x.findParent('a'),x) for x in soup2.findAll("span", {'class' : 'date'})]:
 			print type(ul), ul
 			if ul.name == 'a':
 				out.append(
