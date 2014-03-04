@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon
-  id="plugin.video.abc-iview2" name="ABC iView 2" version="1.0.11" provider-name="boggob">
+  id="plugin.video.abc-iview2" name="ABC iView 2" version="1.0.12" provider-name="boggob">
   <requires>
      <import addon="xbmc.python" version="2.1.0" />
     <import addon="script.module.simplejson"/>

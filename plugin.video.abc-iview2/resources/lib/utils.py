@@ -58,9 +58,9 @@ def make_url(d):
 	pairs = []
 	for k,v in d.iteritems():
 		k = urllib.quote_plus(k)
-		v = str(v)
-		v = v.decode("utf-8")
-		v = unicodedata.normalize('NFC', v).encode('ascii','ignore')
+		v = v.encode('ascii', 'ignore')
+		#v = v.decode("utf-8")
+		#v = unicodedata.normalize('NFC', v).encode('ascii','ignore')
 		v = urllib.quote_plus(v)
 		pairs.append("%s=%s" % (k,v))
 	return "&".join(pairs)
