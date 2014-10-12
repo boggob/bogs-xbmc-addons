@@ -15,7 +15,7 @@ class flushfile(object):
         self.f = f
     def write(self, x):
         self.f.write(x)
-        self.f.flush()
+        #self.f.flush()
 
 import sys
 sys.stdout = flushfile(sys.stdout)
@@ -136,7 +136,9 @@ def xml_decode2(fname):
 		get_thumbs(dom1,rec, node)
 	return rec
 	
-
+def ident(x):
+	print x
+	return x
 def server(fname):
 	rec = xml_decodef(fname)
 			
@@ -147,11 +149,11 @@ def server(fname):
 			print
 	myserver(rec)		
 
-def update(fname_in, typ):
+def update(fname_in, typ, dirt):
 	
 	dirn, filen	= os.path.split(fname_in)
 	prefn, sufn	= os.path.splitext(filen)
-	fname_dir	= os.path.join(dirn, prefn)
+	fname_dir	= os.path.join(dirn, dirt)
 	fname_out	= os.path.join(dirn, "{}_cached{}".format(prefn, sufn))
 	
 	print "using\t", fname_in, fname_dir, fname_out
@@ -178,7 +180,7 @@ def update(fname_in, typ):
 		for idx, (filename, items) in enumerate(sorted(rec.iteritems())):
 			if filename:
 				if  not all(
-					os.path.exists(new_name(fname_dir, item[typ]['mbid'])) 
+					os.path.exists(ident(tags_config.translater(new_name(fname_dir, item[typ]['mbid'])))) 
 					for item in items
 					
 				):
@@ -215,6 +217,7 @@ def update(fname_in, typ):
 		
 if __name__ == "__main__":
 	#server(user_input.input_file())
-	update(r'C:\files\music\art\albums.xml', 'album')
-	update(r'C:\files\music\art\artists.xml', 'artist')
+	update(r'\\DISKSTATION\filesc\music\art\albums_kids.xml', 'album', 'albums')
+	#update(r'\\DISKSTATION\filesc\music\art\artists_test1.xml', 'artist', 'artists')
+	#update(r'\\DISKSTATION\filesc\music\art\artists_test.xml', 'artist', 'artists')
 

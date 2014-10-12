@@ -3,7 +3,7 @@ from xml.dom.minidom import parse, parseString
 import codecs
 import pprint
 
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape, unescape
 #################################################
 
 def fill(items):
@@ -41,9 +41,9 @@ def dcode_rec(node):
 	
 
 	if all(isinstance(d, basestring) for d in data):
-		return {node.nodeName: escape(''.join(data))}
+		return {unescape(node.nodeName): unescape(''.join(data))}
 	else:
-		return { node.nodeName: fill( (k,v) for rdata in data for k,v in rdata.iteritems())}
+		return { unescape(node.nodeName): fill( (k,v) for rdata in data for k,v in rdata.iteritems())}
 		
 		
 	
@@ -56,7 +56,43 @@ def xml_decode(fname):
 		return ret['#document'][0]
 	except IOError:
 		return {}
+
+unquote = lambda st : st.replace('&quot;', '"')
+def xml_encode(outf, data):
+	with codecs.open(outf, "w", encoding='utf8') as outfh:		
+		outfh.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
+		for dat in data:
+			outfh.write(encode(dat))
+			outfh.write("\n")
+		outfh.write("\n</musicdb>\n")
+
 		
+def encode(mp, indent = "  ", depth = 0):
+	#print "\n\n**", mp
+	def test(tag, ii):
+		if isinstance(ii, dict):
+			return encode(ii,indent,depth+1)
+		elif isinstance(ii, basestring):
+			return escape(ii)
+		elif hasattr(v, "__iter__"):
+			return list(encode(vv, indent, depth + 1) if isinstance(vv, dict) else vv for vv in v)
+		else:
+			return str(ii)
+	
+	
+	output = lambda indent, depth, tag, val: ("\n{indent}<{tag}>".format(indent= indent * depth, tag = tag),  val, "</{tag}>".format(indent = indent * depth, tag = tag))
+	out = []
+	for k,v in mp.iteritems():
+		val = test(k, v)
+		if isinstance(val, list):
+			for v in val:
+				vi = "".join(test(k, v))
+				out.extend(output(indent, depth, k, vi))
+		else:
+			out.extend(output(indent, depth, k, val))
+
+	#print out
+	return "".join(out)
 	
 	
 		
