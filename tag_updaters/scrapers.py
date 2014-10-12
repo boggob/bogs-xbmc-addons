@@ -10,6 +10,7 @@ import collections
 import pprint
 import traceback
 import codecs
+import re
 
 
 import iso_3166_1
@@ -32,7 +33,12 @@ class ScaperException(Exception):
 
 unquote = lambda st : st.replace('&quot;', '"')
 
-
+class safe(object):
+	def __init__(self, obj):
+		self.x = obj
+	
+	def  __getattr__(self, name):		
+		return   getattr(self.x, name) if self.x else None
 #def escape(st):
 #	parsed	= BeautifulSoup(st, convertEntities=BeautifulSoup.HTML_ENTITIES)
 #	return HTMLParser.unescape.__func__(HTMLParser, st)
@@ -498,7 +504,7 @@ def brainz_lookup_artist_by_mb(artist, mbid, classical = False):
 			)
 	artists = [
 				{
-					"name"			: tidy(art.artist.find('name')),
+					"name"			: tidy( (art.artist.find('sort-name') or art.artist.find('name')) if classical else art.artist.find('name')),
 #					"sort-name"		: tidy(art.artist.find('sort-name')),
 					"mbid"			: art.artist['id'],
 					'yearsactive'	: [tidy(art.begin)] + ([tidy(art.end)] if tidy(art.end) else []),
@@ -506,10 +512,11 @@ def brainz_lookup_artist_by_mb(artist, mbid, classical = False):
 				}
 				for art in stringer(item.find('relation-list', {'target-type' :"artist"}), 'findAll', 'relation', {'type' : 'member of band'})
 		]
-
+	if not band:
+		return {'artist' : {"name" : {}}}, 
 	inf =  {
 		'artist'		: dict((
-			('name',		 artist), 
+			('name',		 artist or "".join((safe(item.find('sort-name') or item.find('name')) if classical else item.find('name')).contents or [])), 
 #					('sort-name',	 tidy(band.find('sort-name'))),
 			('yearsactive',	 			[
 						data
@@ -674,10 +681,8 @@ def brainz_album(album, mbid):
 			
 		
 		artists = [a['title'] for a in soup.findAll('a', rel="foaf:maker")]
-		if len(set(artists[1:])) == 1:
+		if len(set(artists)) > 1:
 			album_artists = ", ".join(set(artists))
-		elif len(artists):
-			album_artists = artists[0]
 		elif len(artists) and artists[0]:
 			album_artists = artists[0]
 		else:
@@ -689,23 +694,37 @@ def brainz_album(album, mbid):
 				return {extract(dt) : extract(dd) for dt,dd in zip(res.findAll('dt'), res.findAll('dd'))}
 			else:
 				return {}
-			
+		mediums = json.loads(re.findall(r"MB.Release.init\((.*)\)",  data,re.MULTILINE)[0])["mediums"]
+		fmt = lambda x,y: "[B]{}[/B]:{}".format(x,y)
 		inf =  {
 					'album'		: collections.OrderedDict((
 						('mbid',		mbid),
 						('title',		escape(album)),
 						('artist',		escape(album_artists)),
-						('releasedate',	soup.find('span', property="dct:date")['content']),
+						('releasedate',	soup.find('span', property="dct:date").get('content', "") if soup.find('span', property="dct:date") else ""),
 						('label',		tidy(soup.find('a', rel="mo:label"))),
-						('review',		 "[CR][CR]".join([
-											"[CR]".join((
-												"[B]{}[/B]:{}".format(attr , val)  
-												for attr, val in ([
-													(extract(trk.find('span', property="mo:track_number")), 		escape(trk.find('span', property="dct:title rdfs:label")["content"])),
-												] + get_subs(trk).items())
-												if val is not None
-											))
-											for trk in soup.findAll('tr', typeof="mo:Track")
+						('review',		 "[CR][CR]".join(
+										[
+											
+												"[CR]".join(
+													(
+														[
+															fmt(escape(trk['number']),escape(trk['name']))
+														]
+														+
+														[
+															
+															fmt(rel['phrase'], rel['target']['name'])
+															
+															for rel in trk["recording"]['relationships']
+														]
+													)
+													
+												)
+											
+											for medium in mediums	
+											for trk in medium['tracks']											
+									
 										] + [
 											"[CR]".join((
 												"[I]{}[/I]:{}".format(escape(tr.th.string) ,escape( a["title"]))  
@@ -721,19 +740,17 @@ def brainz_album(album, mbid):
 						),
 						('track',		 [
 											{
-												'title'		: escape(trk.find('span', property="dct:title rdfs:label")["content"]),
-												'position'	: extract(trk.find('span', property="mo:track_number")),
-												'duration'	: extract(trk.find('span', property="mo:duration")),
+												'title'		: escape(trk['name']),
+												'position'	: escape(trk['number']),
+												'duration'	: int(round(float(trk['length'])/1000)),
 											}
-											for trk in soup.findAll('tr', typeof="mo:Track")
+											for medium in mediums	
+											for trk in medium['tracks']
 										]),
-						
-						
-
-						('thumb',		cover_get(soup)),
+						('thumb',		re.sub(r'^//', 'http://', cover_get(soup)))
 					))
 				}
-	
+	print inf
 	return inf	
 	
 ##############################################################
@@ -1035,7 +1052,7 @@ def scrape_artists(artsr, outfile, translate):
 				for attr in attrs:
 					if a:
 						save	= a
-						a		= dat.get(attr, [])
+						a		= a.get(attr, [])
 
 				if isinstance(a, basestring):
 					save[attr] = [a]
@@ -1087,7 +1104,7 @@ if __name__ == "__main__":
 	sys.stdout = flushfile(sys.stdout)
 	#print encode(discogs_lookup_artist("Chicago", "", "http://www.discogs.com/artist/Brother+Jack+McDuff"))
 	
-	if 1:
+	if 0:
 		pprint.pprint(backdrops_artist(['Mozart'], '!!!', 'b972f589-fb0e-474e-b64a-803b0364fa75'))
 		raise 1
 
@@ -1133,7 +1150,8 @@ if __name__ == "__main__":
 		('Adam, Adolphe', 'ece590a3-ae0e-4311-bcf3-ee07cfb7b4f0', set([])),
 #		('Chopin, Frederick', 'a4a3478d-1f52-4266-918b-3d250cd1e44a', set([])),
 #		('John Williams', "8b8a38a9-a290-4560-84f6-3d4466e8d791", set([])),
-		('Kabalevsky, Dmitri Borisovich', '96c39679-7de4-48d1-a9ea-d8840296bb73', set([])),
+		('a-ha', '7364dea6-ca9a-48e3-be01-b44ad0d19897', set([])),
 	)	
 	aggregate(sorted(infs), codecs.open('c:/temp/of.xml', 'w',encoding='utf8'), classical = True)
+	print backdrops_artist(['a-ha'], '!!!', '7364dea6-ca9a-48e3-be01-b44ad0d19897')
 	print threading.enumerate()	
