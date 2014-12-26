@@ -84,7 +84,7 @@ class MenuItems(object):
 			
 			rec  =  {
 				"title" 		: entry["title"],
-				"thumbnail"		: entry["media$thumbnails"][0]["plfile$downloadUrl"].replace("\\", ""),
+				"thumbnail"		: entry["media$thumbnails"][0]["plfile$downloadUrl"].replace("\\", "") if entry["media$thumbnails"] else None,
 				"url"			: 'http://www.sbs.com.au/ondemand/video/%s' % entry["id"].split('/')[-1],
 				"info"			: {
 					"Country "	: entry.get("pl1$countryOfOrigin", "?"),
@@ -94,6 +94,7 @@ class MenuItems(object):
 					"genre"		: "%s,%s" % (entry.get("pl1$countryOfOrigin", "?"), entry["media$keywords"]),
 				}
 			}
+			
 			try:
 				rec["info"]["mpaa"]		= entry["media$ratings"][0]['rating']
 			except Exception,e:
