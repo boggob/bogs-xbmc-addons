@@ -1,3 +1,6 @@
+[B]Version 1.0.15[/B]
+-Deal with miissing artwork
+
 [B]Version 1.0.14[/B]
 -Updated to deal with new page contents
 
