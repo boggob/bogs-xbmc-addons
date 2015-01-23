@@ -3,7 +3,7 @@
 // @description		Import releases from Naxos
 // @version		2012-10-07
 // @author		bog.gob
-// @namespace		http://userscripts.org/users/487783
+// @namespace		https://code.google.com/p/bogs-xbmc-addons/source/browse/trunk/tag_updaters/naxos.user.js
 //
 // @include		http://naxos.com/catalogue/*
 // @include		http://naxos.com/catalogue/item.asp
@@ -222,22 +222,23 @@ var top_level_func = function() {
 
 
 	var  musicbrainz_add_recording = function(scape)  {
-		add_field("edit_note", 					"Imported by ''MusicBrainz_Import_from_Naxos''\nhttp://userscripts.org/scripts/show/149718\n\nfrom: " + scape["url"]);
+		add_field("edit_note", 					"Imported by ''MusicBrainz_Import_from_Naxos''\nhttps://code.google.com/p/bogs-xbmc-addons/source/browse/trunk/tag_updaters/naxos.user.js\n\nfrom: " + scape["url"]);
 		add_field("name", 						scape['title']);
 		add_field("labels.0.name", 				scape['headers']['Label'][0]);
-		add_field("barcode", 					scape['headers']['Barcode'][0]);
+		add_field("barcode", 					scape['headers']['Barcode'][0].slice(1,scape['headers']['Barcode'][0].length));
 		add_field('labels.0.catalog_number',	scape['headers']['Catalogue No'][0]);
 		if (scape['headers'].hasOwnProperty('Physical Release')) {
 			add_field("date.year", 					scape['headers']['Physical Release'][0].split('/')[1]);
 			add_field("date.month", 				scape['headers']['Physical Release'][0].split('/')[0]);
 		}
 		
-		add_field("language_id", 				"120");
-		add_field("script_id", 					"28");
-		add_field("status_id", 					"1");
-		add_field("primary_type_id", 			"1");
-		add_field("packaging_id", 				"1");
-		
+
+		add_field("script", 					"28");
+		add_field("status", 					"Official");
+		add_field("type", 						"Album");
+		add_field("packaging", 					"Jewel Case");
+		add_field("urls.0.url", 				scape['url']);
+		add_field("urls.0.link_type", 			"288");
 		
 		var albumartist = scape["headers"]["Artist(s)"];
 		for (var idx =0 ; idx < albumartist.length ; idx++) {
@@ -248,7 +249,7 @@ var top_level_func = function() {
 		}
 		
 		var medium = 0;
-		add_field("mediums.%d.format_id".replace('%d', medium), '1');
+		add_field("mediums.%d.format".replace('%d', medium), 'CD');
 
 		for (var trk = 0 ; trk < scape['works'].length; trk++) {
 			var work = scape['works'][trk];
@@ -265,6 +266,7 @@ var top_level_func = function() {
 				} else {
 					name = work["work"] + ": " + track[1];
 				}
+				name = name.replace("Op.", "op.").replace("No.", "no.")
 				
 				add_field(label.replace("%%s", 'name'), name );
 				add_field(label.replace("%%s", 'length'), track[2]);
