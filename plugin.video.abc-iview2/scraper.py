@@ -44,7 +44,7 @@ class Scraper(object):
 						"still"		: get_str(item.imageurl)[:],
 						"info"		: {
 							"plot"		: get_str(item.description),
-							"duration"	: int(get_str(item.duration))/10,
+							"duration"	: get_str(item.duration),
 							"date"		: get_str(item.datecreated).split("T"),
 							
 						},					
