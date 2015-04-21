@@ -1,3 +1,6 @@
+[B]Version 1.0.13/B]
+- Deal with changes to servers
+
 [B]Version 1.0.12/B]
 - Deal with unicode in menu titles
 

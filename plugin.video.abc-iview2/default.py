@@ -1,7 +1,5 @@
 import sys, os
-import collections
 import urllib
-import re
 import subprocess
 import xbmc, xbmcgui, xbmcaddon, xbmcplugin
 
@@ -53,39 +51,46 @@ def folders(params):
 
 def play(params):
 	print params
-	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play("{0} buffer={1}".format(params["url"], __settings__.getSetting('buffer')), xbmcgui.ListItem(params["name"]))
+	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play("{0}".format(params["url"]), xbmcgui.ListItem(params["name"]))
 
 def record(params):		
+	print params
 	def rpt(c):
-		if c not in set("/\\ %*^&$#@!~:"):
+		if c not in set(" %*^&$#@!~:"):
 			return c
 		else:
 			return "_"
-
-	print params
-	items = params["url"].split()
-	
-	rtmp		= items[0]
-	playpath	= items[1].split("=",1)[-1]
-	swfurl		= items[2].split("=",1)[-1]
-	swfvfy		= items[3].split("=",1)[-1]
-	
-	
-	#outlog = open("%s.log" % (__settings__.getSetting( "path" )), 'w+')
-	try:
+	name	= '%s.mp4' % ("".join(rpt(c) for c in str(params["name"])))
+	url		= params["url"]	
+	logs	= "{}/{}/".format(__settings__.getSetting( "path" ),"logs")
 		
-		args = __settings__.getSetting( "rtmpdump" ), '-o%s%s.mp4' % (__settings__.getSetting( "path" ), "".join(rpt(c) for c in str(params["name"]))), "--rtmp=%s" % rtmp, "--playpath=%s" % playpath, "--swfVfy=%s" % swfurl, "--quiet"
-		#, "--swfurl=%s" % swfurl, 
-		print args
-		startupinfo = None
-		if os.name == 'nt':
-			startupinfo = subprocess.STARTUPINFO()
-			startupinfo.dwFlags |= 1#subprocess.STARTF_USESHOWWINDOW		
-		subprocess.call(args, stdin= subprocess.PIPE, stdout= subprocess.PIPE, stderr= subprocess.STDOUT, shell= False, startupinfo=startupinfo)
-	except:
-		#outlog.close()
-		raise
+	args	= (
+				__settings__.getSetting( "ffmpeg" ), 
+				'-i',  url,
+				"-vcodec", "copy",
+				"-acodec", "copy", 
+				"{}{}".format(__settings__.getSetting( "path" ), name)
+			)
+	startupinfo = None
+	if os.name == 'nt':
+		startupinfo = subprocess.STARTUPINFO()
+		startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW		
 	
+	try:
+		os.makedirs(logs)
+	except OSError:
+		pass
+	
+	print " ".join(args)
+	sout = open(logs+name+".fmpeg.out", "w")
+	serr = open(logs+name+".ffmpeg.err", "w")
+	try:
+		xx = subprocess.call(args, stdin= subprocess.PIPE, stdout= sout, stderr= serr,shell= False, startupinfo=startupinfo)
+	finally:
+		sout.close()
+		serr.close()
+	#print xx.stdout.read()
+	#print xx.stderr.read()	
 ##############################################################
 
 

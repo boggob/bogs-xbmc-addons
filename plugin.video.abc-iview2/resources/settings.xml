@@ -2,8 +2,7 @@
 <settings>
     <!-- RTMP Host -->
     <category label="10075">
-        <setting id="rtmp_host" type="text" label="10070" default="rtmp://" />
-		<setting id="rtmpdump" type="text" label="rtmp dump executable" default="C:/apps/rtmpdump-2.4/rtmpdump.exe" />
+		<setting id="ffmpeg" type="text" label="Recording - ffmpeg executable" default="C:/apps/ffmpeg/bin/ffmpeg.exe" />
 		<setting id="path" 	   type="text" label="output path" default="c:/temp/" />
 		<setting id="buffer" type="text" label="Buffering time in ms" default="30000" />		
     </category>
