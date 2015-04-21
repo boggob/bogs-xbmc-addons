@@ -226,4 +226,4 @@ def main(db, nfo):
 		
 		
 #main(r'\\XBMCBUNTU\Downloads\MyMusic46.db', [r"\\DISKSTATION\filesc\music\art\artists_cached.xml"])
-main(r'c:\temp\MyMusic46.db', [r"\\DISKSTATION\filesc\music\art\artists_cached.xml"])
+main(r'c:\temp\MUSIC\MyMusic48.db', [r"C:\temp\music\artists_test.xml"])

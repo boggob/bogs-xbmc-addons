@@ -50,9 +50,9 @@ EXT_MAPPING_ATTR = {
 	},
 
 	".ape"	: {
-				"musicbrainz_albumid"		: (_extr2("MUSICBRAINZ ALBUM ID"), "MusicBrainz Album Id"),
-				"musicbrainz_artistid"		: (_extr2("MUSICBRAINZ ARTIST ID"), "MusicBrainz Artist Id"),		
-				"musicbrainz_albumartistid"	: (_extr2("MUSICBRAINZ ALBUMARTIST ID"), "MusicBrainz Album Artist Id"),		
+				"musicbrainz_albumid"		: (_extr2("MUSICBRAINZ_ALBUMID"), "MusicBrainz Album Id"),
+				"musicbrainz_artistid"		: (_extr2("MUSICBRAINZ_ARTISTID"), "MusicBrainz Artist Id"),		
+				"musicbrainz_albumartistid"	: (_extr2("MUSICBRAINZ_ALBUMARTISTID"), "MusicBrainz Album Artist Id"),		
 				"asin"						: (_extr2("ASIN"), "ASIN"),		
 				"artist"					: (_extr2("Artist"), "©ART"),		
 				"albumartist"				: (_extr2("Album Artist"), "aART"),		
