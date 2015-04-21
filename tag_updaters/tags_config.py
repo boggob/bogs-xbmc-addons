@@ -1,42 +1,49 @@
 import user_input
 
+import unicodedata
+
+class flushfile(object):
+	def __init__(self, f):
+		self.f = f
+	def write(self, x):
+		try:
+			self.f.write(x.encode('ascii', 'ignore'))
+		except:
+			self.f.write('\n!!@!')
+			self.f.write(str(type(x)))
+			self.f.write(repr(x))
+			self.f.write('\n')
+			
+		
+		self.f.flush()
+
+import sys
+sys.stdout = flushfile(sys.stdout)
+
+
 ####################################
-if 0:
+if 1:
 	PATHS = [
-	 r'\\DISKSTATION\filesc\music\Assorted\A-H',
-	 r'\\DISKSTATION\filesc\music\Assorted\I-Z',
-	 r'\\DISKSTATION\filesc\music\Assorted\No Album',
-	 r'\\DISKSTATION\filesc\music\Assorted\Tripple J',
-#	 r'\\DISKSTATION\filesc\music\Assorted',
+	 r'\\DISKSTATION\filesc\music\Assorted',
 	 r'\\DISKSTATION\filesc\music\Classical',
+	 r'\\DISKSTATION\filesc\music\croatian',
 	 r'\\DISKSTATION\filesc\music\World',
 	 r'\\DISKSTATION\filesc\music\Matilda',
-	 r'\\DISKSTATION\filesc\music\musique_wog',
-	 r'\\DISKSTATION\filesc\music\Jaz',
 	]
 	OUTFILE_ALBUMS	= r'\\DISKSTATION\filesc\music\art\albums.xml'
 	OUTFILE_ARTISTS	= r'\\DISKSTATION\filesc\music\art\artists.xml'
 	translate	= lambda x: x.replace('\\\\DISKSTATION\\filesc\\music\\art\\albums\\', '/home/user/media/filesC/music/art/albums/').replace('\\\\DISKSTATION\\filesc\\music\\art\\artists\\', '/home/user/media/filesC/music/art/artists/')
 else:
-	class flushfile(object):
-		def __init__(self, f):
-			self.f = f
-		def write(self, x):
-			self.f.write(x)
-			self.f.flush()
-
-	import sys
-	sys.stdout = flushfile(sys.stdout)
 	
 	#PATHS = [user_input.input_directory()]
 	PATHS = [
 	 #r'\\DISKSTATION\filesc\music\Matilda',
 	#r"c:\temp\music\albums2"
-	r'C:\temp\music\albums4',
+	r'C:\Users\user\Downloads\music',
 	
 	]
-	OUTFILE_ALBUMS	= "C:/temp/albums_test.xml"
-	OUTFILE_ARTISTS = "C:/temp/artists_test.xml"
+	OUTFILE_ALBUMS	= "C:/temp/music/albums_test.xml"
+	OUTFILE_ARTISTS = "C:/temp/music/artists_test.xml"
 	
 	_pairs = [
 	  ('\\\\DISKSTATION\\filesc\\music\\art\\albums\\', '/home/user/media/filesc/music/art/albums/'),

@@ -15,7 +15,7 @@ import re
 
 import iso_3166_1
 from HTMLParser import HTMLParser
-from xml.sax.saxutils import escape
+from xml.sax.saxutils import escape, unescape
 
 import xml_decode
 
@@ -280,7 +280,7 @@ def discogs_lookup_artist(artist, albums, url):
 #http://htbackdrops.com/api/bd22c2254b47244cc33603a17659b6d2/searchXML?mbid=c130b0fb-5dce-449d-9f40-1437f889f7fe&amp;aid=1,5,26
 
 def backdrops_artist(artists, albums, mbid):
-	data = geturl_delay("http://htbackdrops.com/api/bd22c2254b47244cc33603a17659b6d2/searchXML?mbid={0}&amp;aid=1,5,26".format(mbid))
+	data = geturl_delay("http://htbackdrops.org/api/bd22c2254b47244cc33603a17659b6d2/searchXML?mbid={0}&amp;aid=1,5,26".format(mbid))
 	
 	soup = BeautifulStoneSoup(data)
 	try:
@@ -986,7 +986,7 @@ def scrape_albums(albums, ofile, translate):
 		for idx, ((album,mbid), artist) in enumerate(sorted(albums.iteritems())):
 			print idx, len(albums), clean(album), mbid
 			if mbid:
-				for scraper in (brainz_album, ):
+				for scraper in (mb_albums2, ):
 					try:
 						xml_item =   mbid_xml_map.get(mbid.upper(), None)
 						if not xml_item or xml_item['album']['artist'].strip() != escape(artist).strip():
@@ -997,6 +997,7 @@ def scrape_albums(albums, ofile, translate):
 							#overwrite to ensure that the artist names stay the same!!
 							tmp['album']['artist'] = escape(artist)
 							fo.write(translate(unquote(encode(tmp))))
+							fo.flush()
 							#.encode("utf-8")
 							break
 						else:
@@ -1062,7 +1063,7 @@ def scrape_artists(artsr, outfile, translate):
 	#Aggregate and write to disk
 	with codecs.open(outfile, "w", encoding='utf8') as fo:		
 		fo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
-
+		dat = ""
 		for idx, (artists, mbids) in enumerate(sorted(artsr.iteritems())):
 			try:
 				dat = [collected[mbid]['artist'] for mbid in mbids if collected[mbid]]
@@ -1092,6 +1093,99 @@ def scrape_artists(artsr, outfile, translate):
 	print "\ttime:", (time.clock() - start)		
 ##############################################################
 
+def mb_albums2(name, mbid):
+	def cover(soup):
+		asin = tidy(soup.find("asin"))
+		if soup.find("cover-art-archive").front.string == "true":
+			return "http://coverartarchive.org/release/{}/front".format(soup.release["id"])
+		elif asin:
+			return "http://z2-ec2.images-amazon.com/R/1/a={}+c=A17SFUTIVB227Z".format(asin)
+		else:	
+			return ""	
+	
+	def relations(relations):
+		return "\n".join(
+			"{}:{} {}: {}".format(
+				tidy(rel.begin),
+				tidy(rel.end),
+				tidy(rel.find("attribute")) or rel["type"],										
+				tidy(rel.artist.find("name"))
+			) 
+			for rel in relations
+			if rel.artist
+		) 
+	
+	data	=  geturl_delay("http://musicbrainz.org/ws/2/release/{}?inc=artist-credits+artists+labels+media+url-rels+recordings+recording-rels+recording-level-rels+artist-rels".format(mbid))
+
+	
+	soup			= BeautifulSoup(data)
+	rel				= soup.release
+	album_artists	= 	"".join([
+						"{}{}".format(artist.find("name").string, artist.get("joinphrase", "")) 
+						for artist in rel.find("artist-credit").findAll("name-credit")
+						])
+	
+	date			= rel.find("date")	
+	label			= rel.find('label')
+	tracks_raw		= [
+							(medium_idx, medium, track)
+							for medium_idx, medium in enumerate(rel.findAll("medium"))
+							for track in medium.findAll('track')
+					]
+	relase_rels		= rel.find("relation-list", recursive=False)
+	review			= [
+							"{}.{} {}\n{}".format(
+								medium_idx + 1, 
+								track.number.string, 
+								track.title.string, 
+								relations( track.recording.findAll("relation") ) 
+							)
+							
+							for medium_idx, medium, track in tracks_raw
+					] + [
+					
+						relations( relase_rels.findAll("relation") if relase_rels else [] )
+					]
+		
+	tracks			= [
+						{
+							'title'		: track.title.string,
+							'position'	: "{}.{}".format(medium_idx + 1, track.number.string),
+							'duration'	: int(round(float(track.length.string)/1000))  if track.length else None,
+						}
+						for medium_idx, medium, track in tracks_raw
+					]	
+					
+				
+
+	inf =  {
+				'album'		: collections.OrderedDict((
+					('mbid',		mbid),
+					('title',		escape(name)),
+					('artist',		escape(album_artists)),
+					('releasedate',	date and date.string),
+					('label',		tidy(label and label.find("name").string)),
+					('review',		 "[CR][CR]{}".format("\n".join(review).replace("\n", "[CR]"))),
+								
+					
+					('track',		 tracks),
+					('thumb',		cover(soup))
+				))
+			}
+	print inf
+	return inf	
+
+		
+		
+	artists = [a['title'] for a in soup.findAll('a', rel="foaf:maker")]
+	
+if __name__ == "__main__":
+	tmp = mb_albums2("014fe87b-73ec-4e8a-ac4b-d211fa4296b3", "014fe87b-73ec-4e8a-ac4b-d211fa4296b3")
+	tmp = mb_albums2("D9B0B04A-710B-45F3-9327-8DD1D29A0F54", "D9B0B04A-710B-45F3-9327-8DD1D29A0F54")
+
+ 	
+	print unquote(encode(tmp))
+	raise 11
 if __name__ == "__main__":
 	class flushfile(object):
 		def __init__(self, f):
@@ -1103,7 +1197,7 @@ if __name__ == "__main__":
 	import sys
 	sys.stdout = flushfile(sys.stdout)
 	#print encode(discogs_lookup_artist("Chicago", "", "http://www.discogs.com/artist/Brother+Jack+McDuff"))
-	
+	pprint.pprint( brainz_album('!!!', '20F7924D-8ADE-4F32-BE01-68471C5CEA86'))
 	if 0:
 		pprint.pprint(backdrops_artist(['Mozart'], '!!!', 'b972f589-fb0e-474e-b64a-803b0364fa75'))
 		raise 1
@@ -1155,3 +1249,4 @@ if __name__ == "__main__":
 	aggregate(sorted(infs), codecs.open('c:/temp/of.xml', 'w',encoding='utf8'), classical = True)
 	print backdrops_artist(['a-ha'], '!!!', '7364dea6-ca9a-48e3-be01-b44ad0d19897')
 	print threading.enumerate()	
+
