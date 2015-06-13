@@ -32,7 +32,7 @@ if 1:
 	]
 	OUTFILE_ALBUMS	= r'\\DISKSTATION\filesc\music\art\albums.xml'
 	OUTFILE_ARTISTS	= r'\\DISKSTATION\filesc\music\art\artists.xml'
-	translate	= lambda x: x.replace('\\\\DISKSTATION\\filesc\\music\\art\\albums\\', '/home/user/media/filesC/music/art/albums/').replace('\\\\DISKSTATION\\filesc\\music\\art\\artists\\', '/home/user/media/filesC/music/art/artists/')
+	translate	= lambda x: x.replace('\\\\DISKSTATION\\filesc\\music\\art\\albums\\', '/home/user/media/filesc/music/art/albums/').replace('\\\\DISKSTATION\\filesc\\music\\art\\artists\\', '/home/user/media/filesc/music/art/artists/')
 else:
 	
 	#PATHS = [user_input.input_directory()]

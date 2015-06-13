@@ -137,7 +137,7 @@ def xml_decode2(fname):
 	return rec
 	
 def ident(x):
-	print x
+	print "\t", x
 	return x
 def server(fname):
 	rec = xml_decodef(fname)
@@ -177,15 +177,22 @@ def update(fname_in, typ, dirt):
 	with codecs.open(fname_out, "w", encoding='utf8') as foo:		
 		foo.write('<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>\n<musicdb>\n')
 
-		for idx, (filename, items) in enumerate(sorted(rec.iteritems())):
+		for idx, (filename, items) in enumerate(sorted(rec.iteritems(), key=lambda item: item[1][0][typ]['mbid'])):
+			print
+			print "\t{}/{}: ".format(idx, len(rec)) 
 			if filename:
 				if  not all(
-					os.path.exists(ident(tags_config.translater(new_name(fname_dir, item[typ]['mbid'])))) 
+					os.path.exists(ident(new_name(fname_dir, item[typ]['mbid']))) 
 					for item in items
 					
 				):
 					try:
 						contents = scrapers.geturlbin(filename)
+						#guessed wrong image due to amazon
+						if len(contents) < 100:
+							filename =scrapers.brainz_cover_art(items[0][typ]['mbid'])
+							print "!!\tretrying with:", filename
+							contents = scrapers.geturlbin(filename)
 					except Exception,e:
 						contents = False
 						print
@@ -202,7 +209,7 @@ def update(fname_in, typ, dirt):
 			for item in items:
 				if contents:
 					fname_new = new_name(fname_dir, item[typ]['mbid'])
-					print "\t",  idx, item[typ]['mbid'], filename, fname_new
+					print "\t", item[typ]['mbid'], filename, fname_new
 
 					if contents != True:
 						with open(fname_new, 'wb') as fo:
@@ -217,7 +224,7 @@ def update(fname_in, typ, dirt):
 		
 if __name__ == "__main__":
 	#server(user_input.input_file())
-	update(r'\\DISKSTATION\filesc\music\art\albums_kids.xml', 'album', 'albums')
+	update(r'\\DISKSTATION\filesc\music\art\albums.xml', 'album', 'albums')
 	#update(r'\\DISKSTATION\filesc\music\art\artists_test1.xml', 'artist', 'artists')
 	#update(r'\\DISKSTATION\filesc\music\art\artists_test.xml', 'artist', 'artists')
 
