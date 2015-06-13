@@ -31,6 +31,7 @@ def addDir(params, folder = False, info = {}, still="DefaultFolder.png"):
 	if not folder:
 		liz.addContextMenuItems( [
 			("Record to disk", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url.replace("mode=1", "mode=2") )),
+			("Record to disk as flv", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url.replace("mode=1", "mode=4") )),
 			("Play at Seek", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url.replace("mode=1", "mode=3") ))
 		] )
 		
@@ -156,7 +157,7 @@ def play_at_seek(params):
 		xbmc.executebuiltin("PlayerControl(Play)")
 		seekhack(player, url, item)
 
-def record(params):		
+def record(params, flv=True):		
 	def rpt(c):
 		if c not in set(" %*^&$#@!~:"):
 			return c
@@ -172,13 +173,13 @@ def record(params):
 	name= '%s%s%s' % (
 			__settings__.getSetting( "path" ), 
 			"".join(rpt(c) for c in str(params["name"])),
-			fmt
+			".flv" if flv else fmt
 		)
 	args = (
 		__settings__.getSetting( "ffmpeg" ), 
 		'-i',  url,
-		"-vcodec", "copy",
-		"-acodec", "copy", 
+		"-vcodec", "copy", 
+		"-acodec", "copy", 		
 		name
 	)
 	startupinfo = None
@@ -187,8 +188,14 @@ def record(params):
 		startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW		
 	
 	print " ".join(args)
-	sout = open(name+".fmpeg.out", "w")
-	serr = open(name+".ffmpeg.err", "w")
+	logs	= "{}/{}/".format(__settings__.getSetting( "path" ),"logs")
+	try:
+		os.makedirs(logs)
+	except OSError:
+		pass
+	name_part = os.path.split(name)[1]	
+	sout = open(logs+name_part+".fmpeg.out", "w")
+	serr = open(logs+name_part+".ffmpeg.err", "w")
 	try:
 		xx = subprocess.call(args, stdin= subprocess.PIPE, stdout= sout, stderr= serr,shell= False, startupinfo=startupinfo)
 	finally:
@@ -202,7 +209,8 @@ MODE_MAP	= {
 	0	: lambda params:	INDEX(params),
 	1	: lambda url:		play(url),
 	2	: lambda params: 	record(params),
-	3	: lambda params: 	play_at_seek(params)
+	3	: lambda params: 	play_at_seek(params),
+	4	: lambda params: 	record(params, flv=True),	
 }
 
 

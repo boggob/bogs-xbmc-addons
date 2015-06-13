@@ -232,7 +232,7 @@ def discogs_artist_scrape(url):
 					for it in item.find('table', {'class':  'discography'}).findAll('img', {'class':  'artwork'})
 				)
 			)
-			albums			= [tidy(it) for it in item.find('table', {'class':  'discography'}).findAll('a', {'href':  lambda h: h in set(hrefs)}) if it.string ]
+			albums			= [tidy(it1) for it1 in item.find('table', {'class':  'discography'}).findAll('a', {'href':  lambda h: h in set(hrefs)}) if it.string ]
 			profileso['Albums:'] = zip(albums,artwork)
 
 		#pprint.pprint(profileso)
@@ -499,8 +499,8 @@ def brainz_lookup_artist_by_mb(artist, mbid, classical = False):
 
 	band = item.find('artist')
 	links = dict(
-					(rel["type"],  tidy(rel.target))
-					for rel in stringer(item.find('relation-list', {'target-type' :"url"}), 'findAll', 'relation')
+					(rel1["type"],  tidy(rel1.target))
+					for rel1 in stringer(item.find('relation-list', {'target-type' :"url"}), 'findAll', 'relation')
 			)
 	artists = [
 				{
@@ -621,28 +621,6 @@ def brainz_lookup_artist_mb(artist, albums, classical = False):
 
 	return None
 	
-def brainz_lookup_release_mb(artist, albums, countries):
-	soup = BeautifulStoneSoup(brainz_query_direct("release", [lucene_query_iter(
-		[{'release': album}  for album in albums], 
-		[{'artist' : artist}],
-		[{'country': country}  for country in countries], 
-	)]))
-	soup_mbids = soup.findAll("release")
-
-	for artistf in soup_mbids:
-		disamb = artistf.find('disambiguation')
-		if disamb and disamb > 0:
-			print "\t{0}, {1}, {2}  - {3} ({4}) {5}".format("??", clean(artist), tidy(artistf.find('name')), artistf['ext:score'], tidy(disamb), artistf['id'])
-
-	if not soup_mbids:
-		raise ScaperException("MB", clean(artist), "MBID not found")
-	mbid_map = collections.defaultdict(set)
-	for soup_mbid in soup_mbids:
-		if soup_mbid['ext:score'] == "100":
-			mbid_map[tidy(soup_mbid.title)].add(soup_mbid["id"])
-	
-	return mbid_map
-
 
 	
 def brainz_lookup_artist(artist, mbid, albums, classical = False):
@@ -658,100 +636,7 @@ def printer(a):
 	print a
 	return a
 
-def brainz_album(album, mbid):
-	def cover_get(soup):
-		div = soup.find('div', {"class" : "cover-art"})
-		img =  div.img
-		if not img:
-			print "\t!!!!", repr(album)
-			return ""
-		else:
-			if u"src" in dict(img.attrs):
-				return img['src']
-			else:
-				return div.a['href']
 
-
-	data	=  geturl_delay("http://musicbrainz.org/release/{}".format(mbid))
-	if "Release Not Found" in data:
-		print "%%%Not found", album
-		inf = {}
-	else:
-		soup = BeautifulSoup(data)
-			
-		
-		artists = [a['title'] for a in soup.findAll('a', rel="foaf:maker")]
-		if len(set(artists)) > 1:
-			album_artists = ", ".join(set(artists))
-		elif len(artists) and artists[0]:
-			album_artists = artists[0]
-		else:
-			album_artists = ""
-		
-		def get_subs(tag):
-			res = tag.find('dl', {"class":"ars"})
-			if res:
-				return {extract(dt) : extract(dd) for dt,dd in zip(res.findAll('dt'), res.findAll('dd'))}
-			else:
-				return {}
-		mediums = json.loads(re.findall(r"MB.Release.init\((.*)\)",  data,re.MULTILINE)[0])["mediums"]
-		fmt = lambda x,y: "[B]{}[/B]:{}".format(x,y)
-		inf =  {
-					'album'		: collections.OrderedDict((
-						('mbid',		mbid),
-						('title',		escape(album)),
-						('artist',		escape(album_artists)),
-						('releasedate',	soup.find('span', property="dct:date").get('content', "") if soup.find('span', property="dct:date") else ""),
-						('label',		tidy(soup.find('a', rel="mo:label"))),
-						('review',		 "[CR][CR]".join(
-										[
-											
-												"[CR]".join(
-													(
-														[
-															fmt(escape(trk['number']),escape(trk['name']))
-														]
-														+
-														[
-															
-															fmt(rel['phrase'], rel['target']['name'])
-															
-															for rel in trk["recording"]['relationships']
-														]
-													)
-													
-												)
-											
-											for medium in mediums	
-											for trk in medium['tracks']											
-									
-										] + [
-											"[CR]".join((
-												"[I]{}[/I]:{}".format(escape(tr.th.string) ,escape( a["title"]))  
-												
-												for it in soup.findAll("h2", {"class" : "relationships"})
-												for tb in [it.findNext('table', {"class":"details"})]
-												if tb
-												for tr in tb.findAll('tr')
-												for a in tr.findAll(lambda tag: "title" in dict(tag.attrs))
-											))
-											#if printer(a)
-										])
-						),
-						('track',		 [
-											{
-												'title'		: escape(trk['name']),
-												'position'	: escape(trk['number']),
-												'duration'	: int(round(float(trk['length'])/1000)),
-											}
-											for medium in mediums	
-											for trk in medium['tracks']
-										]),
-						('thumb',		re.sub(r'^//', 'http://', cover_get(soup)))
-					))
-				}
-	print inf
-	return inf	
 	
 ##############################################################
 def aggregate(infs, fo, classical = False):
@@ -1092,16 +977,85 @@ def scrape_artists(artsr, outfile, translate):
 		fo.write("\n</musicdb>\n")		
 	print "\ttime:", (time.clock() - start)		
 ##############################################################
+AMAZON_SERVER = {
+    "amazon.jp": {
+		"server": "ec1.images-amazon.com",
+		"id"    : "09",
+	},
+    "amazon.co.jp": {
+		"server": "ec1.images-amazon.com",
+		"id"    : "09",
+	},
+    "amazon.co.uk": {
+		"server": "ec1.images-amazon.com",
+		"id"    : "02",
+	},
+    "amazon.de": {
+		"server": "ec2.images-amazon.com",
+		"id"    : "03",
+	},
+    "amazon.com": {
+		"server": "ec1.images-amazon.com",
+		"id"    : "01",
+	},
+    "amazon.ca": {
+		"server": "ec1.images-amazon.com",
+		"id"    : "01",                   # .com and .ca are identical
+	},
+    "amazon.fr": {
+		"server": "ec1.images-amazon.com",
+		"id"    : "08"
+	},
+}
+
+AMAZON_IMAGE_PATH = '/images/P/%s.%s.%sZZZZZZZ.jpg'
+AMAZON_ASIN_URL_REGEX = re.compile(r'^http://(?:www.)?(.*?)(?:\:[0-9]+)?/.*/([0-9B][0-9A-Z]{9})(?:[^0-9A-Z]|$)')
+
+def brainz_cover_art(mbid):
+	def cover_get(soup):
+		div = soup.find('div', {"class" : "cover-art"})
+		img =  div.img
+		if not img:
+			print "\t!!!!", mbid
+			return ""
+		else:
+			if u"src" in dict(img.attrs):
+				return img['src']
+			else:
+				return div.a['href']
+
+
+	data	=  geturl_delay("http://musicbrainz.org/release/{}".format(mbid))
+	if "Release Not Found" in data:
+		print "%%%Not found", mbid
+		inf = {}
+	else:
+		soup = BeautifulSoup(data)
+		return re.sub(r'^//', 'http://', cover_get(soup))
+
+
 
 def mb_albums2(name, mbid):
+	
 	def cover(soup):
-		asin = tidy(soup.find("asin"))
 		if soup.find("cover-art-archive").front.string == "true":
 			return "http://coverartarchive.org/release/{}/front".format(soup.release["id"])
-		elif asin:
-			return "http://z2-ec2.images-amazon.com/R/1/a={}+c=A17SFUTIVB227Z".format(asin)
-		else:	
-			return ""	
+		else:
+			asin_link = soup.find("relation", {"type": "amazon asin"})
+			if asin_link:
+				match = AMAZON_ASIN_URL_REGEX.match(tidy(asin_link.target))
+				if match != None:
+					asinHost = match.group(1)
+					asin = match.group(2);
+					if AMAZON_SERVER.has_key(asinHost):
+						serverInfo = AMAZON_SERVER[asinHost]
+					else:
+						serverInfo = AMAZON_SERVER['amazon.com']
+						
+					return "http://{}{}".format(serverInfo['server'],  AMAZON_IMAGE_PATH % (asin, serverInfo['id'], 'L') )
+				return ""	
+			else:	
+				return ""	
 	
 	def relations(relations):
 		return "\n".join(
@@ -1149,7 +1103,7 @@ def mb_albums2(name, mbid):
 		
 	tracks			= [
 						{
-							'title'		: track.title.string,
+							'title'		: escape(track.title.string),
 							'position'	: "{}.{}".format(medium_idx + 1, track.number.string),
 							'duration'	: int(round(float(track.length.string)/1000))  if track.length else None,
 						}
@@ -1164,11 +1118,11 @@ def mb_albums2(name, mbid):
 					('title',		escape(name)),
 					('artist',		escape(album_artists)),
 					('releasedate',	date and date.string),
-					('label',		tidy(label and label.find("name").string)),
-					('review',		 "[CR][CR]{}".format("\n".join(review).replace("\n", "[CR]"))),
+					('label',		escape(tidy(label and label.find("name").string))),
+					('review',		escape("[CR][CR]{}".format("\n".join(review).replace("\n", "[CR]")))),
 								
 					
-					('track',		 tracks),
+					('track',		tracks),
 					('thumb',		cover(soup))
 				))
 			}
@@ -1177,11 +1131,11 @@ def mb_albums2(name, mbid):
 
 		
 		
-	artists = [a['title'] for a in soup.findAll('a', rel="foaf:maker")]
+
 	
 if __name__ == "__main__":
-	tmp = mb_albums2("014fe87b-73ec-4e8a-ac4b-d211fa4296b3", "014fe87b-73ec-4e8a-ac4b-d211fa4296b3")
-	tmp = mb_albums2("D9B0B04A-710B-45F3-9327-8DD1D29A0F54", "D9B0B04A-710B-45F3-9327-8DD1D29A0F54")
+	tmp = mb_albums2("50BFDAEB-19D9-3DF4-B1E0-2BF9FA7FCE37", "50BFDAEB-19D9-3DF4-B1E0-2BF9FA7FCE37")
+	#tmp = mb_albums2("D9B0B04A-710B-45F3-9327-8DD1D29A0F54", "D9B0B04A-710B-45F3-9327-8DD1D29A0F54")
 
  	
 	print unquote(encode(tmp))
@@ -1197,25 +1151,15 @@ if __name__ == "__main__":
 	import sys
 	sys.stdout = flushfile(sys.stdout)
 	#print encode(discogs_lookup_artist("Chicago", "", "http://www.discogs.com/artist/Brother+Jack+McDuff"))
-	pprint.pprint( brainz_album('!!!', '20F7924D-8ADE-4F32-BE01-68471C5CEA86'))
 	if 0:
 		pprint.pprint(backdrops_artist(['Mozart'], '!!!', 'b972f589-fb0e-474e-b64a-803b0364fa75'))
 		raise 1
 
-		pprint.pprint( brainz_album('!!!', 'aa92e166-10d9-4ec6-ba2f-79aa7dce586b'))
-		print
-		pprint.pprint( brainz_album('!!!', '20F7924D-8ADE-4F32-BE01-68471C5CEA86'))
-		print
-		pprint.pprint( brainz_album('!!!', '44070763-68BD-4406-AC9D-3CBA9972F8C3'))
-		print
 		
 		raise 1
 		
 		pprint.pprint( lastfm_album(u'Communique', 	'e42b0f81-9191-389c-9ae7-0ad279674a64') )
 		
-		print "??"
-		print
-		print brainz_lookup_release_mb('AC/DC', ['Back In Black', 'Dirty Deeds Done Cheap'], [])
 		raise 1
 	
 	if 0:
