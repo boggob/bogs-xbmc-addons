@@ -1,12 +1,9 @@
 import sys, os
-import collections
 import urllib
-import re
 import subprocess
 import xbmc, xbmcgui, xbmcaddon, xbmcplugin
 
-from resources.BeautifulSoup import BeautifulStoneSoup,NavigableString
-import resources.scraper
+from resources import scraper
 
 
 ##############################################################
@@ -23,35 +20,26 @@ __addonid__			= __settings__.getAddonInfo('id')
 
 def addDir(params, folder = False, info = {}, still="DefaultFolder.png"):
 	name = params["name"]
+	liz=xbmcgui.ListItem(name, iconImage=still, thumbnailImage=still)
 	url =  sys.argv[0] + "?" + "&".join(["%s=%s" % (urllib.quote_plus(k),urllib.quote_plus(str(v)))    for k, v in params.items()])
-	print "::", url,  params, info, "%%"
-	liz=xbmcgui.ListItem(name, iconImage=still, thumbnailImage="")
+	print ("::", url,  params, info, folder, "%%")		
 	if info:
 		liz.setInfo("video", info)
 	if not folder:
-		liz.addContextMenuItems( [
-			("Record to disk", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url.replace("mode=1", "mode=2") )),
-			("Record to disk as flv", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url.replace("mode=1", "mode=4") )),
-			("Play at Seek", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url.replace("mode=1", "mode=3") ))
-		] )
-		
+		liz.addContextMenuItems( [("Record to disk", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url + "&record=1"))] )
 		
 	ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=liz,isFolder=folder)
 	return ok
 
 ##############################################################
-def INDEX(params):
-	addon = xbmcaddon.Addon( id=ID)
-	scraper = resources.scraper.SCRAPER
 
-	node = scraper.menu_main(params["path"])
+	
 
-	if not node["children"]:
-		for obj in scraper.menu_shows(node["url"]):
-			addDir({"path" : params["path"], "name" : obj["title"], "url" : obj["url"], "mode" : params["mode"] + 1}, False, obj["info"], still = obj["thumbnail"])
-	else:
-		for path in sorted(node["children"]):
-			addDir({"path" : path, "name" : path[-1], "url" : scraper.menu_main(path)["url"], "mode" : params["mode"]}, True)
+
+def folders(params):
+	for param in params:
+		print "@@",param
+		addDir({"name" : param['title'], "url" : param["url"], "path" : param["path"]}, param["folder"], info = param.get("info", {}), still = param.get("still", "DefaultFolder.png"))
 
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_UNSORTED )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
@@ -60,8 +48,22 @@ def INDEX(params):
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_PROGRAM_COUNT )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_RUNTIME )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_GENRE )	   
-
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+def play(params):
+	print params
+	
+	
+	url		= params["url"]
+	item	= xbmcgui.ListItem(params["name"])
+
+	player = xbmc.Player(xbmc.PLAYER_CORE_AUTO)
+	player.play(url, item)
+	
+	addon	= xbmcaddon.Addon( id=ID )
+	xbmc.sleep(int(addon.getSetting( "delay" )))	
+	xbmc.executebuiltin("PlayerControl(Play)")
+	seekhack(player, url, item)
 
 def seekhack(player, url, item):
 	addon	= xbmcaddon.Addon( id=ID )
@@ -114,106 +116,48 @@ def seekhack(player, url, item):
 							player.play("&".join(url.split("&")[:-1]) + "&seek={0}".format(lastseek), item)
 							xbmc.sleep(int(addon.getSetting( "delay" )))	
 							xbmc.executebuiltin("PlayerControl(Play)")
-						
-def play(params):
-	scraper = resources.scraper.SCRAPER
-	addon	= xbmcaddon.Addon( id=ID )
-	bitrate	= int(addon.getSetting( "vid_quality" ))
-	obj,fmt		= scraper.menu_play(params["url"])
-	diff, sbitrate, url = sorted([(abs(int(sbitrate) - int(bitrate)), sbitrate, pl) for sbitrate, pl in sorted(obj.iteritems())])[0]	
-	print ("using:",diff, bitrate, sbitrate, url)
-	item = xbmcgui.ListItem(params["name"])
 	
-	player = xbmc.Player(xbmc.PLAYER_CORE_AUTO)
-	player.play(url, item)
-	
-	xbmc.sleep(int(addon.getSetting( "delay" )))	
-	xbmc.executebuiltin("PlayerControl(Play)")
-	seekhack(player, url, item)
-		
 
-	
-def play_at_seek(params):
-	offset = False
-	keyboard = xbmc.Keyboard('')
-	keyboard.doModal()
-	if (keyboard.isConfirmed()):
-	  offset = int(keyboard.getText())
-	  
-
-	if offset != False:
-		scraper = resources.scraper.SCRAPER
-		addon	= xbmcaddon.Addon( id=ID )
-		bitrate	= int(addon.getSetting( "vid_quality" ))
-		obj,fmt		= scraper.menu_play(params["url"])
-		diff, sbitrate, url = sorted([(abs(int(sbitrate) - int(bitrate)), sbitrate, pl) for sbitrate, pl in sorted(obj.iteritems())])[0]	
-		print ("using:",diff, bitrate, sbitrate, url, obj.iteritems)
-		item = xbmcgui.ListItem(params["name"])
-		
-		player = xbmc.Player(xbmc.PLAYER_CORE_AUTO)
-		player.play("&".join(url.split("&")[:-1]) + "&seek={0}".format(offset), item)
-		
-		xbmc.sleep(int(addon.getSetting( "delay" )))	
-		xbmc.executebuiltin("PlayerControl(Play)")
-		seekhack(player, url, item)
-
-def record(params, flv=True):		
+def record(params):		
+	print params
 	def rpt(c):
 		if c not in set(" %*^&$#@!~:"):
 			return c
 		else:
 			return "_"
-	print params
-	scraper = resources.scraper.SCRAPER
-	addon	= xbmcaddon.Addon( id=ID )
-	bitrate	= int(addon.getSetting( "vid_quality" ))
-	obj,fmt		= scraper.menu_play(params["url"])
-	diff, sbitrate, url = sorted([(abs(int(sbitrate) - int(bitrate)), sbitrate, play) for sbitrate, play in sorted(obj.iteritems())])[0]	
-	print ("using:",diff, bitrate, sbitrate, url)
-	name= '%s%s%s' % (
-			__settings__.getSetting( "path" ), 
-			"".join(rpt(c) for c in str(params["name"])),
-			".flv" if flv else fmt
-		)
-	args = (
-		__settings__.getSetting( "ffmpeg" ), 
-		'-i',  url,
-		"-vcodec", "copy", 
-		"-acodec", "copy", 		
-		name
-	)
+	name	= '%s.mp4' % ("".join(rpt(c) for c in str(params["name"])))
+	url		= params["url"]	
+	logs	= "{}/{}/".format(__settings__.getSetting( "path" ),"logs")
+		
+	args	= (
+				__settings__.getSetting( "ffmpeg" ), 
+				'-i',  url,
+				"-vcodec", "copy",
+				"-acodec", "copy", 
+				"{}{}".format(__settings__.getSetting( "path" ), name)
+			)
 	startupinfo = None
 	if os.name == 'nt':
 		startupinfo = subprocess.STARTUPINFO()
 		startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW		
 	
-	print " ".join(args)
-	logs	= "{}/{}/".format(__settings__.getSetting( "path" ),"logs")
 	try:
 		os.makedirs(logs)
 	except OSError:
 		pass
-	name_part = os.path.split(name)[1]	
-	sout = open(logs+name_part+".fmpeg.out", "w")
-	serr = open(logs+name_part+".ffmpeg.err", "w")
+	
+	print " ".join(args)
+	sout = open(logs+name+".fmpeg.out", "w")
+	serr = open(logs+name+".ffmpeg.err", "w")
 	try:
 		xx = subprocess.call(args, stdin= subprocess.PIPE, stdout= sout, stderr= serr,shell= False, startupinfo=startupinfo)
 	finally:
 		sout.close()
 		serr.close()
 	#print xx.stdout.read()
-	#print xx.stderr.read()
+	#print xx.stderr.read()	
 	
 ##############################################################
-MODE_MAP	= {
-	0	: lambda params:	INDEX(params),
-	1	: lambda url:		play(url),
-	2	: lambda params: 	record(params),
-	3	: lambda params: 	play_at_seek(params),
-	4	: lambda params: 	record(params, flv=True),	
-}
-
-
 def parse_args(args):
 	out = {}
 	if args[2]:
@@ -222,23 +166,18 @@ def parse_args(args):
 			items = item.split("=")
 			k,v = items[0], "=".join(items[1:])
 			out[k] = urllib.unquote_plus(v)
-		out["path"] = eval(out["path"])
-	else:
-		out["mode"]		= "0"
-		out["path"]		= []
-		out["url"]		= ""
 
-	out["mode"] = int(out["mode"])
 	return out
 
 
 def main():
-#	item = xbmcgui.ListItem("test")
-#	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play("http://sbsauvod-f.akamaihd.net/SBS_Production/managed/2012/04/2221230187_,1500,1000,512,128,K.mp4.csmil/bitrate=0?v=2.5.14&fp=WIN%2011,1,102,55&r=HJHYK&g=SOENISYOINXG", item)
-#	return
-	params = parse_args(sys.argv)
+	params	= parse_args(sys.argv)
 	print "##", sys.argv, params
-	MODE_MAP[params["mode"]](params)
+	mode	= params.get("path", "menu_main")
+	print "$$", mode
+	addon	= xbmcaddon.Addon( id=ID )
+	sc		= scraper.Scraper(folders, play, record, int(addon.getSetting( "vid_quality" )))
+	getattr(sc, mode)(params)
 	
 
 main()

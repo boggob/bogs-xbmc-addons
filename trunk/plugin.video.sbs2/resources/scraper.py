@@ -1,8 +1,12 @@
+import	datetime
 import	urllib2 
 import	re
-from	time import localtime, strftime, gmtime
-from	BeautifulSoup import BeautifulStoneSoup,BeautifulSoup, NavigableString
-import collections
+from	time import  strftime, gmtime
+from	BeautifulSoup import BeautifulSoup
+
+
+def get_str(item):
+	return item.string if item else ""	
 
 
 def geturl(url):
@@ -19,64 +23,43 @@ def jsonc(st):
 	return eval(st)
 
 
-class MenuItems(object):
-	def __init__(self):
-		self.base				= 'http://www.sbs.com.au/ondemand/'
-		self.main_txt			= re.sub(r'^[^=]+=','', geturl(self.base + 'js/video-menu'))
-		self.main				= jsonc(self.main_txt)
-		if 0:
-			import pprint
-			pprint.pprint(self.main)
-		self.cache				= {}
-		self.cache[tuple([])]	= {"url"		: None, "children" : self.__menu([], self.main.values())}
-		print self.main
-
-	def __menu(self, parent, items):
+class Scraper(object):
+	def __init__(self, folders, play, record, bitrate):
+		self.folders	= folders
+		self.play		= play
+		self.record		= record
+		self.bitrate	= bitrate
+		
+	def menu_main(self, params):
 		out = []
-		if isinstance(items, dict):
-			items = items.values()
-			
-		for item in items:
-			if "name" in item:
-				name		= tuple(list(parent) + [item["name"]])
-				children	= item.get("children", [])
-				if "url" in item:
-					url			= "http://www.sbs.com.au%s" % (re.sub(r'%([0-9,A-F,a-f]{2})', lambda m : chr(int(m.group(1),16)), item["url"].replace("\\", "")))
-
-					if children:
-						self.cache[name]				= {"url"	:  None, "children" : 	self.__menu(name, children)}
-						alli 							= tuple(list(name) + ["All Items"])
-						self.cache[alli]				= {"url"	: url, "children" : []}
-						self.cache[name]["children"]	= [alli] + self.cache[name]["children"]
-					else:
-						self.cache[name]				= {"url"	:  url, "children" : []}
+	
+		for days in [1, 7, 14, 356]:
+			dates1 =  (datetime.datetime.utcnow() - datetime.datetime(1970,1,1))
+			dates2 =  dates1 - datetime.timedelta(days)
+		
+			rec  =  {
+					"title" 	: "Last {} days".format(days),
+					"url"		: 'http://www.sbs.com.au/api/video_feed/f/dYtmxB/section-programs?form=json&byPubDate={}~{}&range=1-5000'.format(int(dates2.total_seconds() * 1000), int(dates1.total_seconds() * 1000)),
+					
+					"path"		: "menu_shows",					
+					"folder"	: True,
+				}
 				
-					out.append(name)
-				else:
-					print ("!!", item)
+			out.append( rec )
+		self.folders(out)
 
-		return out
-
-
-	def menu_main(self, *args):
-		if not len(args):
-			args = [[]]
-
-		return self.cache[tuple(args[0])]
-
-
-	def menu_shows(self, st):
-		print st
-		res = geturl(st)
 		
-		if '"status":"failed"' in res:
-			st = st.rsplit('&',1)[0]
-			print st
-			res = geturl(st)
-		
+
+
+
+	def menu_shows(self, params):
+		print params
+		res = geturl(params["url"])
+				
 		jsres = jsonc(res)
 		print "%%menu_shows", res
-			
+		
+		out = []
 		for entry in sorted(jsres["entries"], key = lambda x: x["title"]):
 			hours, remainder = divmod(int(entry["media$content"][0]['plfile$duration']), 3600)
 			minutes, seconds = divmod(remainder, 60)
@@ -84,79 +67,72 @@ class MenuItems(object):
 			
 			rec  =  {
 				"title" 		: entry["title"],
-				"thumbnail"		: entry["media$thumbnails"][0]["plfile$downloadUrl"].replace("\\", "") if entry["media$thumbnails"] else None,
-				"url"			: 'http://www.sbs.com.au/ondemand/video/%s' % entry["id"].split('/')[-1],
+				"still"			: sorted(entry["media$thumbnails"], key = lambda e: e["plfile$height"])[-1]["plfile$downloadUrl"].replace("\\", "") if entry["media$thumbnails"] else None,
+				"url"			: 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"].split('/')[-1]),
 				"info"			: {
 					"Country "	: entry.get("pl1$countryOfOrigin", "?"),
 					"plot"		: entry["description"],
 					"duration"	: "%s" % ((hours * 60) + minutes),
+					"mpaa"		: entry.get("media$ratings"),
 					"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)),
 					"genre"		: "%s,%s" % (entry.get("pl1$countryOfOrigin", "?"), entry["media$keywords"]),
-				}
+				},
+				
+				"path"		: "menu_play",					
+				"folder"	: False,
+				
 			}
-			
+				
 			try:
 				rec["info"]["mpaa"]		= entry["media$ratings"][0]['rating']
 			except Exception,e:
 				rec["info"]["mpaa"]		= '?'
-			yield rec
+			print rec	
+			out.append( rec )
+		self.folders(out)
 
-	def menu_play(self, lk):
-		print lk
-		contents = geturl(lk)
+			
+
+	def menu_play(self, params):
+		print params
+		contents = geturl(params["url"])
+		print contents
 		
 		out = {}
 		fmt = None
-		for mtch in re.findall(r"^[ \t]+standard: '(.*)'", contents, re.MULTILINE):
-			contents2 =  geturl(mtch.split("?")[0])
+		for mtch in re.findall(r'"standard":"(.*)"', contents, re.MULTILINE):
+			contents2 =  geturl(mtch.split("&ord=")[0].replace('\\', ''))
 			print contents2
 			soup = BeautifulSoup(contents2)
 			
 			if contents2.find('.flv') > -1:
-				fmt = '.flv'			
+
 				for item in soup.findAll('video'):
 					out[int(item["system-bitrate"])] = item["src"]
+				raise out
 			else:
-				fmt = '.mp4'
-				vals = {}
+				
 				if str(soup).find('akamaihd') <= -1:
 					for item in soup.findAll('video'):
 						out[int(item["system-bitrate"])] = item["src"]
 				else:
 					for item in soup.findAll('video'):
-						splts = item["src"].rsplit("/", 1)
-						hd, (tl, rate) = splts[:-1], splts[-1].rsplit("K.",1)[0].rsplit("_", 1)
-						hd = "/".join(hd)	
-						if (hd,tl) not in vals:
-							vals[hd,tl] = set([])
-						vals[hd,tl].add(rate)
-				
-					for (hd,tl),rts in vals.iteritems():
-						for idx, rt in enumerate(sorted(rts, key = lambda x: int(x))):
-							out[int(rt) * 1000] = "%s/%s_,%s,K.mp4.csmil/bitrate=%s?v=2.5.14&fp=WIN%%%%2011,1,102,55&r=HJHYK&g=SOENISYOINXG&seek=0" % (hd,tl, ",".join(sorted(rts, key = lambda e: int(e))), idx)
-					
-		return out, fmt
+						splts	= item["src"].split("/managed/")[1].split(',')[0]
+						tail= splts if splts.endswith(".mp4") else "{}1500K.mp4".format(splts)
+						print "%^^&", item["src"], splts
+						val		= {
+							"url"		: "http://sbsauvod-f.akamaihd.net/SBS_Production/managed/{}?v=&fp=&r=&g=".format(tail),
+							"name"		: item["title"]
+						}
+						print ("@2"	,  val)
+						if "record" in params:
+							self.record(val)
+						else:
+							self.play(val)
+						break
 
-	def menu_tree(self, node, out):
-		for i in self.menu_main(node)["children"]:
-			out.append(i)
-			self.menu_tree(i, out)
-		return out
+		
+		
 
 if __name__ == "__main__":
-	from  pprint import PrettyPrinter, pprint
-
-	m = MenuItems()
-	print "#" * 20
-	menues = []
-	m.menu_tree([], menues)
-	PrettyPrinter(indent=1).pprint(menues)
-	print "#" * 30
-	leafs = [i for i in menues if not m.menu_main(i)["children"]]
-	print "#" * 30
-	shows = list(m.menu_shows(m.menu_main(leafs[30])["url"]))
-	PrettyPrinter(indent=1).pprint(shows)
-	print "#" * 30
-	PrettyPrinter(indent=1).pprint(m.menu_play(shows[2]["url"]))
-else:
-	SCRAPER = MenuItems()
+	pass
