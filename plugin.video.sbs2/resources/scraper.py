@@ -1,5 +1,5 @@
 import	datetime
-import	urllib2 
+import	urllib2, urllib 
 import	re
 from	time import  strftime, gmtime
 from	BeautifulSoup import BeautifulSoup
@@ -46,13 +46,87 @@ class Scraper(object):
 				}
 				
 			out.append( rec )
+		
+		res = geturl("http://www.sbs.com.au/ondemandcms/sitenav")
+		jsres = jsonc(res)
+		print  jsres.get("sitenav", [])
+			
+		for title, url in (
+			[("Programs", "http://www.sbs.com.au/api/video_programlist/?upcoming=1")]
+		):
+			rec  =  {
+					"title" 	: title,
+					"url"		: url,
+					
+					"path"		: "menu_shows2",					
+					"folder"	: True,
+				}
+				
+			out.append( rec )
+
+		for title, url in (
+			[ 	(
+					"Movie: {}".format(child["title"]), 
+					"http://www.sbs.com.au/ondemandcms/sections/%s" % (child["href"].replace("\\", ""))
+				) 
+				for top in jsres.get("sitenav", []) 
+				if top["title"] == "Movies"
+				for section in top["groups"]
+				if section["title"] in  ("Genres",) 
+				for child in section["children"] 
+			]
+		):
+			rec  =  {
+					"title" 	: title,
+					"url"		: url,
+					
+					"path"		: "movie_shows",					
+					"folder"	: True,
+				}
+				
+			out.append( rec )
+
+		for title, url in (
+			[ 	(
+					"Movie: {}".format(child["title"]), 
+					"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&range=1-12&byCategories=Film,Section/Programs&byRatings=&facets=1&byCustomValue={collections}{%s}" % (urllib.quote_plus(child["title"]))
+				) 
+				for top in jsres.get("sitenav", []) 
+				if top["title"] == "Movies"
+				for section in top["groups"]
+				if section["title"] in  ("Collections",) 
+				for child in section["children"] 
+			]
+		):
+			rec  =  {
+					"title" 	: title,
+					"url"		: url,
+					
+					"path"		: "menu_shows",					
+					"folder"	: True,
+				}
+				
+			out.append( rec )
+		
 		self.folders(out)
 
 		
+	def movie_shows(self, params):
+		print params
+		contents = geturl(params["url"])
+		print 	contents	
+		soup = BeautifulSoup(contents)
+		
+		for mtch in soup.findAll('div', {"data-content-type":"video"}):
+			print mtch["data-filter"]
+			#"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&byCustomValue={%s}{%s}" % (section["title"].lower(), child["title"])
+			url = "http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&byCategories=Section%2FPrograms,Film,{}".format(urllib.quote_plus(mtch["data-filter"]))
+			self._menu_shows({"url" : url})
+			
 
 
 
-	def menu_shows(self, params):
+	def _menu_shows(self, params):
 		print params
 		res = geturl(params["url"])
 				
@@ -73,7 +147,6 @@ class Scraper(object):
 					"Country "	: entry.get("pl1$countryOfOrigin", "?"),
 					"plot"		: entry["description"],
 					"duration"	: "%s" % ((hours * 60) + minutes),
-					"mpaa"		: entry.get("media$ratings"),
 					"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)),
 					"genre"		: "%s,%s" % (entry.get("pl1$countryOfOrigin", "?"), entry["media$keywords"]),
 				},
@@ -91,7 +164,48 @@ class Scraper(object):
 			out.append( rec )
 		self.folders(out)
 
+	def menu_shows(self, params):		
+		return self._menu_shows(params)
+
+		
+	def menu_shows2(self, params):
+		print params
+		res = geturl(params["url"])
+				
+		jsres = jsonc(res)
+		print "%%menu_shows", res
+		
+		out = []
+		for entry in sorted(jsres["entries"], key = lambda x: x["name"]):
+			if "media$content" in entry:
+				hours, remainder = divmod(int(entry["media$content"][0]['plfile$duration']), 3600)
+				minutes, seconds = divmod(remainder, 60)
+				duration = "%s" % ((hours * 60) + minutes)
+			else:
+				duration = None
 			
+			rec  =  {
+				"title" 		: entry["name"],
+				"still"			: entry["thumbnails"]['1280x720'].replace("\\", "") if entry["thumbnails"] else None,
+				"url"			: entry.get('url', 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"])).replace("\\", "") ,
+				"info"			: {
+					"plot"		: entry["description"],
+					"duration"	: duration,
+					"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)) if "pubDate" in entry else None,
+				},
+				
+				"path"		: "menu_play" if duration is not None else "menu_shows",					
+				"folder"	: duration is None,
+				
+			}
+				
+			try:
+				rec["info"]["mpaa"]		= entry["media$ratings"][0]['rating']
+			except Exception,e:
+				rec["info"]["mpaa"]		= '?'
+			print rec	
+			out.append( rec )
+		self.folders(out)			
 
 	def menu_play(self, params):
 		print params
