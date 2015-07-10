@@ -26,7 +26,10 @@ def addDir(params, folder = False, info = {}, still="DefaultFolder.png"):
 	if info:
 		liz.setInfo("video", info)
 	if not folder:
-		liz.addContextMenuItems( [("Record to disk", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url + "&record=1"))] )
+		liz.addContextMenuItems( [
+			("Record to disk", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url + "&record=1")),
+			("Record to disk as flv", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url + "&recordFlv=1")),
+		] )
 		
 	ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=liz,isFolder=folder)
 	return ok
@@ -118,15 +121,15 @@ def seekhack(player, url, item):
 							xbmc.executebuiltin("PlayerControl(Play)")
 	
 
-def record(params):		
+def record(params, flv=False):		
 	print params
 	def rpt(c):
-		if c not in set(" %*^&$#@!~:"):
+		if c not in set(" %*^&$#@!~:?"):
 			return c
 		else:
 			return "_"
-	name	= '%s.mp4' % ("".join(rpt(c) for c in str(params["name"])))
-	url		= params["url"]	
+	name	= '%s%s' % ("".join(rpt(c) for c in str(params["name"])), ".flv" if flv else ".mp4" )
+	url		= params["url"]	#+ "seek=7136"
 	logs	= "{}/{}/".format(__settings__.getSetting( "path" ),"logs")
 		
 	args	= (

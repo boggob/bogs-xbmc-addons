@@ -185,7 +185,7 @@ class Scraper(object):
 				duration = None
 			
 			rec  =  {
-				"title" 		: entry["name"],
+				"title" 		: "{}{}".format(entry["name"], " [Encrypted]" if entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted'] else "") ,
 				"still"			: entry["thumbnails"]['1280x720'].replace("\\", "") if entry["thumbnails"] else None,
 				"url"			: entry.get('url', 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"])).replace("\\", "") ,
 				"info"			: {
@@ -241,6 +241,8 @@ class Scraper(object):
 						print ("@2"	,  val)
 						if "record" in params:
 							self.record(val)
+						elif "recordFlv" in params:
+							self.record(val, flv=True)
 						else:
 							self.play(val)
 						break
