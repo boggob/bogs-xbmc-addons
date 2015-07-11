@@ -270,9 +270,9 @@ class Scraper(object):
 
 						print ("@2"	,  val)
 						if "record" in params:
-							self.record(val)
+							self.record(val, audio=enc)
 						elif "recordFlv" in params:
-							self.record(val, flv=True)
+							self.record(val, flv=True, audio=enc)
 						else:
 							self.play(val)
 						break
