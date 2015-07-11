@@ -259,7 +259,7 @@ class Scraper(object):
 							contents3	= geturl(splts)
 							print contents3
 
-							url			= contents3.split("\n")[-4]
+							url			= contents3.split("\n")[2]
 
 
 							val		= {
