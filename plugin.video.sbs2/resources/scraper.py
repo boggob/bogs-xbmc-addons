@@ -184,8 +184,9 @@ class Scraper(object):
 			else:
 				duration = None
 			
+			enc = entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted'] 
 			rec  =  {
-				"title" 		: "{}{}".format(entry["name"], " [Encrypted]" if entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted'] else "") ,
+				"title" 		: "{}{}".format( entry["name"], " [Encrypted]" if enc else ""),
 				"still"			: entry["thumbnails"]['1280x720'].replace("\\", "") if entry["thumbnails"] else None,
 				"url"			: entry.get('url', 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"])).replace("\\", "") ,
 				"info"			: {
@@ -194,7 +195,11 @@ class Scraper(object):
 					"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)) if "pubDate" in entry else None,
 				},
 				
-				"path"		: "menu_play" if duration is not None else "menu_shows",					
+				"path"		: (
+								"menu_shows"	if duration is None else 
+								"menu_play_enc" if entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted'] else
+								"menu_play"
+							),					
 				"folder"	: duration is None,
 				
 			}
@@ -207,14 +212,22 @@ class Scraper(object):
 			out.append( rec )
 		self.folders(out)			
 
-	def menu_play(self, params):
+	def menu_play(self, params):		
+		self._menu_play(params, enc = False)
+
+	def menu_play_enc(self, params):		
+		self._menu_play(params, enc = True)
+		
+	def _menu_play(self, params, enc = False):
 		print params
 		contents = geturl(params["url"])
 		print contents
 		
-		out = {}
-		fmt = None
-		for mtch in re.findall(r'"standard":"(.*)"', contents, re.MULTILINE):
+		
+		search = r'"standard":"([^"]*)"' if not enc else '"([^"]*manifest=m3u[^"]*)"'
+		
+		out = {}		
+		for mtch in re.findall(search, contents, re.MULTILINE):
 			contents2 =  geturl(mtch.split("&ord=")[0].replace('\\', ''))
 			print contents2
 			soup = BeautifulSoup(contents2)
@@ -231,13 +244,28 @@ class Scraper(object):
 						out[int(item["system-bitrate"])] = item["src"]
 				else:
 					for item in soup.findAll('video'):
-						splts	= item["src"].split("/managed/")[1].split(',')[0]
-						tail= splts if splts.endswith(".mp4") else "{}1500K.mp4".format(splts)
-						print "%^^&", item["src"], splts
-						val		= {
-							"url"		: "http://sbsauvod-f.akamaihd.net/SBS_Production/managed/{}?v=&fp=&r=&g=".format(tail),
-							"name"		: item["title"]
-						}
+						if not enc:
+							splts	= item["src"].split("/managed/")[1].split(',')[0]
+							tail= splts if splts.endswith(".mp4") else "{}1500K.mp4".format(splts)
+							print "%^^&", item["src"], splts					
+							val		= {
+								"url"		: "http://sbsauvod-f.akamaihd.net/SBS_Production/managed/{}?v=&fp=&r=&g=".format(tail),
+								"name"		: item["title"]
+							}
+						else:
+							splts		= item["src"].split("&")[0]
+							contents3	= geturl(splts)
+							print contents3
+							
+							url			= contents3.split("\n")[-4]
+
+					
+							val		= {
+								"url"		: url,
+								"name"		: item["title"]
+							}
+							
+							
 						print ("@2"	,  val)
 						if "record" in params:
 							self.record(val)
