@@ -121,7 +121,7 @@ def seekhack(player, url, item):
 							xbmc.executebuiltin("PlayerControl(Play)")
 	
 
-def record(params, flv=False):		
+def record(params, flv=False, audio=False):		
 	print params
 	def rpt(c):
 		if c not in set(" %*^&$#@!~:?"):
@@ -131,14 +131,24 @@ def record(params, flv=False):
 	name	= '%s%s' % ("".join(rpt(c) for c in str(params["name"])), ".flv" if flv else ".mp4" )
 	url		= params["url"]	#+ "seek=7136"
 	logs	= "{}/{}/".format(__settings__.getSetting( "path" ),"logs")
-		
-	args	= (
-				__settings__.getSetting( "ffmpeg" ), 
-				'-i',  url,
-				"-vcodec", "copy",
-				"-acodec", "copy", 
-				"{}{}".format(__settings__.getSetting( "path" ), name)
-			)
+	
+	if audio:
+		args	= (
+					__settings__.getSetting( "ffmpeg" ), 
+					'-i',  url,
+					"-vcodec", "copy",
+					"-acodec", "copy", 
+					"-bsf:a", "aac_adtstoasc",
+					"{}{}".format(__settings__.getSetting( "path" ), name)
+				)	
+	else:
+		args	= (
+					__settings__.getSetting( "ffmpeg" ), 
+					'-i',  url,
+					"-vcodec", "copy",
+					"-acodec", "copy", 
+					"{}{}".format(__settings__.getSetting( "path" ), name)
+				)
 	startupinfo = None
 	if os.name == 'nt':
 		startupinfo = subprocess.STARTUPINFO()
