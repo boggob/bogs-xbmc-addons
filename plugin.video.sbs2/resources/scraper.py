@@ -230,7 +230,10 @@ class Scraper(object):
 
 		out = {}
 		for mtch in re.findall(search, contents, re.MULTILINE):
-			contents2 =  geturl(mtch.split("&ord=")[0].replace('\\', ''))
+			url = mtch.split("&ord=")[0].replace('\\', '')
+			if "http:"  not in url:
+				url = "http:" + url
+			contents2 =  geturl(url)
 			print contents2
 			soup = BeautifulSoup(contents2)
 

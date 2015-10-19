@@ -1,21 +1,4 @@
 <addons>
-  <addon id="metadata.albums.loopback"
-         name="loopback"
-         version="1.0.0"
-  >
-    <requires>
-      <import addon="xbmc.metadata" version="1.0"/>
-      <import addon="metadata.common.htbackdrops.com" version="1.1.0"/>
-    </requires>
-    <extension point="xbmc.metadata.scraper.albums"
-               language="en"
-               library="loopback.xml"/>
-    <extension point="xbmc.addon.metadata">
-      <summary lang="en">NFO Music Scraper</summary>
-      <description lang="en">NFO scraper from local loopback</description>
-      <platform>all</platform>
-    </extension>
-  </addon>
   <addon
     id="plugin.video.abc-iview2" name="ABC iView 2" version="1.0.13" provider-name="boggob">
     <requires>
@@ -157,7 +140,7 @@
       <platform>all</platform>
     </extension>
   </addon>
-  <addon id="plugin.video.sbs2" name="SBS2" version="1.0.23" provider-name="bog.gob">
+  <addon id="plugin.video.sbs2" name="SBS2" version="1.0.24" provider-name="bog.gob">
     <requires>
       <import addon="xbmc.python" version="2.1.0" />
     </requires>
