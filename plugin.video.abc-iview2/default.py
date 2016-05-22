@@ -21,24 +21,27 @@ def addDir(params, folder = False, info = {}, still="DefaultFolder.png"):
 	name = params["name"]
 	liz=xbmcgui.ListItem(name, iconImage=still, thumbnailImage=still)
 	url =  sys.argv[0] + "?" + "&".join(["%s=%s" % (urllib.quote_plus(k),urllib.quote_plus(str(v)))    for k, v in params.items()])
-	print ("::", url,  params, info, folder, "%%")		
+	print ("::", url,  params, info, folder, "%%")
 	if info:
 		liz.setInfo("video", info)
 	if not folder:
 		liz.addContextMenuItems( [("Record to disk", "XBMC.RunPlugin(%s?&%s)"   % (sys.argv[0], url + "&record=1"))] )
-		
-	ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=liz,isFolder=folder)
-	return ok
+
+
+	return url,liz,folder
 
 ##############################################################
 
-	
+
 
 
 def folders(params):
+	args = []
 	for param in params:
 		print "@@",param
-		addDir({"name" : param['title'], "url" : param["url"], "path" : param["path"]}, param["folder"], info = param.get("info", {}), still = param.get("still", "DefaultFolder.png"))
+		args.append(addDir({"name" : param['title'], "url" : param["url"], "path" : param["path"], "data" : param["data"]}, param["folder"], info = param.get("info", {}), still = param.get("still", "DefaultFolder.png")))
+
+	xbmcplugin.addDirectoryItems(int(sys.argv[1]),args, len(args))
 
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_UNSORTED )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_LABEL )
@@ -46,14 +49,14 @@ def folders(params):
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_DATE )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_PROGRAM_COUNT )
 	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_VIDEO_RUNTIME )
-	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_GENRE )	   
+	xbmcplugin.addSortMethod( handle=int( sys.argv[ 1 ] ), sortMethod=xbmcplugin.SORT_METHOD_GENRE )
 	xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def play(params):
 	print params
 	xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER).play("{0}".format(params["url"]), xbmcgui.ListItem(params["name"]))
 
-def record(params):		
+def record(params):
 	print params
 	def rpt(c):
 		if c not in set(" %*^&$#@!~:"):
@@ -61,26 +64,26 @@ def record(params):
 		else:
 			return "_"
 	name	= '%s.mp4' % ("".join(rpt(c) for c in str(params["name"])))
-	url		= params["url"]	
+	url		= params["url"]
 	logs	= "{}/{}/".format(__settings__.getSetting( "path" ),"logs")
-		
+
 	args	= (
-				__settings__.getSetting( "ffmpeg" ), 
+				__settings__.getSetting( "ffmpeg" ),
 				'-i',  url,
 				"-vcodec", "copy",
-				"-acodec", "copy", 
+				"-acodec", "copy",
 				"{}{}".format(__settings__.getSetting( "path" ), name)
 			)
 	startupinfo = None
 	if os.name == 'nt':
 		startupinfo = subprocess.STARTUPINFO()
-		startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW		
-	
+		startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
 	try:
 		os.makedirs(logs)
 	except OSError:
 		pass
-	
+
 	print " ".join(args)
 	sout = open(logs+name+".fmpeg.out", "w")
 	serr = open(logs+name+".ffmpeg.err", "w")
@@ -90,7 +93,7 @@ def record(params):
 		sout.close()
 		serr.close()
 	#print xx.stdout.read()
-	#print xx.stderr.read()	
+	#print xx.stderr.read()
 ##############################################################
 
 

@@ -1,3 +1,11 @@
+[B]Version 1.0.15/B]
+- Added genres
+
+
+[B]Version 1.0.14/B]
+- Added categories
+
+
 [B]Version 1.0.13/B]
 - Deal with changes to servers
 
