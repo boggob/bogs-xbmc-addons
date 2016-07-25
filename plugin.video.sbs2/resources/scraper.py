@@ -33,20 +33,6 @@ class Scraper(object):
 	def menu_main(self, params):
 		out = []
 
-		for days in [1, 7, 14, 28, 356]:
-			dates1 =  (datetime.datetime.utcnow() - datetime.datetime(1970,1,1))
-			dates2 =  dates1 - datetime.timedelta(days)
-
-			rec  =  {
-					"title" 	: "Last {} days".format(days),
-					"url"		: 'http://www.sbs.com.au/api/video_feed/f/dYtmxB/section-programs?form=json&byPubDate={}~{}&range=1-5000'.format(int(dates2.total_seconds() * 1000), int(dates1.total_seconds() * 1000)),
-
-					"path"		: "menu_shows",
-					"folder"	: True,
-				}
-
-			out.append( rec )
-
 		res = geturl("http://www.sbs.com.au/ondemandcms/sitenav")
 		jsres = jsonc(res)
 		print  jsres.get("sitenav", [])
@@ -189,7 +175,7 @@ class Scraper(object):
 			enc = entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted']
 			rec  =  {
 				"title" 		: "{}{}".format( entry["name"], " [Encrypted]" if enc else ""),
-				"still"			: entry["thumbnails"]['1280x720'].replace("\\", "") if entry["thumbnails"] else None,
+				"still"			: entry["thumbnails"]['1280x720'].replace("\\", "") if entry.get("thumbnails") else None,
 				"url"			: entry.get('url', 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"])).replace("\\", "") ,
 				"info"			: {
 					"plot"		: entry["description"],
@@ -221,6 +207,8 @@ class Scraper(object):
 		self._menu_play(params, enc = True)
 
 	def _menu_play(self, params, enc = False):
+		enc = True
+	
 		print params
 		contents = geturl(params["url"])
 		print contents

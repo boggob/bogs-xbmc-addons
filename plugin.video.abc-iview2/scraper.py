@@ -20,23 +20,23 @@ def get_str(item):
 
 def group_titles(data):
 	out = collections.defaultdict(list)
-	
+
 	for d in data:
-		parts = d["title"].split("Series")  
+		parts = d["title"].split("Series")
 		if len(parts) > 1:
 			out[parts[0]].append(d)
 		else:
-			parts = d["title"].split("Episode")  
+			parts = d["title"].split("Episode")
 			if len(parts) > 1:
-				out[parts[0]].append(d)				
+				out[parts[0]].append(d)
 			else:
-				parts = d["title"].split(":")  
+				parts = d["title"].split(":")
 				if len(parts) > 1:
 					out[parts[0]].append(d)
 				else:
 					out[d["title"]].append(d)
-			
-	return out			
+
+	return out
 
 
 
@@ -58,14 +58,13 @@ class Scraper(object):
 
 
 		print "^^^^^"
-		out = collections.defaultdict(list)
+		out 		= collections.defaultdict(list)
+		all_items	= []
 		for item in soup.findAll('asset'):
 			print "%%%%", get_str(item.asseturl), item
 			if item.asseturl:
-				genres =sorted(si["name"] for si in item.findAll('category'))
-				for g in genres:
-					out[g].append(
-						{
+				genres	= sorted(si["name"] for si in item.findAll('category'))
+				record	= {
 							"url"		: get_str(item.asseturl)[:],
 							"title"		: get_str(item.title)[:],
 							"still"		: get_str(item.imageurl)[:],
@@ -81,16 +80,20 @@ class Scraper(object):
 							"data"	: False,
 
 						}
-				)
+				all_items.append(record)
+				for g in genres:
+					out[g].append(record)
+
+
 
 		folders = (
 					[
 						{
 							"title" 	: "All",
-							"url" 		: g,
+							"url" 		: "All",
 							"path"		: "menu_all",
 							"folder"	: True,
-							"data"		: sorted((dd for d in out.itervalues() for dd in d), key = lambda a: a['title'])
+							"data"		: sorted(all_items, key = lambda a: a['title'])
 						},
 
 					 ] + (
