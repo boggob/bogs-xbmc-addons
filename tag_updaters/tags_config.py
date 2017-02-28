@@ -22,7 +22,7 @@ sys.stdout = flushfile(sys.stdout)
 
 
 ####################################
-if 1:
+if 0:
 	PATHS = [
 	 r'\\DISKSTATION\filesc\music\Assorted',
 	 r'\\DISKSTATION\filesc\music\Classical',
@@ -37,13 +37,10 @@ else:
 	
 	#PATHS = [user_input.input_directory()]
 	PATHS = [
-	 #r'\\DISKSTATION\filesc\music\Matilda',
-	#r"c:\temp\music\albums2"
-	r'C:\Users\user\Downloads\music',
-	
+		r'D:\music',	
 	]
-	OUTFILE_ALBUMS	= "C:/temp/music/albums_test.xml"
-	OUTFILE_ARTISTS = "C:/temp/music/artists_test.xml"
+	OUTFILE_ALBUMS	= "d:/temp/music/albums_test.xml"
+	OUTFILE_ARTISTS = "d:/temp/music/artists_test.xml"
 	
 	_pairs = [
 	  ('\\\\DISKSTATION\\filesc\\music\\art\\albums\\', '/home/user/media/filesc/music/art/albums/'),

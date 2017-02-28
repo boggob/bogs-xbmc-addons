@@ -1068,6 +1068,7 @@ def mb_albums2(name, mbid):
 			for rel in relations
 			if rel.artist
 		) 
+		
 	
 	data	=  geturl_delay("http://musicbrainz.org/ws/2/release/{}?inc=artist-credits+artists+labels+media+url-rels+recordings+recording-rels+recording-level-rels+artist-rels".format(mbid))
 
@@ -1134,7 +1135,7 @@ def mb_albums2(name, mbid):
 
 	
 if __name__ == "__main__":
-	tmp = mb_albums2("50BFDAEB-19D9-3DF4-B1E0-2BF9FA7FCE37", "50BFDAEB-19D9-3DF4-B1E0-2BF9FA7FCE37")
+	tmp = mb_albums2("374df7cd-06b7-32ba-899a-c68c8d1a977c", "374df7cd-06b7-32ba-899a-c68c8d1a977c")
 	#tmp = mb_albums2("D9B0B04A-710B-45F3-9327-8DD1D29A0F54", "D9B0B04A-710B-45F3-9327-8DD1D29A0F54")
 
  	

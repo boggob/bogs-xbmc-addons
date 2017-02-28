@@ -261,11 +261,23 @@ var top_level_func = function() {
 				var label = "mediums.%1.track.%2.%%s".replace('%1', medium).replace('%2', parseInt(track[0] + '0',10)-1);	
 				
 				var name;
-				if (work["work"] == track[1]) {
-					name = track[1];
+				console.log("" + work );
+				if (work["work"] + "" == work["work"]) {
+					var wname = work["work"].toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ");
+					var tname = track[1].toLowerCase().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ");
+					
+					console.log("Wname: " + wname );
+					console.log("Tname: " + tname );
+					if (wname == tname) {
+						name = track[1];
+					} else {
+						name = work["work"] + ": " + track[1];
+					}
+					
 				} else {
-					name = work["work"] + ": " + track[1];
+					name = track[1];
 				}
+				
 				name = name.replace("Op.", "op.").replace("No.", "no.")
 				
 				add_field(label.replace("%%s", 'name'), name );
