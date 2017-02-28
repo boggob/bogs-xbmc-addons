@@ -222,7 +222,7 @@ var top_level_func = function() {
 
 
 	var  musicbrainz_add_recording = function(scape)  {
-		add_field("edit_note", 					"Imported by ''MusicBrainz_Import_from_Naxos''\nhttps://code.google.com/p/bogs-xbmc-addons/source/browse/trunk/tag_updaters/naxos.user.js\n\nfrom: " + scape["url"]);
+		add_field("edit_note", 					"Imported by ''MusicBrainz_Import_from_Naxos''\nhttps://github.com/boggob/bogs-xbmc-addons/blob/master/tag_updaters/naxos.user.js\n\nfrom: " + scape["url"]);
 		add_field("name", 						scape['title']);
 		add_field("labels.0.name", 				scape['headers']['Label'][0]);
 		add_field("barcode", 					scape['headers']['Barcode'][0].slice(1,scape['headers']['Barcode'][0].length));
