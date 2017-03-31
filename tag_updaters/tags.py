@@ -10,6 +10,7 @@ from mutagen.flac import FLAC
 EXT_MAPPING_OBJ = {
 	".mp3"	: MP3,
 	".m4a"	: MP4,
+	".mp4"	: MP4,
 	".ape"	: APEv2,
 	".mpc"	: APEv2,
 	".flac"	: FLAC,
@@ -26,6 +27,18 @@ _upd	= lambda attr: lambda ent, val : ent.update(attr=val)
 
 
 EXT_MAPPING_ATTR = {
+	".mp4"	: {
+
+				"musicbrainz_albumid"		: ( _extr3(["----:com.apple.iTunes:MUSICBRAINZ ALBUM ID", "----:com.apple.iTunes:MusicBrainz Album Id"]), 		"MusicBrainz Album Id"),
+				"musicbrainz_artistid"		: ( _extr3(["----:com.apple.iTunes:MUSICBRAINZ ARTIST ID", "----:com.apple.iTunes:MusicBrainz Artist Id"]),		"MusicBrainz Artist Id"),		
+				"musicbrainz_albumartistid"	: ( _extr3(["----:com.apple.iTunes:MUSICBRAINZ ALBUM ARTIST ID", "----:com.apple.iTunes:MusicBrainz Album Artist Id"]),	"MusicBrainz Album Artist Id"),		
+				"asin"						: ( _extr("----:com.apple.iTunes:ASIN"),						"ASIN"),		
+				"artist"					: ( _extr("\xa9ART"),											"©ART"),		
+				"albumartist"				: ( _extr("aART"),												"aART"),		
+				"album"						: ( _extr("\xa9alb"),											"©alb"),		
+				"genre"						: ( _extr("\xa9gen"),											"©gen"),
+	},
+
 	".mp3"	: {
 				"musicbrainz_albumid"		: ( _extr("TXXX:MusicBrainz Album Id") ,		None),
 				"musicbrainz_artistid"		: ( _extr("TXXX:MusicBrainz Artist Id"),		None), 

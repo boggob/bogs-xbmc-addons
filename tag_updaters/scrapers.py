@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import time
 import exceptions
 import threading
@@ -177,7 +179,7 @@ def encode(mp, indent = "  ", depth = 0):
 			out.extend(output(indent, depth, k, val))
 
 	#print out
-	return "".join(out)
+	return u"".join(out)
 
 
 ##############################################################

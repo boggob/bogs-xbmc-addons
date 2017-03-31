@@ -60,7 +60,7 @@ def play(params):
 	url		= params["url"]
 	item	= xbmcgui.ListItem(params["name"])
 
-	player = xbmc.Player(xbmc.PLAYER_CORE_AUTO)
+	player = xbmc.Player()
 	player.play(url, item)
 	
 	addon	= xbmcaddon.Addon( id=ID )

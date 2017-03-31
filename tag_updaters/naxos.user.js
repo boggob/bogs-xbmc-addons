@@ -176,6 +176,7 @@ var top_level_func = function() {
 		var works = new Array();
 		$(source).find("div.works").each(function(idx, para) {
 			var work = new Object();
+			work["medium"]		= ($(para).prevAll('p.discnumber').map(function () {return Number(text_node_to_text(this, true).join(' ').replace( 'Disc', '' ).trim()) - 1}).toArray() + [0])[0];
 			work["work"]		= text_node_to_text(para, false).join(' ').trim().replace( /\n/, '' );
 			work["composers"]	= $(para).prevAll('p.composers').eq(0).find('a').map(function () {return artist_sort_order(text_node_to_text(this, true))}).get();
 			work["performers"]	= $(para).next('div.performers').find('td:has(>a)').map(
@@ -241,12 +242,17 @@ var top_level_func = function() {
 		add_field("urls.0.link_type", 			"288");
 		
 		var albumartist = scape["headers"]["Artist(s)"];
-		for (var idx =0 ; idx < albumartist.length ; idx++) {
-			add_field("artist_credit.names.%d.artist.name".replace('%d', idx), albumartist[idx]);
-			if (idx + 1 < albumartist.length) {
-				add_field("artist_credit.names.%d.join_phrase".replace('%d', idx), " & ");
+		if (albumartist.length < 30) {
+			for (var idx =0 ; idx < albumartist.length ; idx++) {
+				add_field("artist_credit.names.%d.artist.name".replace('%d', idx), albumartist[idx]);
+				if (idx + 1 < albumartist.length) {
+					add_field("artist_credit.names.%d.join_phrase".replace('%d', idx), " & ");
+				}
 			}
+		} else {
+			add_field("artist_credit.names.%d.artist.name".replace('%d', 0), "[various artists]");
 		}
+		
 		
 		var medium = 0;
 		add_field("mediums.%d.format".replace('%d', medium), 'CD');
@@ -258,7 +264,7 @@ var top_level_func = function() {
 				
 				console.log(track);
 				console.log(track[0] + '0');
-				var label = "mediums.%1.track.%2.%%s".replace('%1', medium).replace('%2', parseInt(track[0] + '0',10)-1);	
+				var label = "mediums.%1.track.%2.%%s".replace('%1', work["medium"]).replace('%2', parseInt(track[0] + '0',10)-1);	
 				
 				var name;
 				console.log("" + work );
@@ -268,6 +274,7 @@ var top_level_func = function() {
 					
 					console.log("Wname: " + wname );
 					console.log("Tname: " + tname );
+					console.log("Medium: " + work["medium"] )
 					if (wname == tname) {
 						name = track[1];
 					} else {
@@ -278,7 +285,7 @@ var top_level_func = function() {
 					name = track[1];
 				}
 				
-				name = name.replace("Op.", "op.").replace("No.", "no.")
+				name = name.replace("Op.", "op.").replace("No.", "no.").replace(' (Highlights)', '')
 				
 				add_field(label.replace("%%s", 'name'), name );
 				add_field(label.replace("%%s", 'length'), track[2]);
