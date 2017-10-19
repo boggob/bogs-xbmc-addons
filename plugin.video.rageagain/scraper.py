@@ -54,7 +54,7 @@ class Scraper(object):
 		]
 		
 		for item in soup.find('div', {"id":"episodes"}).findAll("a", {"class":"playlist"}):
-			print item
+			#print item
 			val = { 
 				"url"	: self.URLS['base']+ "tracks/getByPlaylistId/{0}.json".format(item["data-playlist_id"]), 
 				"title"	: pretty("{0}:{1}:{2}".format(strings(item.findPrevious('h2').span), " ".join(strings(item).split()[::-1]), strings(item.find()))), 
@@ -126,11 +126,11 @@ class Scraper(object):
 			outd		= dict([(k,urllib.unquote(v)) for p in out.split('&') for k,v in [p.split('=')]])
 			
 			print "~" *80
-			pprint.pprint(outd) 
+			print outd
 			ret			= outd['url']
 			
 			val = {
-				"url"		: ret + '&signature=' + outd['sig'],
+				"url"		: ret,# + '&signature=' + outd['sig'],
 				"duration"	: track['sources'][0]["duration"],
 				"name"		: track['sources'][0]["title"],
 			}
@@ -171,4 +171,8 @@ class Scraper(object):
 		
 
 if __name__ == "__main__":
-	pass
+	def p(a):
+		for aa in a:
+			print aa
+	x = Scraper(p, p, p, p)
+	x.menu(None)
