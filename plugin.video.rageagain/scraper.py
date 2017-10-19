@@ -77,7 +77,7 @@ class Scraper(object):
 			val = { 
 				"url"	: self.URLS['base']+ "youtube/get_sources.json?track_id={0}".format(item), 
 				"title"	: data.get("artist", "") + ":" + data.get("track",""), 
-				"folder"	: False,
+				"folder"	: True,
 				"info"		: {"duration": ":".join(data.get("timeslot", "").split(":")[:-1])},
 				"path"	: "details",
 			}
@@ -97,7 +97,7 @@ class Scraper(object):
 			val = { 
 				"url"	: self.URLS['base']+ "youtube/get_sources.json?track_artist={0}&track_name={1}&track_label={2}".format(urllib.quote(data['artist'] or ""), urllib.quote(data['track'] or ""),urllib.quote(data['label'] or "")), 
 				"title"	: data.get("artist", "") + ":" + data.get("track",""), 
-				"folder"	: False,
+				"folder"	: True,
 #				"info"		: {"duration": ":".join(data.get("timeslot", "").split(":")[:-1])},
 				"path"	: "details",
 			}
@@ -113,31 +113,50 @@ class Scraper(object):
 			self.notify('RageAgain Error', ['This track is not contained on the RageAgain site.'])
 			return params
 		else:
-			out = []
-			youtube_dat	= geturl("http://www.youtube.com/get_video_info?el=embedded&splay=1&video_id={0}&eurl=http%3A%2F%2Frageagain.com%2F&asv=3&hl=en_GB".format(track["sources"][0]["id"]))
-			resp		= dict([(k,urllib.unquote(v)) for p in youtube_dat.split('$')[-1].split('&') for k,v in [p.split('=')] ])
-			print "*" *80
-			pprint.pprint(resp)
-			outs		= resp["url_encoded_fmt_stream_map"].split(',')
-			
-			print "!" *80
-			pprint.pprint(outs)
-			out			= outs[1]
-			outd		= dict([(k,urllib.unquote(v)) for p in out.split('&') for k,v in [p.split('=')]])
-			
-			print "~" *80
-			print outd
-			ret			= outd['url']
-			
-			val = {
-				"url"		: ret,# + '&signature=' + outd['sig'],
-				"duration"	: track['sources'][0]["duration"],
-				"name"		: track['sources'][0]["title"],
-			}
-			print val
-			self.play(val)
-			
+			out = []	
+			for source in track["sources"]:				
+				val = {
+					"url"		: "http://www.youtube.com/get_video_info?el=embedded&splay=1&video_id={0}&eurl=http%3A%2F%2Frageagain.com%2F&asv=3&hl=en_GB".format(source["id"]),
+					#"info"		: {"duration": ":".join(data.get("timeslot", "").split(":")[:-1])},					
+					#"duration"	: source["duration"],
+					"title"		: source["title"],
+					"folder"	: False,
+					"path"		: "details2",
+				}
+				print val
+				out.append(val)
 
+			self.folders(out)				
+
+			
+	def details2(self, params):
+					
+		print "^^", params				
+		youtube_dat	= geturl(params["url"])
+		resp		= dict([(k,urllib.unquote(v)) for p in youtube_dat.split('$')[-1].split('&') for k,v in [p.split('=')] ])
+		print "*" *80
+		pprint.pprint(resp)
+		outs		= resp["url_encoded_fmt_stream_map"].split(',')
+		
+		print "!" *80
+		pprint.pprint(outs)
+		out1			= outs[1]
+		outd		= dict([(k,urllib.unquote(v)) for p in out1.split('&') for k,v in [p.split('=')]])
+		
+		print "~" *80
+		print outd
+		ret			= outd['url']
+		
+		val = {
+			"url"		: ret,
+			#"duration"	: track['sources'][0]["duration"],
+			"name"		: params["name"],
+		}	
+		
+		print val
+		self.play(val)
+
+			
 
 	def playitems(self, params):
 		print params
