@@ -219,7 +219,7 @@ class Scraper(object):
 		out = {}
 		for mtch in re.findall(search, contents, re.MULTILINE):
 			url = mtch.split("&ord=")[0].replace('\\', '')
-			if "http:"  not in url:
+			if "http:"  not in url and "https:"  not in url:
 				url = "http:" + url
 			contents2 =  geturl(url)
 			print contents2
