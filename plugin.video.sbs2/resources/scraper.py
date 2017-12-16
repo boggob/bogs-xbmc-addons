@@ -23,6 +23,18 @@ def jsonc(st):
 	return eval(st)
 
 
+def get_date(field):
+	if isinstance(field, long):
+		field = field/1000
+
+
+
+	if isinstance(field, (int, long)):
+		print "^%", field
+		return strftime("%d.%m.%Y", gmtime(field))
+	else:
+		return ".".join(field.split('T')[0].split("-")[::-1])
+
 class Scraper(object):
 	def __init__(self, folders, play, record, bitrate):
 		self.folders	= folders
@@ -135,7 +147,7 @@ class Scraper(object):
 					"Country "	: entry.get("pl1$countryOfOrigin", "?"),
 					"plot"		: entry["description"],
 					"duration"	: "%s" % ((hours * 60) + minutes),
-					"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)),
+					#"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)),
 					"genre"		: "%s,%s" % (entry.get("pl1$countryOfOrigin", "?"), entry["media$keywords"]),
 				},
 
@@ -155,8 +167,7 @@ class Scraper(object):
 	def menu_shows(self, params):
 		return self._menu_shows(params)
 
-
-	def menu_shows2(self, params):
+	def menu_shows_prim(self, params):
 		print params
 		res = geturl(params["url"])
 
@@ -171,24 +182,31 @@ class Scraper(object):
 				duration = "%s" % ((hours * 60) + minutes)
 			else:
 				duration = None
-
-			enc = entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted']
+			
+			date	= entry.get("seasons", [{"seasonStartDate" : datetime.datetime.fromtimestamp( entry.get('media$availableDate', 0) / 1000).isoformat(), "seasonEndDate" : datetime.datetime.fromtimestamp( entry.get('media$expirationDate', 0) / 1000).isoformat()}])[0]
+			enc		= entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted']
 			rec  =  {
-				"title" 		: "{}{}".format( entry["name"], " [Encrypted]" if enc else ""),
-				"still"			: entry["thumbnails"]['1280x720'].replace("\\", "") if entry.get("thumbnails") else None,
-				"url"			: entry.get('url', 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"])).replace("\\", "") ,
-				"info"			: {
-					"plot"		: entry["description"],
-					"duration"	: duration,
-					"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)) if "pubDate" in entry else None,
+				"content"			: ({entry.get("genre", None), entry.get("type", None)} - {None}) | set(entry.get("collections",[])),
+				"date_end"			: "End_" + date['seasonEndDate'].split("T")[0].rsplit("-", 1)[0],
+				"date_start"		: "Start_" + date['seasonStartDate'].split("T")[0].rsplit("-", 1)[0],
+				"title" 			: "{}{}".format( entry["name"], " [Encrypted]" if enc else ""),
+				"still"				: entry["thumbnails"]['1280x720'].replace("\\", "") if entry.get("thumbnails") else None,
+				"url"				: entry.get('url', 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"])).replace("\\", "") ,
+				"info"				: {
+					"plot"			: entry["description"],
+					"duration"		: duration,
+					"date"			: get_date(entry["latest_episode_available_date"] or entry['pubDate'])   if "latest_episode_available_date" in entry else None,
+					"genre"			: entry.get("genre", None) or entry.get("type", None),
+					"tagline"		: entry.get("genre", None) or entry.get("type", None),
 				},
 
 				"path"		: (
-								"menu_shows"	if duration is None else
+								"menu_shows"	if entry.get("type") != "program_oneoff" else
 								"menu_play_enc" if entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted'] else
 								"menu_play"
 							),
 				"folder"	: duration is None,
+
 
 			}
 
@@ -196,9 +214,101 @@ class Scraper(object):
 				rec["info"]["mpaa"]		= entry["media$ratings"][0]['rating']
 			except Exception,e:
 				rec["info"]["mpaa"]		= '?'
-			print rec
+			print "%%&", rec
 			out.append( rec )
+		return out
+
+	def menu_shows2(self, params):
+		out = self.menu_shows_prim(params)
+
+
+		agg = {
+			c
+			for o in out
+			for c in o.get("content", [])
+		}
+		
+
+		agg2 = {
+			o.get("date_end", None)
+			for o in out
+		}
+
+		agg3 = {
+			o.get("date_start", None)
+			for o in out
+		}
+	
+		
+		out = (
+			[
+			
+				{
+					"title" 			: a,
+					"url"				: params['url'],
+
+					"path"		: "menu_shows_end",
+					"folder"	: True,
+					"info"		: {}
+
+				}
+
+				for a in sorted(agg2)[:3]
+			
+			]
+			+
+			[
+			
+				{
+					"title" 			: a,
+					"url"				: params['url'],
+
+					"path"		: "menu_shows_start",
+					"folder"	: True,
+					"info"		: {}
+
+				}
+
+				for a in sorted(agg3)[-3:]
+			]
+			+ 			
+			[
+				{
+					"title" 			: a,
+					"url"				: params['url'],
+
+					"path"		: "menu_shows3",
+					"folder"	: True,
+					"info"		: {}
+
+				}
+
+				for a in sorted(agg)
+			]
+		)
+	
+		print "^^&@", out
 		self.folders(out)
+
+	def menu_shows3(self, params):
+		print "<!!>", params
+		out = self.menu_shows_prim(params)
+
+		self.folders([o for o in out if params["name"] in o["content"]])
+
+	def menu_shows_end(self, params):
+		print "<!!>", params
+		out = self.menu_shows_prim(params)
+
+		self.folders([o for o in out if params["name"] == o["date_end"]])
+
+	def menu_shows_start(self, params):
+		print "<!!>", params
+		out = self.menu_shows_prim(params)
+
+		self.folders([o for o in out if params["name"] == o["date_start"]])
+
+		
 
 	def menu_play(self, params):
 		self._menu_play(params, enc = False)
@@ -208,7 +318,7 @@ class Scraper(object):
 
 	def _menu_play(self, params, enc = False):
 		enc = True
-	
+
 		print params
 		contents = geturl(params["url"])
 		print contents
