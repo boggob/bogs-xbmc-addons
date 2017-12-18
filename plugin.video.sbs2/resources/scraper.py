@@ -5,6 +5,8 @@ from	time import  strftime, gmtime
 from	BeautifulSoup import BeautifulSoup
 
 
+
+
 def get_str(item):
 	return item.string if item else ""
 
@@ -360,7 +362,17 @@ class Scraper(object):
 							contents3	= geturl(splts)
 							print contents3
 
-							url			= contents3.split("\n")[2]
+							urls		= contents3.strip().split("\n")[1:]
+							urls_p		= [ (urls[i], urls[i+1]) for i in range(0, len(urls), 2)]
+							print urls_p
+							urls_s		= sorted(
+											(data, url)
+											for comm, url in urls_p
+											for data in [int(comm.split('BANDWIDTH=')[-1].split(',')[0] or 0)]
+										)
+										
+							print "URLS", urls_s
+							url			= urls_s[-1][1]
 
 
 							val		= {

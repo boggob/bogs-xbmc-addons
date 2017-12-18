@@ -2,6 +2,7 @@ import os, os.path
 from zipfile import ZipFile
 import shutil
 import xml.etree.ElementTree
+import subprocess
 
 def get_files(path, filt = (lambda file, ext:True)):
 	out = []
@@ -74,6 +75,16 @@ def main(dest_path):
 	
 	copy(top, dest_path, "addons.xml")
 	copy(top, dest_path, "addons.xml.md5")
+	
+	os.chdir(r'D:\files\xbmc\denis\bogs-xbmc-addons')
+	subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
+	subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
+	subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)
 
+	os.chdir(r'D:\files\xbmc\denis\bogs-kodi-release')
+	subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
+	subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
+	subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)
 
+	
 main(r'D:\files\xbmc\denis\bogs-kodi-release')	
