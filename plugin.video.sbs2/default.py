@@ -62,13 +62,14 @@ def play(params):
 	if params['subtitle_files']:
 		item.setSubtitles(params['subtitle_files'])
 
-	player = xbmc.Player()
-	player.play(url, item)
-	
-	addon	= xbmcaddon.Addon( id=ID )
-	#xbmc.sleep(int(addon.getSetting( "delay" )))	
-	#xbmc.executebuiltin("PlayerControl(Play)")
-	#seekhack(player, url, item)
+	if 0:
+		player = xbmc.Player()
+		player.play(url, item)
+		
+		addon	= xbmcaddon.Addon( id=ID )
+		xbmc.sleep(int(addon.getSetting( "delay" )))	
+		xbmc.executebuiltin("PlayerControl(Play)")
+		seekhack(player, url, item)
 	xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem=item)
 
 	
