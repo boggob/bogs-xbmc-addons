@@ -362,7 +362,7 @@ class Scraper(object):
 							for idx, subtitle in enumerate(subtitles):
 								caption_file = os.path.join(caption_dir, "{}.txt".format(idx))
 								with open(caption_file, 'w') as f:
-									f.write(geturl(subtitle))
+									f.write(geturl(subtitle[0]))
 									f.close()
 								
 								subtitle_files.append(caption_file)
