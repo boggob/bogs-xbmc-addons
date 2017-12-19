@@ -59,15 +59,19 @@ def play(params):
 	
 	url		= params["url"]
 	item	= xbmcgui.ListItem(params["name"])
+	if params['subtitle_files']:
+		item.setSubtitles(params['subtitle_files'])
 
 	player = xbmc.Player()
 	player.play(url, item)
 	
 	addon	= xbmcaddon.Addon( id=ID )
-	xbmc.sleep(int(addon.getSetting( "delay" )))	
-	xbmc.executebuiltin("PlayerControl(Play)")
-	seekhack(player, url, item)
+	#xbmc.sleep(int(addon.getSetting( "delay" )))	
+	#xbmc.executebuiltin("PlayerControl(Play)")
+	#seekhack(player, url, item)
+	xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, listitem=item)
 
+	
 def seekhack(player, url, item):
 	addon	= xbmcaddon.Addon( id=ID )
 	#if not xbmc.abortRequested:
@@ -135,7 +139,8 @@ def record(params, flv=False, audio=False):
 	if audio:
 		args	= (
 					__settings__.getSetting( "ffmpeg" ), 
-					'-i',  url,
+					"-i",
+					url,
 					"-vcodec", "copy",
 					"-acodec", "copy", 
 					"-bsf:a", "aac_adtstoasc",
@@ -144,7 +149,8 @@ def record(params, flv=False, audio=False):
 	else:
 		args	= (
 					__settings__.getSetting( "ffmpeg" ), 
-					'-i',  url,
+					"-i", 
+					url,
 					"-vcodec", "copy",
 					"-acodec", "copy", 
 					"{}{}".format(__settings__.getSetting( "path" ), name)
@@ -189,7 +195,7 @@ def main():
 	mode	= params.get("path", "menu_main")
 	print "$$", mode
 	addon	= xbmcaddon.Addon( id=ID )
-	sc		= scraper.Scraper(folders, play, record, int(addon.getSetting( "vid_quality" )))
+	sc		= scraper.Scraper(folders, play, record, int(addon.getSetting( "vid_quality" )), __settings__.getSetting( "path" ))
 	getattr(sc, mode)(params)
 	
 
