@@ -1,6 +1,7 @@
 import	datetime
 import	urllib2, urllib
 import	re
+import	os, os.path
 from	time import  strftime, gmtime
 from	BeautifulSoup import BeautifulSoup
 
@@ -38,11 +39,12 @@ def get_date(field):
 		return ".".join(field.split('T')[0].split("-")[::-1])
 
 class Scraper(object):
-	def __init__(self, folders, play, record, bitrate):
+	def __init__(self, folders, play, record, bitrate, path):
 		self.folders	= folders
 		self.play		= play
 		self.record		= record
 		self.bitrate	= bitrate
+		self.path		= path
 
 	def menu_main(self, params):
 		out = []
@@ -334,7 +336,7 @@ class Scraper(object):
 			if "http:"  not in url and "https:"  not in url:
 				url = "http:" + url
 			contents2 =  geturl(url)
-			print contents2
+			print "%smil", contents2
 			soup = BeautifulSoup(contents2)
 
 			if contents2.find('.flv') > -1:
@@ -349,13 +351,31 @@ class Scraper(object):
 						out[int(item["system-bitrate"])] = item["src"]
 				else:
 					for item in soup.findAll('video'):
+						subtitles = [(s["src"], s["type"])  for s in item.parent.findAll('textstream')]
+						print "%captions", subtitles
+						subtitle_files = []
+						if subtitles:
+							caption_dir = os.path.join(self.path, 'subtitles')
+							if not os.path.exists(caption_dir):
+								os.makedirs(caption_dir)
+							
+							for idx, subtitle in enumerate(subtitles):
+								caption_file = os.path.join(caption_dir, "{}.txt".format(idx))
+								with open(caption_file, 'w') as f:
+									f.write(geturl(subtitle))
+									f.close()
+								
+								subtitle_files.append(caption_file)
+							
+					
 						if not enc:
 							splts	= item["src"].split("/managed/")[1].split(',')[0]
 							tail= splts if splts.endswith(".mp4") else "{}1500K.mp4".format(splts)
 							print "%^^&", item["src"], splts
 							val		= {
-								"url"		: "http://sbsauvod-f.akamaihd.net/SBS_Production/managed/{}?v=&fp=&r=&g=".format(tail),
-								"name"		: item["title"]
+								"url"				: "http://sbsauvod-f.akamaihd.net/SBS_Production/managed/{}?v=&fp=&r=&g=".format(tail),
+								"name"				: item["title"],
+								"subtitle_files"	: subtitle_files
 							}
 						else:
 							splts		= item["src"].split("&")[0]
@@ -376,8 +396,9 @@ class Scraper(object):
 
 
 							val		= {
-								"url"		: url,
-								"name"		: item["title"]
+								"url"				: url,
+								"name"				: item["title"],
+								"subtitle_files"	: subtitle_files
 							}
 
 
