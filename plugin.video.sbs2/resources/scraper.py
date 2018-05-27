@@ -186,15 +186,22 @@ class Scraper(object):
 				duration = "%s" % ((hours * 60) + minutes)
 			else:
 				duration = None
+			def conv_date(date):
+				try:
+					return datetime.datetime.fromtimestamp( date / 1000).isoformat()
+				except Exception, e:
+					return datetime.datetime.fromtimestamp( 0).isoformat()
+				
+				
 			
-			date	= entry.get("seasons", [{"seasonStartDate" : datetime.datetime.fromtimestamp( entry.get('media$availableDate', 0) / 1000).isoformat(), "seasonEndDate" : datetime.datetime.fromtimestamp( entry.get('media$expirationDate', 0) / 1000).isoformat()}])[0]
+			date	= entry.get("seasons", [{"seasonStartDate" : conv_date( entry.get('media$availableDate', 0)), "seasonEndDate" : conv_date( entry.get('media$expirationDate', 0))}])[0]
 			enc		= entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted']
 			rec  =  {
 				"content"			: ({entry.get("genre", None), entry.get("type", None)} - {None}) | set(entry.get("collections",[])),
 				"date_end"			: "End_" + date['seasonEndDate'].split("T")[0].rsplit("-", 1)[0],
 				"date_start"		: "Start_" + date['seasonStartDate'].split("T")[0].rsplit("-", 1)[0],
 				"title" 			: "{}{}".format( entry["name"], " [Encrypted]" if enc else ""),
-				"still"				: entry["thumbnails"]['1280x720'].replace("\\", "") if entry.get("thumbnails") else None,
+				"still"				: entry["thumbnails"]['1280x720'].replace("\\", "") if entry.get("thumbnails") and entry["thumbnails"].get("1280x720") else None,
 				"url"				: entry.get('url', 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"])).replace("\\", "") ,
 				"info"				: {
 					"plot"			: entry["description"],
