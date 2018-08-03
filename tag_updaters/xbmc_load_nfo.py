@@ -98,10 +98,11 @@ n integer not null default '0',  strMoods text, strStyles text, strThemes text, 
 	for mbid, artidsl in albums_map.iteritems():
 		if mbid:
 			cmd = [ (a[0], artidsl[0]) for a in sql(c, '''select idAlbum from album where lower(strMusicBrainzAlbumID) = '{mbid}' '''.format(mbid = mbid.lower()))]
-			#print cmd
+			print cmd
 		else:
 			a_map = {a['title'] : a for a in artidsl}
 			cmd = [ (a[0], a_map[a[1]]) for a in sql(c, '''select idAlbum, strAlbum from album where strAlbum in ({stralbum}) '''.format(stralbum = quote(a_map)))]		
+			print cmd
 		for idalbum, item in cmd:		
 			thumbs	= [
 				t

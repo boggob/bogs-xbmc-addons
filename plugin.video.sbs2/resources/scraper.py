@@ -20,7 +20,8 @@ def geturl(url):
 def jsonc(st):
 	for i,o in (
 		('true', 'True'),
-		('false', 'False')
+		('false', 'False'),
+		('null', 'None')
 	):
 		st = st.replace(i,o)
 	return eval(st)
@@ -68,13 +69,14 @@ class Scraper(object):
 
 			out.append( rec )
 
+			
 		for title, url in (
 			[ 	(
 					"Movie: {}".format(child["title"]),
 					"http://www.sbs.com.au/ondemandcms/sections/%s" % (child["href"].replace("\\", ""))
 				)
 				for top in jsres.get("sitenav", [])
-				if top["title"] == "Movies"
+				if top and top["title"] == "Movies"
 				for section in top["groups"]
 				if section["title"] in  ("Genres",)
 				for child in section["children"]
@@ -96,7 +98,7 @@ class Scraper(object):
 					"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&range=1-12&byCategories=Film,Section/Programs&byRatings=&facets=1&byCustomValue={collections}{%s}" % (urllib.quote_plus(child["title"]))
 				)
 				for top in jsres.get("sitenav", [])
-				if top["title"] == "Movies"
+				if top and top["title"] == "Movies"
 				for section in top["groups"]
 				if section["title"] in  ("Collections",)
 				for child in section["children"]

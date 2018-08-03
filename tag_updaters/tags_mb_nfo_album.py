@@ -64,7 +64,7 @@ def handler(handler_input):
 def main():
 	print "starting"
 	
-	if 1:
+	if 0:
 		x = u"""45b3a1de-c198-4ddc-b84b-36dc283ae6ec|The Platinum Collection|Howard Jones|
 	9d56bf0a-d795-47c0-b0a6-9f0237481528|Dave Dee, Dozy, Beaky, Mick & Tich|Dave Dee, Dozy, Beaky, Mick & Tich|
 	27e0827e-b226-45e5-a794-57c14483d89d|Don Juan / Till Eulenspiegel / Also sprach Zarathustra|Strauss, Richard; Slovak Philharmonic, Košler, Zdeněk|
@@ -89,6 +89,6 @@ def main():
 		handler(vals)
 	
 	else:
-		handler()
+		handler(None)
 
 main()

@@ -37,7 +37,7 @@ else:
 	
 	#PATHS = [user_input.input_directory()]
 	PATHS = [
-		r'D:\DVD\music\done',	
+		r'D:\temp\music\1',	
 	]
 	OUTFILE_ALBUMS	= "d:/temp/music/albums_test.xml"
 	OUTFILE_ARTISTS = "d:/temp/music/artists_test.xml"
