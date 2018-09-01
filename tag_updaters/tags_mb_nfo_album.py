@@ -64,23 +64,11 @@ def handler(handler_input):
 def main():
 	print "starting"
 	
-	if 0:
-		x = u"""45b3a1de-c198-4ddc-b84b-36dc283ae6ec|The Platinum Collection|Howard Jones|
-	9d56bf0a-d795-47c0-b0a6-9f0237481528|Dave Dee, Dozy, Beaky, Mick & Tich|Dave Dee, Dozy, Beaky, Mick & Tich|
-	27e0827e-b226-45e5-a794-57c14483d89d|Don Juan / Till Eulenspiegel / Also sprach Zarathustra|Strauss, Richard; Slovak Philharmonic, Košler, Zdeněk|
-	138b696e-a104-4f30-8e23-9cc251f124c1|The Great Violinists|Menuhin, Yehudi, Heifetz, Jascha, Kreisler, Fritz, Sammons, Albert, Powell, Maud|
-	1d058252-8c4e-4520-8817-ad0328ff365b|Symphonien 1 & 5|Beethoven, Ludwig van; Philadelphia Orchestra, Muti, Riccardo|
-	b4394c07-a505-4ecc-8b8e-adeadca140f2|The Great Composers, Volume 2: Brahms: Symphony no. 1 in C minor, op. 68|Brahms, Johannes; SWR Baden-Baden and Freiburg Symphony Orchestra, Horenstein, Jascha|
-	7b3f8613-c204-4401-b16a-b503efd939d1|5|Lenny Kravitz|
-	667851cb-0f84-3fdd-8882-33902fa16aef|10 000 Hz Legend|Air|
-	c6b3f29d-15cd-3f67-8228-0580fa01b194|21|Adele|
-	142e1b79-b022-385f-8554-109604ce93f0|Dance the Devil|The Frames|
-	b434a801-3c05-46e2-8d43-6a56b77f56c6|Franz Ferdinand|Franz Ferdinand|
-	4ccca10d-45dd-31f7-8d34-ff97d09f8a2b|Legend: The Best of Bob Marley and The Wailers|Bob Marley & The Wailers|
-	49094ab4-5eea-4535-a354-f8504e4a6c13|Magical Mystery Tour|The Beatles|
-	365683ab-1762-4259-9dfd-9532baf725fc|nimrod.|Green Day|
-	fdb8a6ee-624d-3dfb-9a68-28e68b9195e1|Numbers: A Pythagorean Theory Tale|Cat Stevens|
-	04f1756a-0ca7-3917-ad4d-32f3a018b2f0|Them Crooked Vultures|Them Crooked Vultures|"""
+	if 1:
+		#select strMusicBrainzAlbumID,strAlbum,strArtists,null from albumview where strImage is null or strImage = '<thumb/>' and strMusicBrainzAlbumID is not null and strMusicBrainzAlbumID != "" order by strAlbum;
+		x = u"""83d37129-3fe5-3161-bb31-3d47c9c5df9c|Bolero / Piano Concert in G major|Ravel, Maurice|
+73832579-6785-3b77-b7a5-653007308cdd|Thicker Than Water|Various Artists|"""
+
 		
 		
 		vals =  [y.split("|") for y in x.split('\n')]
