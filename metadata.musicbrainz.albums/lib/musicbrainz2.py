@@ -5,14 +5,16 @@ import json
 import pprint
 import time
 import urllib2
+import urllib
 
 from musicbrainz import musicbrainz_albumdetails
 
 
-URL_MB_RELEASE	= "https://musicbrainz.org/ws/2/release/{}?fmt=json&inc=genres+release-groups+artists+artist-credits+labels+ratings+recording-level-rels+recordings+artist-rels+place-rels+url-rels+work-rels+area-rels+release-group-rels"
-URL_MB_RELEASEG	= "http://musicbrainz.org/ws/2/release-group?release={}&fmt=json&inc=genres+artist-credits+ratings+artist-rels+place-rels+url-rels+area-rels"
-URL_WIKI		= "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
-URL_COVER_ARCHV	= "http://coverartarchive.org/release/{}/{}"
+URL_MB_RELEASE	= u"https://musicbrainz.org/ws/2/release/{}?fmt=json&inc=genres+release-groups+artists+artist-credits+labels+ratings+recording-level-rels+recordings+artist-rels+place-rels+url-rels+work-rels+area-rels+release-group-rels"
+URL_MB_RELEASEG	= u"http://musicbrainz.org/ws/2/release-group?release={}&fmt=json&inc=genres+artist-credits+ratings+artist-rels+place-rels+url-rels+area-rels"
+URL_WIKI		= u"https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
+URL_WIKID		= u"https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&formatversion=2&props=sitelinks&ids={}"
+URL_COVER_ARCHV	= u"http://coverartarchive.org/release/{}/{}"
 
 
 def make_multimap(it, cls=list):
@@ -50,14 +52,19 @@ def merge_multimap(*args, **kwargs):
 		return out
 
 
-def get_data(url, headers = None):
+def get_data(url, headers = None, encode = False):
+	if encode:
+		url = url
 	try:
+		print repr(url)
 		req = urllib2.Request(url, headers)
 		request = urllib2.urlopen(req)
 		response = request.read()
 		request.close()
 	except Exception, e:
-		print e
+		import traceback
+		print "Error getting URL", e
+		traceback.print_exc()
 		response = ''
 	return response
 
@@ -101,11 +108,23 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/'):
 				make_multimap( (r['type'] , r['url']['resource'])                    for r in ret['relations']  if r['target-type'] == 'url'),
 				make_multimap( (r['type'] , r['url']['resource'])   for retr in retg for r in retr['relations'] if r['target-type'] == 'url')
 			)
-	
+	print urls
 	if urls.get('wikipedia'):
-		wikis = sorted( urls.get('wikipedia'),  key = lambda u :  0 if '://en' in u else 1)
-		retw = json.loads(get_data(URL_WIKI.format(wikis[0].split('/')[-1]).encode('utf-8')))
-		wikid = [next((v['extract'] for v in  retw['query']['pages'].values()), None)]
+		wikis	= sorted( urls.get('wikipedia'),  key = lambda u :  0 if '://en' in u else 1)
+		id_		= wikis[0].split('/')[-1]
+		id_1	= urllib2.quote(id_.encode('UTF-8'))
+		retw	= json.loads(get_data(URL_WIKI.format(id_)), encoding = 'utf-8')
+		wikid	= [next((v['extract'] for v in  retw['query']['pages'].values()), None)]
+	elif urls.get('wikidata'):
+		wikis	= sorted( urls.get('wikidata'))
+		id_		= wikis[0].split('/')[-1]
+		retw	= json.loads(get_data(URL_WIKID.format(id_)), encoding = 'utf-8')
+		wikip	= next((v['title'] for res in  retw['entities'].values() for k, v in res['sitelinks'].items() if k == 'enwiki' ), None)
+		wikip1 	= urllib2.quote(wikip.encode('UTF-8'))
+		y		= get_data(URL_WIKI.format(wikip1))
+		retw	= json.loads(y, encoding = 'utf-8')
+		wikid	= [next((v['extract'] for v in  retw['query']['pages'].values()), None)]
+		
 	else:
 		wikid = []
 
@@ -132,4 +151,6 @@ if __name__ == "__main__":
 	#pprint.pprint(musicbrainz_albumdetails2('a8976979-398a-4d03-9998-c24455885151'))
 	#pprint.pprint(musicbrainz_albumdetails2('2a06e2db-5d86-4294-8388-3109e6228963'))
 	#pprint.pprint(musicbrainz_albumdetails2('2a018799-55cb-43f1-a0ae-4a54a319d768'))
+	pprint.pprint(musicbrainz_albumdetails2('fd14a4e3-f39a-4fef-afba-36ab8d22902b'))
+	
 	pass
