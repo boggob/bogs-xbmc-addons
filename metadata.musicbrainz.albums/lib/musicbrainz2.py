@@ -5,7 +5,7 @@ import json
 import pprint
 import time
 import urllib2
-import urllib
+
 
 from musicbrainz import musicbrainz_albumdetails
 
@@ -112,7 +112,7 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/'):
 	if urls.get('wikipedia'):
 		wikis	= sorted( urls.get('wikipedia'),  key = lambda u :  0 if '://en' in u else 1)
 		id_		= wikis[0].split('/')[-1]
-		id_1	= urllib2.quote(id_.encode('UTF-8'))
+		id_1	= urllib2.quote(id_1.encode('UTF-8'))
 		retw	= json.loads(get_data(URL_WIKI.format(id_)), encoding = 'utf-8')
 		wikid	= [next((v['extract'] for v in  retw['query']['pages'].values()), None)]
 	elif urls.get('wikidata'):
