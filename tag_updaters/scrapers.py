@@ -1106,7 +1106,7 @@ def mb_albums2(name, mbid):
 		
 	tracks			= [
 						{
-							'title'		: escape(track.title.string),
+							'title'		: escape(track.title.string or ""),
 							'position'	: "{}.{}".format(medium_idx + 1, track.number.string),
 							'duration'	: int(round(float(track.length.string)/1000))  if track.length else None,
 						}

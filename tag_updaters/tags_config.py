@@ -22,7 +22,7 @@ sys.stdout = flushfile(sys.stdout)
 
 
 ####################################
-if 1:
+if 0:
 	PATHS = [
 	 r'\\DISKSTATION\music\Assorted',
 	 r'\\DISKSTATION\music\Classical',
@@ -37,7 +37,7 @@ else:
 	
 	#PATHS = [user_input.input_directory()]
 	PATHS = [
-		r'D:\temp\music\1',	
+		r'D:\DVD\music',	
 	]
 	OUTFILE_ALBUMS	= "d:/temp/music/albums_test.xml"
 	OUTFILE_ARTISTS = "d:/temp/music/artists_test.xml"

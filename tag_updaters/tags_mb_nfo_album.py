@@ -64,10 +64,9 @@ def handler(handler_input):
 def main():
 	print "starting"
 	
-	if 1:
+	if 0:
 		#select strMusicBrainzAlbumID,strAlbum,strArtists,null from albumview where strImage is null or strImage = '<thumb/>' and strMusicBrainzAlbumID is not null and strMusicBrainzAlbumID != "" order by strAlbum;
-		x = u"""83d37129-3fe5-3161-bb31-3d47c9c5df9c|Bolero / Piano Concert in G major|Ravel, Maurice|
-73832579-6785-3b77-b7a5-653007308cdd|Thicker Than Water|Various Artists|"""
+		x = u"""71e4755b-a685-408c-9f86-ed551ff1b687|The Very Best of Romantic Classics|Various Artists|"""
 
 		
 		

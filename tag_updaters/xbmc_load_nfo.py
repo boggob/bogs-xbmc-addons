@@ -187,7 +187,7 @@ def main(db, nfos):
 if __name__ == "__main__":
 	#main(r'\\XBMCBUNTU\Downloads\MyMusic46.db', [r"\\DISKSTATION\filesc\music\art\artists_cached.xml",r"\\DISKSTATION\filesc\music\art\albums_cached.xml"])
 	main(
-		r'd:\temp\music\MyMusic60.db', 
+		r'd:\temp\music\MyMusic72.db', 
 		[
 			r"d:\temp\music\albums_test.xml",			
 		]
