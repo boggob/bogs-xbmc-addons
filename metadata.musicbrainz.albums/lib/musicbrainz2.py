@@ -17,6 +17,8 @@ URL_WIKID		= u"https://www.wikidata.org/w/api.php?action=wbgetentities&format=js
 URL_COVER_ARCHV	= u"http://coverartarchive.org/release/{}/{}"
 
 
+DEBUG 			= False
+
 def make_multimap(it, cls=list):
 	items = collections.defaultdict(cls)
 	func = "append" if cls is list else "add"
@@ -52,11 +54,10 @@ def merge_multimap(*args, **kwargs):
 		return out
 
 
-def get_data(url, headers = None, encode = False):
-	if encode:
-		url = url
+def get_data(url, headers = None):
 	try:
-		print repr(url)
+		if DEBUG:
+			print repr(url)
 		req = urllib2.Request(url, headers)
 		request = urllib2.urlopen(req)
 		response = request.read()
@@ -112,8 +113,8 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/'):
 	if urls.get('wikipedia'):
 		wikis	= sorted( urls.get('wikipedia'),  key = lambda u :  0 if '://en' in u else 1)
 		id_		= wikis[0].split('/')[-1]
-		id_1	= urllib2.quote(id_1.encode('UTF-8'))
-		retw	= json.loads(get_data(URL_WIKI.format(id_)), encoding = 'utf-8')
+		id_1	= urllib2.quote(id_.encode('UTF-8'))
+		retw	= json.loads(get_data(URL_WIKI.format(id_1)), encoding = 'utf-8')
 		wikid	= [next((v['extract'] for v in  retw['query']['pages'].values()), None)]
 	elif urls.get('wikidata'):
 		wikis	= sorted( urls.get('wikidata'))
@@ -145,12 +146,15 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/'):
 	
 
 if __name__ == "__main__":
+	DEBUG = True
+
 	#pprint.pprint(musicbrainz_albumdetails2('be4dfc70-fb62-3589-aeb4-4680cea68c50'))
 	#pprint.pprint(musicbrainz_albumdetails2('033ab928-e9c7-443d-86dc-5d18393e97b9'))
 	#pprint.pprint(musicbrainz_albumdetails2('9787a825-5dab-4c89-943d-4b142a03cb56'))
 	#pprint.pprint(musicbrainz_albumdetails2('a8976979-398a-4d03-9998-c24455885151'))
 	#pprint.pprint(musicbrainz_albumdetails2('2a06e2db-5d86-4294-8388-3109e6228963'))
 	#pprint.pprint(musicbrainz_albumdetails2('2a018799-55cb-43f1-a0ae-4a54a319d768'))
-	pprint.pprint(musicbrainz_albumdetails2('fd14a4e3-f39a-4fef-afba-36ab8d22902b'))
+	#pprint.pprint(musicbrainz_albumdetails2('fd14a4e3-f39a-4fef-afba-36ab8d22902b'))
+	pprint.pprint(musicbrainz_albumdetails2('1bb8e966-cc02-3b98-92c3-16c0cbc9cb1b'))
 	
 	pass
