@@ -83,7 +83,7 @@ def get_sub(data, delimiter, *args):
 		if x != NotImplementedError:
 			return x
 
-def musicbrainz_albumdetails2(mbid, seperator = u'/'):
+def musicbrainz_albumdetails2(mbid, seperator = u'/', wiki = False):
 	ret		= json.loads(get_data(URL_MB_RELEASE.format(mbid).encode('utf-8')))
 	time.sleep(1)
 	retg	= json.loads(get_data(URL_MB_RELEASEG.format(mbid).encode('utf-8')))['release-groups']
@@ -109,11 +109,11 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/'):
 				make_multimap( (r['type'] , r['url']['resource'])                    for r in ret['relations']  if r['target-type'] == 'url'),
 				make_multimap( (r['type'] , r['url']['resource'])   for retr in retg for r in retr['relations'] if r['target-type'] == 'url')
 			)
-	print urls
+	
 	if urls.get('wikipedia'):
 		wikis	= sorted( urls.get('wikipedia'),  key = lambda u :  0 if '://en' in u else 1)
 		id_		= wikis[0].split('/')[-1]
-		id_1	= urllib2.quote(id_.encode('UTF-8'))
+		id_1	= urllib2.quote(urllib2.unquote(id_.encode('UTF-8')))
 		retw	= json.loads(get_data(URL_WIKI.format(id_1)), encoding = 'utf-8')
 		wikid	= [next((v['extract'] for v in  retw['query']['pages'].values()), None)]
 	elif urls.get('wikidata'):
@@ -124,7 +124,7 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/'):
 		wikip1 	= urllib2.quote(wikip.encode('UTF-8'))
 		y		= get_data(URL_WIKI.format(wikip1))
 		retw	= json.loads(y, encoding = 'utf-8')
-		wikid	= [next((v['extract'] for v in  retw['query']['pages'].values()), None)]
+		wikid	= next(([v['extract']] for v in  retw['query']['pages'].values()), [])
 		
 	else:
 		wikid = []
@@ -141,7 +141,7 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/'):
 	if ret.get('cover-art-archive', {}).get('back'):
 		albumdata["back"]		= URL_COVER_ARCHV.format(mbid, 'back')
 	
-	return albumdata
+	return albumdata if not wiki else wikid
 	
 	
 
@@ -155,6 +155,7 @@ if __name__ == "__main__":
 	#pprint.pprint(musicbrainz_albumdetails2('2a06e2db-5d86-4294-8388-3109e6228963'))
 	#pprint.pprint(musicbrainz_albumdetails2('2a018799-55cb-43f1-a0ae-4a54a319d768'))
 	#pprint.pprint(musicbrainz_albumdetails2('fd14a4e3-f39a-4fef-afba-36ab8d22902b'))
-	pprint.pprint(musicbrainz_albumdetails2('1bb8e966-cc02-3b98-92c3-16c0cbc9cb1b'))
+	#pprint.pprint(musicbrainz_albumdetails2('1bb8e966-cc02-3b98-92c3-16c0cbc9cb1b'))
+	pprint.pprint(musicbrainz_albumdetails2('72995c3c-db08-4a2d-8823-f5d718b78c3d'))
+	#raise 1
 	
-	pass
