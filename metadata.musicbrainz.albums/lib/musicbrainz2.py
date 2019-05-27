@@ -10,14 +10,14 @@ import urllib2
 from musicbrainz import musicbrainz_albumdetails
 
 
-URL_MB_RELEASE	= u"https://musicbrainz.org/ws/2/release/{}?fmt=json&inc=genres+release-groups+artists+artist-credits+labels+ratings+recording-level-rels+recordings+artist-rels+place-rels+url-rels+work-rels+area-rels+release-group-rels"
+URL_MB_RELEASE	= u"https://musicbrainz.org/ws/2/release/{}?fmt=json&inc=genres+release-groups+artists+artist-credits+labels+ratings+recording-level-rels+recordings+artist-rels+place-rels+url-rels+work-rels+area-rels+release-group-rels+aliases"
 URL_MB_RELEASEG	= u"http://musicbrainz.org/ws/2/release-group?release={}&fmt=json&inc=genres+artist-credits+ratings+artist-rels+place-rels+url-rels+area-rels"
-URL_WIKI		= u"https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
+URL_WIKI		= u"https://{}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
 URL_WIKID		= u"https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&formatversion=2&props=sitelinks&ids={}"
 URL_COVER_ARCHV	= u"http://coverartarchive.org/release/{}/{}"
 
 
-DEBUG 			= False
+DEBUG 			= True
 
 def make_multimap(it, cls=list):
 	items = collections.defaultdict(cls)
@@ -42,6 +42,8 @@ def merge_multimap(*args, **kwargs):
 
 	if len(types) > 1:
 		raise ValueError("Multiple value types detected {}".format(types))
+	elif len(types) < 1 :
+		return {}
 	else:
 		type_	= list(types)[0]
 		prop	= (lambda a,b: a.union(b)) if issubclass(type_, set) else (lambda a,b: a + b)
@@ -71,19 +73,28 @@ def get_data(url, headers = None):
 
 
 
-def get_sub(data, delimiter, *args):
-	for arg in args:
+def get_sub(data, **kwargs):
+	for key, func in kwargs.iteritems():
 		curr = data
-		for sp in arg.split(delimiter):
-			x = curr.get(sp, NotImplementedError)
-			if x != NotImplementedError and isinstance(x, collections.Mapping):
-				curr = x
-			else:
-				break
-		if x != NotImplementedError:
-			return x
+		x = curr.get(key, NotImplementedError)
+		if x != NotImplementedError and isinstance(x, collections.Mapping):
+			return func(x)
+	return None
 
-def musicbrainz_albumdetails2(mbid, seperator = u'/', wiki = False):
+def artist_name(artist, locale):
+	name = next(
+				(
+					alias['name'] 
+					for alias in artist.get('aliases', []) 
+					if alias.get('type', None) == "Artist name" 
+					if alias.get('locale', None) == locale
+				),
+				None
+			)
+			
+	return name or artist['sort-name']
+
+def musicbrainz_albumdetails2(mbid, seperator = u'/', locale = 'fr', wiki = False):
 	ret		= json.loads(get_data(URL_MB_RELEASE.format(mbid).encode('utf-8')))
 	time.sleep(1)
 	retg	= json.loads(get_data(URL_MB_RELEASEG.format(mbid).encode('utf-8')))['release-groups']
@@ -92,12 +103,13 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/', wiki = False):
 					u"{}.{} {}: {}\n{}".format(	
 						media_idx + 1, 
 						track['position'], 
-						", ".join(a['artist']['name'] for a in track['artist-credit']),
+						", ".join(artist_name(a['artist'], locale) for a in track['artist-credit']),
 						track['title'],
 						u"\n".join(sorted(
-							u"  {}:{} {}: {}".format( rel['begin'] or "-", rel['end']  or "-",  rel['type'], get_sub(rel, '.', 'artist.name', 'work.title', 'place.name') ) 
+							u"  {}:{} {}: {}".format( rel['begin'] or "-", rel['end']  or "-",  rel['type'], rel_t ) 
 							for rel in track['recording']['relations'] 
-							if get_sub(rel, '.', 'artist.name', 'work.title', 'place.name')
+							for rel_t in [get_sub(rel, artist = lambda n: artist_name(n, locale), work = lambda n: n['title'], place = lambda n: n['name'])]
+							if rel_t is not None
 						))
 					)
 				
@@ -111,20 +123,19 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/', wiki = False):
 			)
 	
 	if urls.get('wikipedia'):
-		wikis	= sorted( urls.get('wikipedia'),  key = lambda u :  0 if '://en' in u else 1)
+		wikis	= sorted( urls.get('wikipedia'),  key = lambda u :  0 if '://{}'.format(locale) in u else 1)
 		id_		= wikis[0].split('/')[-1]
 		id_1	= urllib2.quote(urllib2.unquote(id_.encode('UTF-8')))
-		retw	= json.loads(get_data(URL_WIKI.format(id_1)), encoding = 'utf-8')
-		wikid	= [next((v['extract'] for v in  retw['query']['pages'].values()), None)]
+		retw	= json.loads(get_data(URL_WIKI.format(locale, id_1)), encoding = 'utf-8')
+		wikid	= next(([v['extract']] for v in  retw['query']['pages'].values()), [])
 	elif urls.get('wikidata'):
 		wikis	= sorted( urls.get('wikidata'))
 		id_		= wikis[0].split('/')[-1]
-		retw	= json.loads(get_data(URL_WIKID.format(id_)), encoding = 'utf-8')
-		wikip	= next((v['title'] for res in  retw['entities'].values() for k, v in res['sitelinks'].items() if k == 'enwiki' ), None)
+		retw	= json.loads(get_data(URL_WIKID.format(locale, id_)), encoding = 'utf-8')
+		wikip	= next((v['title'] for res in  retw['entities'].values() for k, v in res['sitelinks'].items() if k == '{}wiki'.format(locale) ), '')
 		wikip1 	= urllib2.quote(wikip.encode('UTF-8'))
-		y		= get_data(URL_WIKI.format(wikip1))
-		retw	= json.loads(y, encoding = 'utf-8')
-		wikid	= next(([v['extract']] for v in  retw['query']['pages'].values()), [])
+		retw	= json.loads(get_data(URL_WIKI.format(wikip1)), encoding = 'utf-8') if wikip1 else {}
+		wikid	= next(([v['extract']] for v in  retw['query']['pages'].values()), []) if wikip1 else []
 		
 	else:
 		wikid = []
@@ -135,11 +146,22 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/', wiki = False):
 	albumdata['year'] 			= next(retr['first-release-date'][:4] for retr in retg)
 	albumdata['releasedate']	= next(retr['first-release-date'] for retr in retg )
 		
-		
-	if ret.get('cover-art-archive', {}).get('front'):
+	covers						= ret.get('cover-art-archive', {})	
+	if covers.get('front'):
 		albumdata["discart"]	= URL_COVER_ARCHV.format(mbid, 'front')
-	if ret.get('cover-art-archive', {}).get('back'):
+		albumdata['thumb'] 		= [
+										{
+											'image'			: URL_COVER_ARCHV.format(mbid, 'front'),
+											'preview'		: URL_COVER_ARCHV.format(mbid, 'front'),
+											'aspect'		: 'thumb'	
+										}
+									]
+	if covers.get('back'):
 		albumdata["back"]		= URL_COVER_ARCHV.format(mbid, 'back')
+	
+
+
+	
 	
 	return albumdata if not wiki else wikid
 	
@@ -148,7 +170,7 @@ def musicbrainz_albumdetails2(mbid, seperator = u'/', wiki = False):
 if __name__ == "__main__":
 	DEBUG = True
 
-	#pprint.pprint(musicbrainz_albumdetails2('be4dfc70-fb62-3589-aeb4-4680cea68c50'))
+	pprint.pprint(musicbrainz_albumdetails2('be4dfc70-fb62-3589-aeb4-4680cea68c50'))
 	#pprint.pprint(musicbrainz_albumdetails2('033ab928-e9c7-443d-86dc-5d18393e97b9'))
 	#pprint.pprint(musicbrainz_albumdetails2('9787a825-5dab-4c89-943d-4b142a03cb56'))
 	#pprint.pprint(musicbrainz_albumdetails2('a8976979-398a-4d03-9998-c24455885151'))
@@ -156,7 +178,8 @@ if __name__ == "__main__":
 	#pprint.pprint(musicbrainz_albumdetails2('2a018799-55cb-43f1-a0ae-4a54a319d768'))
 	#pprint.pprint(musicbrainz_albumdetails2('fd14a4e3-f39a-4fef-afba-36ab8d22902b'))
 	#pprint.pprint(musicbrainz_albumdetails2('1bb8e966-cc02-3b98-92c3-16c0cbc9cb1b'))
-	pprint.pprint(musicbrainz_albumdetails2('72995c3c-db08-4a2d-8823-f5d718b78c3d'))
+	#pprint.pprint(musicbrainz_albumdetails2('72995c3c-db08-4a2d-8823-f5d718b78c3d'))
+	#pprint.pprint(musicbrainz_albumdetails2('35e0a764-99cd-4ecf-af94-96375cb0f9af'))
 	#raise 1
 	
 	

@@ -169,11 +169,14 @@ class Scraper():
 
     def get_details(self, param, site, details):
         #bypass all other options for now
-        albumresults = musicbrainz_albumdetails2(param)
-        if not albumresults:
-            return
-        details[site] = albumresults
-        return details
+        if site == 'musicbrainz':
+            albumresults = musicbrainz_albumdetails2(param)
+            if not albumresults:
+                return
+            details[site] = albumresults
+            return details
+        else:
+            return details		
 
     def compile_results(self, details):
         result = {}
@@ -200,6 +203,11 @@ class Scraper():
         if 'musicbrainz' in details:
             for k, v in details['musicbrainz'].items():
                 result[k] = v
+                if k == 'thumb':
+                    thumbs.append(v)
+                if k == 'extras':
+                    extras.append(v)
+
         if 'coverarchive' in details:
             for k, v in details['coverarchive'].items():
                 result[k] = v
