@@ -113,9 +113,10 @@ def musicbrainz_arstistdetails2(mbid, seperator = u'/', locale = 'en', wiki = Fa
 					for res in  retw1['entities'].values()
 					for imgd in res.get('claims', {}).get('P18', []) 
 					if imgd
-					for fil in [imgd['mainsnak']['datavalue']['value'].replace(" ", "_")]
-					for hash in [ hashlib.md5(fil).hexdigest() ]
+					for fil in [imgd['mainsnak']['datavalue']['value'].replace(u" ", u"_")]
+					for hash in [ hashlib.md5(fil.encode('utf-8')).hexdigest() ]
 					for img in [IMG_URL.format(hash[0], hash[0], hash[1], fil)]
+					
 				]	
 		
 		
@@ -168,7 +169,9 @@ def musicbrainz_arstistdetails2(mbid, seperator = u'/', locale = 'en', wiki = Fa
 if __name__ == "__main__":
 	DEBUG = True
 
-	pprint.pprint(musicbrainz_arstistdetails2('24f1766e-9635-4d58-a4d4-9413f9f98a4c'))
+	#pprint.pprint(musicbrainz_arstistdetails2('24f1766e-9635-4d58-a4d4-9413f9f98a4c'))
+	pprint.pprint(musicbrainz_arstistdetails2('fd14da1b-3c2d-4cc8-9ca6-fc8c62ce6988'))
+	
 	
 	#raise 1
 	
