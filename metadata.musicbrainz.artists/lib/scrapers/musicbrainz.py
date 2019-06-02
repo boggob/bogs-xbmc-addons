@@ -4,13 +4,15 @@ import collections
 import hashlib
 import json
 import pprint
-#import time
+import urllib
 import urllib2
 
+from lib.url_get import get_data
+import lib.scrapers.utils
 
 
 
-URL_MB_RELEASE	= u"http://musicbrainz.org/ws/2/artist/{}?fmt=json&inc=ratings+artist-rels+url-rels+aliases"
+URL_MB_RELEASE	= u"http://musicbrainz.org/ws/2/artist/{}?fmt=json&inc=ratings+artist-rels+url-rels+aliases+release-groups+release-group-rels"
 URL_WIKI		= u"https://{}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
 URL_WIKID		= u"https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&formatversion=2&props=sitelinks|claims&ids={}"
 IMG_URL			= u"https://upload.wikimedia.org/wikipedia/commons/{}/{}{}/{}"
@@ -55,20 +57,6 @@ def merge_multimap(*args, **kwargs):
 		return out
 
 
-def get_data(url, headers = None):
-	try:
-		if DEBUG:
-			print repr(url)
-		req = urllib2.Request(url, headers)
-		request = urllib2.urlopen(req)
-		response = request.read()
-		request.close()
-	except Exception, e:
-		import traceback
-		print "Error getting URL", e
-		traceback.print_exc()
-		response = ''
-	return response
 
 
 
@@ -93,41 +81,45 @@ def artist_name(artist, locale):
 			
 	return name or artist['sort-name']
 
-def musicbrainz_arstistdetails2(mbid, seperator = u'/', locale = 'en', wiki = False):
-	ret		= json.loads(get_data(URL_MB_RELEASE.format(mbid).encode('utf-8')))
-			
-	
-	urls = make_multimap( (r['type'] , r['url']['resource'])                    for r in ret['relations']  if r['target-type'] == 'url')
-	
-	if urls.get('wikidata'):
-		wikis	= sorted( urls.get('wikidata'))
-		id_		= wikis[0].split('/')[-1]
-		retw1	= json.loads(get_data(URL_WIKID.format(id_)), encoding = 'utf-8')
-		wikip	= next((v['title'] for res in  retw1['entities'].values() for k, v in res['sitelinks'].items() if k == '{}wiki'.format(locale) ), '')
-		wikip1 	= urllib2.quote(wikip.encode('UTF-8'))
-		retw	= json.loads(get_data(URL_WIKI.format(locale, wikip1)), encoding = 'utf-8') if wikip1 else {}
-		wikid	= next(([v['extract']] for v in  retw['query']['pages'].values()), []) if wikip1 else []
 
-		imgs	= [
-					{ 'image' :  img, 'preview' :  img, 'aspect' :  img }
-					for res in  retw1['entities'].values()
-					for imgd in res.get('claims', {}).get('P18', []) 
-					if imgd
-					for fil in [imgd['mainsnak']['datavalue']['value'].replace(u" ", u"_")]
-					for hash in [ hashlib.md5(fil.encode('utf-8')).hexdigest() ]
-					for img in [IMG_URL.format(hash[0], hash[0], hash[1], fil)]
-					
-				]	
-		
-		
-	else:
-		wikid	= []
-		imgs	= []
+def musicbrainz_artistfind(artist):
+	url = lib.scrapers.utils.MUSICBRAINZURL % (lib.scrapers.utils.MUSICBRAINZSEARCH % urllib.quote_plus(artist))
+	data = get_data(url, True)
+	if not data:
+		return
+
+
+	artists = []
+	for item in data.get('artists',[]):
+		artistdata = {}
+		artistdata['artist'] = item['name']
+		artistdata['thumb'] = ''
+		artistdata['genre'] = ''
+		artistdata['born'] = item['life-span'].get('begin', '')
+		if 'type' in item:
+			artistdata['type'] = item['type']
+		if 'gender' in item:
+			artistdata['gender'] = item['gender']
+		if 'disambiguation' in item:
+			artistdata['disambiguation'] = item['disambiguation']
+		artistdata['mbid'] = item['id']
+		if item.get('score',1):
+			artistdata['relevance'] = str(item['score'] / 100.00)
+		artists.append(artistdata)
+	return artists
+
+
+
+def musicbrainz_arstistdetails(mbid, seperator = u'/', locale = 'en', wiki = False):
+	ret		= get_data(URL_MB_RELEASE.format(mbid).encode('utf-8'), True)
+
+				
+	urls	= make_multimap( (r['type'] , r['url']['resource'])   for r in ret['relations']  if r['target-type'] == 'url')
+	
 
 	artistdata = {}
 	artistdata['artist']		= artist_name(ret, locale)
 	artistdata['mbartistid']	= ret['id']
-	artistdata['biography']		= u"\n\n".join(wikid)
 	artistdata['type'] 			= ret['type']
 	artistdata['gender'] 		= ret['gender']
 	artistdata['disambiguation'] = ret['disambiguation']
@@ -148,18 +140,45 @@ def musicbrainz_arstistdetails2(mbid, seperator = u'/', locale = 'en', wiki = Fa
 		albums.append(albumdata)
 	if albums:
 		artistdata['albums'] = albums
-	for item in ret['relations']:
-		if item['type'] == 'allmusic':
-			artistdata['allmusic-url'] = item['url']['resource']
-		elif item['type'] == 'discogs':
-			artistdata['discogs-url'] = item['url']['resource']
-			
-	
-	artistdata['thumb']  	=  imgs
-	artistdata['fanart']	=  imgs
+
+	if urls.get('wikidata'):
+		artistdata['wikidata-url']	=  sorted( urls.get('wikidata'))[0]
+	if urls.get('allmusic'):
+		artistdata['allmusic-url']	= sorted( urls.get('allmusic'))[0]
+	if urls.get('discogs'):
+		artistdata['discogs-url']	= sorted( urls.get('discogs'))[0]
+				
 		
 	return artistdata
 
+def wikidata_arstistdetails(url, seperator = u'/', locale = 'en'):
+	id_		= url.split('/')[-1]
+	retw1	= get_data(URL_WIKID.format(id_), True)
+	wikip	= next((v['title'] for res in  retw1['entities'].values() for k, v in res['sitelinks'].items() if k == '{}wiki'.format(locale) ), '')
+	wikip1 	= urllib2.quote(wikip.encode('UTF-8'))
+	retw	= get_data(URL_WIKI.format(locale, wikip1), True) if wikip1 else {}
+	wikid	= next(([v['extract']] for v in  retw['query']['pages'].values()), []) if wikip1 else []
+
+	imgs	= [
+				{ 'image' :  img, 'preview' :  img, 'aspect' :  img }
+				for res in  retw1['entities'].values()
+				for imgd in res.get('claims', {}).get('P18', []) 
+				if imgd
+				for fil in [imgd['mainsnak']['datavalue']['value'].replace(u" ", u"_")]
+				for hash_ in [ hashlib.md5(fil.encode('utf-8')).hexdigest() ]
+				for img in [IMG_URL.format(hash_[0], hash_[0], hash_[1], fil)]
+				
+			]	
+		
+		
+
+	artistdata = {}
+	artistdata['biography']		= u"\n\n".join(wikid)
+	
+	artistdata['thumb']  		=  imgs
+	artistdata['fanart']		=  imgs
+		
+	return artistdata
 
 	
 	
@@ -169,8 +188,8 @@ def musicbrainz_arstistdetails2(mbid, seperator = u'/', locale = 'en', wiki = Fa
 if __name__ == "__main__":
 	DEBUG = True
 
-	#pprint.pprint(musicbrainz_arstistdetails2('24f1766e-9635-4d58-a4d4-9413f9f98a4c'))
-	pprint.pprint(musicbrainz_arstistdetails2('fd14da1b-3c2d-4cc8-9ca6-fc8c62ce6988'))
+	#pprint.pprint(musicbrainz_arstistdetails('24f1766e-9635-4d58-a4d4-9413f9f98a4c'))
+	pprint.pprint(musicbrainz_arstistdetails('fd14da1b-3c2d-4cc8-9ca6-fc8c62ce6988'))
 	
 	
 	#raise 1
