@@ -11,6 +11,7 @@ from lib.url_get import get_data
 URL_WIKI		= u"https://{}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
 URL_WIKID		= u"https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&formatversion=2&props=sitelinks|claims&ids={}"
 IMG_URL			= u"https://upload.wikimedia.org/wikipedia/commons/{}/{}{}/{}"
+URL_WIKID2		= u"https://www.wikidata.org/w/api.php?action=wbgetentities&ids={}&format=json&props=labels"
 
 def wikidata_arstistdetails(url, seperator = u'/', locale = 'en'):
 	id_		= url.split('/')[-1]
@@ -31,10 +32,26 @@ def wikidata_arstistdetails(url, seperator = u'/', locale = 'en'):
 				
 			]	
 		
+	genres_	= "|".join(
+				dat['mainsnak']['datavalue']['value']["id"]
+				for res in  retw1['entities'].values()
+				for dat in res.get('claims', {}).get('P136', []) 
+				if dat
+			  )
+
+	retg	= get_data(URL_WIKID2.format(genres_), True) if genres_ else {}
+	genres	= [
+				dat
+				for res in  retg['entities'].values()
+				for dat in [res.get('labels', {}).get(locale, {}).get('value', None)]
+				if dat
+			]	
+
 		
 
 	artistdata = {}
 	artistdata['biography']		= u"\n\n".join(wikid)
+	artistdata['genre']			= genres
 	
 	artistdata['thumb']  		=  imgs
 	artistdata['fanart']		=  imgs
