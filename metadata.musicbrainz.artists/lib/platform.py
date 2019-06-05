@@ -12,9 +12,20 @@ try:
 		xbmc.log(msg, xbmc.LOGWARNING)
 		
 		
-	VERSION		= xbmcaddon.Addon().getAddonInfo('version')	
-	USE_DISCOGS	= xbmcaddon.Addon().getSetting('usediscogs') == '1'
-	LANG		= xbmcaddon.Addon().getSetting('lang')
+	VERSION		= xbmcaddon.Addon().getAddonInfo('version')		
+	SETTINGS	= {
+					'language'		: xbmcaddon.Addon().getSetting('lang').lower(),
+					'use_discogs'	: xbmcaddon.Addon().getSetting('usediscogs'),
+					'ranking'		: {
+						'wikidata'		: int(xbmcaddon.Addon().getSetting('wikidata')),
+						'musicbrainz'	: int(xbmcaddon.Addon().getSetting('musicbrainz')),
+						'discogs'		: int(xbmcaddon.Addon().getSetting('discogs')),
+						'allmusic'		: int(xbmcaddon.Addon().getSetting('allmusic')),
+						'theaudiodb'	: int(xbmcaddon.Addon().getSetting('theaudiodb')),
+						'fanarttv'		: int(xbmcaddon.Addon().getSetting('fanarttv'))
+					}
+				}
+					
 	
 	def sleep(tm):
 		xbmc.sleep(int(tm * 1000))
@@ -107,9 +118,10 @@ try:
 			for count, fanart in enumerate(item['fanart']):
 				listitem.setProperty('artist.fanart%i.url' % (count + 1), fanart['image'])
 				listitem.setProperty('artist.fanart%i.preview' % (count + 1), fanart['preview'])
-		if 'thumb' in item:
-			listitem.setProperty('artist.thumbs', str(len(item['thumb'])))
-			for count, thumb in enumerate(item['thumb']):
+		if 'thumb' in item or 'extras' in item:
+			thumbs = item.get('thumb', []) + item.get('extras', []) 
+			listitem.setProperty('artist.thumbs', str(len(thumbs)))
+			for count, thumb in enumerate(thumbs):
 				listitem.setProperty('artist.thumb%i.url' % (count + 1), thumb['image'])
 				listitem.setProperty('artist.thumb%i.preview' % (count + 1), thumb['preview'])
 				listitem.setProperty('artist.thumb%i.aspect' % (count + 1), thumb['aspect'])
@@ -127,8 +139,21 @@ except ImportError:
 		print msg
 		
 	VERSION		= 1.0
-	USE_DISCOGS	= True
-	LANG		= 'en'
+	
+	SETTINGS	= {
+					'language'		: 'en',
+					'use_discogs'	: True,
+					'ranking'		: {
+						'wikidata'		: 1,
+						'musicbrainz'	: 2,
+						'discogs'		: 3,
+						'allmusic'		: 4,
+						'theaudiodb'	: 5,
+						'fanarttv'		: 6
+					}
+				}
+	
+	
 	sleep		= time.sleep
 	
 

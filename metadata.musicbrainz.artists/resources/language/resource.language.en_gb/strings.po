@@ -16,7 +16,7 @@ msgstr ""
 "Language: en_GB\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgctxt "#30000"
+msgctxt "#30100"
 msgid "Preferences"
 msgstr ""
 
@@ -24,34 +24,37 @@ msgctxt "#30001"
 msgid "Prefered language for artist biography"
 msgstr ""
 
-msgctxt "#30002"
-msgid "Prefer biography from"
-msgstr ""
-
-msgctxt "#30003"
-msgid "Prefer discography from"
-msgstr ""
-
-msgctxt "#30004"
-msgid "Prefer genres from"
-msgstr ""
-
-msgctxt "#30005"
-msgid "Prefer styles from"
-msgstr ""
-
-msgctxt "#30006"
-msgid "Prefer moods from"
-msgstr ""
-
 msgctxt "#30101"
 msgid "Use Discogs.com"
 msgstr ""
 
-msgctxt "#30102"
-msgid "As fallback only"
+
+
+msgctxt "#30200"
+msgid "Data preference ranking (lower numbers have greater priority)"
 msgstr ""
 
-msgctxt "#30103"
-msgid "Always"
+msgctxt "#30002"
+msgid "Data ranking for Wikidata"
 msgstr ""
+
+msgctxt "#30003"
+msgid "Data ranking for Musicbrainz"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Data ranking for Discogs"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Data ranking for AllMusic"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Data ranking for theaudiodb"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Data ranking for fanarttv"
+msgstr ""
+
