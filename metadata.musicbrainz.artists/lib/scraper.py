@@ -7,17 +7,12 @@ import time
 
 
 from lib.nfo import nfo_geturl
-from lib.platform				import log, SETTINGS, sleep, user_prefs, return_details, return_search, return_nfourl, return_resolved
+from lib.platform				import log, SETTINGS, sleep, return_details, return_search, return_nfourl, return_resolved
 
-from lib.scrapers.allmusic		import allmusic_artistdetails
-from lib.scrapers.discogs		import discogs_artistfind, discogs_artistdetails, discogs_artistalbums
-#from lib.scrapers.fanarttv		import fanarttv_artistart
-from lib.scrapers.musicbrainz	import musicbrainz_artistfind, musicbrainz_arstistdetails
-from lib.scrapers.wikidata		import wikidata_arstistdetails
-#from lib.scrapers.theaudiodb	import theaudiodb_artistdetails, theaudiodb_artistalbums
-
-
-
+import lib.scrapers.musicbrainz as musicbrainz
+import lib.scrapers.allmusic	as allmusic
+import lib.scrapers.discogs		as discogs
+import lib.scrapers.wikidata	as wikidata
 
 
 
@@ -32,54 +27,51 @@ class Scraper(object):
 		# search for artist name matches
 		elif action == 'find':
 			# both musicbrainz and discogs allow 1 api per second. this query requires 1 musicbrainz api call and optionally 1 discogs api call
-			return_search(
-				musicbrainz_artistfind(artist)
-				or
-				discogs_artistfind(artist)
-			)
-			self.wait(start, 1)
+			for finder in [musicbrainz.SCAPER.artistfind, discogs.SCAPER.artistfind] :
+				res = finder.function(artist)
+				if res:
+					return_search(res)
+					self.wait(finder.wait, 1)
+					break
 		# return info using artistname / id's
 		elif action == 'getdetails':
+			print "$$$", url
 			url__	= json.loads(url)
 			mbid	= url__.get('mbid', '')
 			dcid	= url__.get('dcid', '')
 			details = {}
-			threads	= []
 			delay	= []
 			# we have a musicbrainz id
 			if mbid:
-				# musicbrainz allows 1 api per second.
-
-				scrapers		= [[mbid, 'musicbrainz'], [mbid, 'theaudiodb'], [mbid, 'fanarttv']]
-				extrascrapers	= [['allmusic-url', 'allmusic']] + ([] if not SETTINGS['use_discogs'] else [['discogs-url', 'discogs']]) + [['wikidata-url', 'wikidata']]
-
-				for item in scrapers:
-					thread = Thread(target = self.get_details, args = (item[0], item[1], details, delay))
-					threads.append(thread)
-					thread.start()
+				threads	= []
+				for scraper in [musicbrainz.SCAPER.getdetails,]:					
+					t,d 	= self.get_details_thread(scraper, mbid, details)
+					threads.append(t)
+					delay.append(d)
 
 				# wait for musicbrainz to finish
 				threads[0].join()
 
 				# check if we have a result:
-				for key_, site in extrascrapers:
-					url_ = details.get('musicbrainz', {}).get(key_)
-					if url_:
-						thread = Thread(target = self.get_details, args = (url_, site, details, delay))
-						threads.append(thread)
-						thread.start()
+				for scraper in [allmusic.SCAPER.getdetails, discogs.SCAPER.getdetails, wikidata.SCAPER.getdetails]:
+					url_	= next(iter(details.get('musicbrainz', {}).get('urls', {}).get(scraper.name, [])), None)
+					t,d 	= self.get_details_thread(scraper, url_, details)
+					threads.append(t)
+					delay.append(d)
+					
+
+				for thread in threads:
+					if thread:
+						thread.join()
 
 			# we have a discogs id
-			else:
-				result = self.get_details(dcid, 'discogs', details, delay)
+			elif dcid:
+				result = self.get_details(discogs.SCAPER.getdetails, dcid, details)
 				# discogs allow 1 api per second. this query requires 2 discogs api call
-
-			for thread in threads:
-				thread.join()
+			
 			log(json.dumps(details))
 				
-			result_	= self.compile_results(details)
-			result	= user_prefs(details, result_)
+			result	= self.compile_results(details)
 
 			log(json.dumps(result))
 			return_details(result)
@@ -107,45 +99,25 @@ class Scraper(object):
 		return item
 
 
-
-	def get_details(self, param, site, details, delay):
-		if site == 'musicbrainz':
-			albumresults = musicbrainz_arstistdetails(param, locale =  SETTINGS['language'])
-			if albumresults:
-				details[site] = albumresults
-			delay.append(1)
-			return details
-			
-		elif site == 'wikidata':
-			albumresults = wikidata_arstistdetails(param, locale =  SETTINGS['language'])
-			if albumresults:
-				details[site] = albumresults
-			delay.append(1)
-			return details
-
-		# discogs
-		elif site == 'discogs':
-			dcid = int(param.rsplit('/', 1)[1])
-
-			artistresults = discogs_artistdetails(dcid)
-			albumresults = discogs_artistalbums(dcid)
-			if albumresults:
-				artistresults['albums'] = albumresults
-			if artistresults:
-				details[site] = artistresults
-			delay.append(2)
-			return details
-		elif site == 'allmusic':
-			artistresults = allmusic_artistdetails(param + '/discography')
-			if artistresults:
-				details[site] = artistresults
-			delay.append(1)
-			return details
-
+	def get_details_thread(self, scraper, param, details):
+		if not param:
+			return None, 0
+		elif SETTINGS['ranking'].get(scraper.name, 100) < 0:
+			log("skipping: {}".format(scraper.name))
+			return None, 0
 		else:
-			delay.append(1)
-			return details
+			thread = Thread(target = self.get_details, args = (scraper, param, details))
+			thread.start()
+			return thread, scraper.wait
+		
+	
 
+	def get_details(self, scraper, param, details):
+		albumresults = scraper.function(param, locale =  SETTINGS['language'])
+		if albumresults:
+			details[scraper.name] = albumresults
+		return details
+			
 
 
 	def compile_results(self, details):
@@ -156,7 +128,12 @@ class Scraper(object):
 		result_	= collections.defaultdict(list)
 		for site in ranked:
 			for k, v in details.get(site, {}).items():
-				result_[k].append(v) 
+				if SETTINGS['fields'].get(k, True):
+					log("$$$$ {}".format(SETTINGS['fields']))
+					
+					result_[k].append(v) 
+				else:
+					log("skipping: {} {}".format(site, k))
 		
 		#return top ranking
 		result	= {}	

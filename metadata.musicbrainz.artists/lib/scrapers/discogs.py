@@ -1,12 +1,20 @@
 # -*- coding: UTF-8 -*-
 
 import urllib
-from lib.url_get import get_data
-import lib.scrapers.utils
+from lib.scrapers.utils	import ScraperType, Action
+from lib.url_get		import get_data
+
+
+DISCOGSKEY			= 'zACPgktOmNegwbwKWMaC'
+DISCOGSSECRET		= 'wGuSOeMtfdkQxtERKQKPquyBwExSHdQq'
+DISCOGSURL			= 'https://api.discogs.com/%s'
+DISCOGSSEARCH		= 'database/search?q=%s&type=artist&key=%s&secret=%s'
+DISCOGSDETAILS		= 'artists/%i?key=%s&secret=%s'
+DISCOGSDISCOGRAPHY	= 'artists/%i/releases?sort=format&page=1&per_page=100&key=%s&secret=%s'
 
 
 def discogs_artistfind(artist):
-	url = lib.scrapers.utils.DISCOGSURL % (lib.scrapers.utils.DISCOGSSEARCH % (urllib.quote_plus(artist), lib.scrapers.utils.DISCOGSKEY , lib.scrapers.utils.DISCOGSSECRET))
+	url = DISCOGSURL % (DISCOGSSEARCH % (urllib.quote_plus(artist), DISCOGSKEY , DISCOGSSECRET))
 	data = get_data(url, True)
 	if not data:
 		return
@@ -24,8 +32,20 @@ def discogs_artistfind(artist):
 		artists.append(artistdata)
 	return artists
 
+
+def discogs_artistdetails_(param, locale):
+	dcid = int(param.rsplit('/', 1)[1])
+
+	artistresults = discogs_artistdetails(dcid)
+	albumresults = discogs_artistalbums(dcid)
+	if albumresults:
+		artistresults['albums'] = albumresults
+	
+	return artistresults
+
+
 def discogs_artistdetails(dcid):
-	url = lib.scrapers.utils.DISCOGSURL % (lib.scrapers.utils.DISCOGSDETAILS % (dcid, lib.scrapers.utils.DISCOGSKEY, lib.scrapers.utils.DISCOGSSECRET))
+	url = DISCOGSURL % (DISCOGSDETAILS % (dcid, DISCOGSKEY, DISCOGSSECRET))
 	data = get_data(url, True)
 	if not data:
 		return
@@ -46,7 +66,7 @@ def discogs_artistdetails(dcid):
 	return artistdata
 
 def discogs_artistalbums(dcid):
-	url = lib.scrapers.utils.DISCOGSURL % (lib.scrapers.utils.DISCOGSDISCOGRAPHY % (dcid, lib.scrapers.utils.DISCOGSKEY, lib.scrapers.utils.DISCOGSSECRET))
+	url = DISCOGSURL % (DISCOGSDISCOGRAPHY % (dcid, DISCOGSKEY, DISCOGSSECRET))
 	data = get_data(url, True)
 	if not data:
 		return
@@ -59,3 +79,8 @@ def discogs_artistalbums(dcid):
 			albumdata['year'] = str(item.get('year', ''))
 			albums.append(albumdata)
 	return albums
+
+SCAPER = ScraperType(
+			Action('discogs', discogs_artistfind, 1),
+			Action('discogs', discogs_artistdetails_, 2),
+		)

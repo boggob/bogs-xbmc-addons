@@ -10,19 +10,25 @@ try:
 	
 	def log(msg):
 		xbmc.log(msg, xbmc.LOGWARNING)
-		
+	
+	def convert(val):
+		return int(val) if val != 'disable' else -1
 		
 	VERSION		= xbmcaddon.Addon().getAddonInfo('version')		
 	SETTINGS	= {
 					'language'		: xbmcaddon.Addon().getSetting('lang').lower(),
-					'use_discogs'	: xbmcaddon.Addon().getSetting('usediscogs'),
+					'fields'		: {
+										'albums'	: xbmcaddon.Addon().getSetting('use_albums') == "true",
+										'artist'	: xbmcaddon.Addon().getSetting('use_artist') == "true"
+					
+									},
 					'ranking'		: {
-						'wikidata'		: int(xbmcaddon.Addon().getSetting('wikidata')),
-						'musicbrainz'	: int(xbmcaddon.Addon().getSetting('musicbrainz')),
-						'discogs'		: int(xbmcaddon.Addon().getSetting('discogs')),
-						'allmusic'		: int(xbmcaddon.Addon().getSetting('allmusic')),
-						'theaudiodb'	: int(xbmcaddon.Addon().getSetting('theaudiodb')),
-						'fanarttv'		: int(xbmcaddon.Addon().getSetting('fanarttv'))
+						'wikidata'		: convert(xbmcaddon.Addon().getSetting('wikidata')),
+						'musicbrainz'	: convert(xbmcaddon.Addon().getSetting('musicbrainz')),
+						'discogs'		: convert(xbmcaddon.Addon().getSetting('discogs')),
+						'allmusic'		: convert(xbmcaddon.Addon().getSetting('allmusic')),
+						'theaudiodb'	: convert(xbmcaddon.Addon().getSetting('theaudiodb')),
+						'fanarttv'		: convert(xbmcaddon.Addon().getSetting('fanarttv'))
 					}
 				}
 					
@@ -30,8 +36,6 @@ try:
 	def sleep(tm):
 		xbmc.sleep(int(tm * 1000))
 
-	def user_prefs(details, result):
-		return result
 	 
 	def return_search(data):
 		for item in data:
@@ -142,7 +146,11 @@ except ImportError:
 	
 	SETTINGS	= {
 					'language'		: 'en',
-					'use_discogs'	: True,
+					'fields'		: {
+										'albums'	: False,
+										'artist'	: True
+					
+									},					
 					'ranking'		: {
 						'wikidata'		: 1,
 						'musicbrainz'	: 2,
@@ -157,8 +165,6 @@ except ImportError:
 	sleep		= time.sleep
 	
 
-	def user_prefs(details, result):
-		return result
 
 	def return_nfourl(item):
 		print item

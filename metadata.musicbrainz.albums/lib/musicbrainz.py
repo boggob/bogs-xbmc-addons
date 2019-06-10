@@ -146,7 +146,10 @@ def musicbrainz_albumdetails(mbid, seperator = u'/', locale = 'en', wiki = False
 				for track in media['tracks']				
 				]
 	
-	urls = make_multimap( (r['type'] , r['url']['resource'])   for retr in retg for r in retr['relations'] if r['target-type'] == 'url')
+	urls = merge_multimap( 
+				make_multimap( (r['type'] , r['url']['resource'])                    for r in ret['relations']  if r['target-type'] == 'url'),
+				make_multimap( (r['type'] , r['url']['resource'])   for retr in retg for r in retr['relations'] if r['target-type'] == 'url')
+			)
 	
 	if urls.get('wikidata'):
 		wikis			= sorted( urls.get('wikidata'))

@@ -2,11 +2,14 @@
 
 from bs4 import BeautifulSoup
 
+from lib.scrapers.utils import ScraperType, Action
 from lib.url_get import get_data
 
 
 
-def allmusic_artistdetails(url):
+
+
+def allmusic_artistdetails(url, locale):
 	data = get_data(url, False)
 	if not data:
 		return
@@ -81,3 +84,9 @@ def allmusic_artistdetails(url):
 		thumbs.append(thumbdata)
 		artistdata['thumb'] = thumbs
 	return artistdata
+
+
+SCAPER = ScraperType(
+			Action('allmusic', None, 1),
+			Action('allmusic', allmusic_artistdetails, 1),
+		)

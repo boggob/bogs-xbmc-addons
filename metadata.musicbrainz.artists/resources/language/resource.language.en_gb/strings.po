@@ -25,7 +25,11 @@ msgid "Prefered language for artist biography"
 msgstr ""
 
 msgctxt "#30101"
-msgid "Use Discogs.com"
+msgid "Update albums field"
+msgstr ""
+
+msgctxt "#30102"
+msgid "Update artist name field"
 msgstr ""
 
 

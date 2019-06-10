@@ -4,54 +4,17 @@ import collections
 import pprint
 import urllib
 
-from lib.url_get import get_data
-import lib.scrapers.utils
+from lib.url_get		import get_data
+from lib.assorted		import make_multimap
+from lib.scrapers.utils import ScraperType, Action
 
 
+URL_MUSICBRAINZ			= 'https://musicbrainz.org/ws/2/artist/%s'
+URL_MUSICBRAINZSEARCH	= '?query=artist:"%s"&fmt=json'
+URL_MUSICBRAINZDETAILS	= '%s?inc=url-rels+release-groups&type=album&fmt=json'
 
-URL_MB_RELEASE	= u"http://musicbrainz.org/ws/2/artist/{}?fmt=json&inc=ratings+artist-rels+url-rels+aliases+release-groups+release-group-rels"
-URL_WIKI		= u"https://{}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
-
-
-
-
-def make_multimap(it, cls=list):
-	items = collections.defaultdict(cls)
-	func = "append" if cls is list else "add"
-	for k, v in it:
-		getattr(items[k], func)(v)
-	return items
-
-def merge_multimap(*args, **kwargs):
-	"""
-	Merges multiple multimaps into one by concatenating the results, all mmap values should be of the same type (either set or list)
-
-	:param args: mmaps
-	:param kwargs: if the key word of func is supplied this will be used for unifying the values of the mmaps
-	:return: Unified mmap of the concatenated results
-	"""
-	types = {
-		type(val)
-		for map_ in args
-		for val in map_.itervalues()
-	}
-
-	if len(types) > 1:
-		raise ValueError("Multiple value types detected {}".format(types))
-	elif len(types) < 1 :
-		return {}
-	else:
-		type_	= list(types)[0]
-		prop	= (lambda a,b: a.union(b)) if issubclass(type_, set) else (lambda a,b: a + b)
-		func	= kwargs.get("func", prop)
-
-		out		= collections.defaultdict(type_)
-		for map_ in args:
-			for k, v in map_.iteritems():
-				out[k] = func(out[k], v)
-		return out
-
-
+URL_MB_RELEASE			= u"http://musicbrainz.org/ws/2/artist/{}?fmt=json&inc=ratings+artist-rels+url-rels+aliases+release-groups+release-group-rels"
+URL_WIKI				= u"https://{}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
 
 
 
@@ -66,19 +29,19 @@ def get_sub(data, **kwargs):
 def artist_name(artist, locale):
 	name = next(
 				(
-					alias['name'] 
-					for alias in artist.get('aliases', []) 
-					if alias.get('type', None) == "Artist name" 
+					alias['name']
+					for alias in artist.get('aliases', [])
+					if alias.get('type', None) == "Artist name"
 					if alias.get('locale', None) == locale
 				),
 				None
 			)
-			
+
 	return name or artist['sort-name']
 
 
 def musicbrainz_artistfind(artist):
-	url = lib.scrapers.utils.MUSICBRAINZURL % (lib.scrapers.utils.MUSICBRAINZSEARCH % urllib.quote_plus(artist))
+	url = URL_MUSICBRAINZ % (URL_MUSICBRAINZSEARCH % urllib.quote_plus(artist))
 	data = get_data(url, True)
 	if not data:
 		return
@@ -105,18 +68,17 @@ def musicbrainz_artistfind(artist):
 
 
 
-def musicbrainz_arstistdetails(mbid, seperator = u'/', locale = 'en', wiki = False):
+def musicbrainz_arstistdetails(mbid, locale = 'en'):
 	ret		= get_data(URL_MB_RELEASE.format(mbid).encode('utf-8'), True)
-
-				
-	urls	= make_multimap( (r['type'] , r['url']['resource'])   for r in ret['relations']  if r['target-type'] == 'url')
-	
 
 	artistdata = {}
 	artistdata['artist']		= artist_name(ret, locale)
 	artistdata['mbartistid']	= ret['id']
-	artistdata['type'] 			= ret['type']
-	artistdata['gender'] 		= ret['gender']
+	if ret['type']:
+		artistdata['type'] 			= ret['type']
+	if ret['gender']:
+		artistdata['gender'] 		= ret['gender']
+
 	artistdata['disambiguation'] = ret['disambiguation']
 	if ret.get('life-span','') and ret.get('type',''):
 		begin = ret['life-span'].get('begin', '')
@@ -127,35 +89,36 @@ def musicbrainz_arstistdetails(mbid, seperator = u'/', locale = 'en', wiki = Fal
 		elif ret['type'] in ['Person', 'Character']:
 			artistdata['born'] = begin
 			artistdata['died'] = end
-	albums = []
-	for item in ret.get('release-groups',[]):
-		albumdata = {}
-		albumdata['title'] = item.get('title','')
-		albumdata['year'] = item.get('first-release-date','')
-		albums.append(albumdata)
+	albums	= [
+				{
+					'title'	: item.get('title',''),
+					'year'	: item.get('first-release-date','')
+				}
+				for item in ret.get('release-groups',[])
+			]
 	if albums:
 		artistdata['albums'] = albums
 
-	if urls.get('wikidata'):
-		artistdata['wikidata-url']	=  sorted( urls.get('wikidata'))[0]
-	if urls.get('allmusic'):
-		artistdata['allmusic-url']	= sorted( urls.get('allmusic'))[0]
-	if urls.get('discogs'):
-		artistdata['discogs-url']	= sorted( urls.get('discogs'))[0]
-				
-		
+
+	artistdata['urls']	=  make_multimap( (r['type'] , r['url']['resource'])   for r in ret['relations']  if r['target-type'] == 'url')
+
+
 	return artistdata
 
-	
-	
+
+SCAPER = ScraperType(
+			Action('musicbrainz', musicbrainz_artistfind, 1),
+			Action('musicbrainz', musicbrainz_arstistdetails, 1),
+		)
+
+
 
 if __name__ == "__main__":
 
 
 	#pprint.pprint(musicbrainz_arstistdetails('24f1766e-9635-4d58-a4d4-9413f9f98a4c'))
 	pprint.pprint(musicbrainz_arstistdetails('fd14da1b-3c2d-4cc8-9ca6-fc8c62ce6988'))
-	
-	
+
+
 	#raise 1
-	
-	
+
