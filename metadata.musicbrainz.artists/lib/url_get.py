@@ -3,7 +3,7 @@
 import requests
 from requests.exceptions import Timeout
 
-from lib.platform import log, VERSION
+from lib.platform import log, VERSION, LOGERROR
 
 
 
@@ -13,13 +13,13 @@ def get_data(url, json_):
 	try:
 		response = requests.get(url, headers=useragent, timeout=5)
 	except Timeout:
-		log('request timed out')
+		log('request timed out', LOGERROR)
 		return
 	if response.status_code == 503:
-		log('exceeding musicbrainz api limit')
+		log('server unavailable', LOGERROR)
 		return
 	elif response.status_code == 429:
-		log('exceeding discogs api limit')
+		log('too many requests', LOGERROR)
 		return
 	if json_:
 		try:

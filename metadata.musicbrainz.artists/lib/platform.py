@@ -4,12 +4,13 @@ import json
 
 try:
 	import xbmc
+	from xbmc import LOGDEBUG, LOGINFO, LOGNOTICE, LOGWARNING, LOGERROR, LOGFATAL
 	import xbmcaddon
 	import xbmcgui
 	import xbmcplugin
-	
-	def log(msg):
-		xbmc.log(msg, xbmc.LOGWARNING)
+		
+	def log(msg, severity = LOGNOTICE):
+		xbmc.log(msg, severity)
 	
 	def convert(val):
 		return int(val) if val != 'disable' else -1
@@ -139,7 +140,14 @@ try:
 
 	 
 except ImportError:
-	def log(msg):
+	LOGDEBUG	= 1
+	LOGINFO		= 2
+	LOGNOTICE	= 3
+	LOGWARNING	= 4
+	LOGERROR	= 5
+	LOGFATAL	= 6
+	
+	def log(msg, severity = LOGNOTICE):
 		print msg
 		
 	VERSION		= 1.0

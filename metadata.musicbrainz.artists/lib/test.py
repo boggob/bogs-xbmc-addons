@@ -20,7 +20,9 @@ if __name__ == "__main__":
 		#lib.scraper.Scraper('getdetails', None, None, json.dumps({'mbid' : '0a46cf2a-61bd-447d-b8fd-a2b32eb20282'}), None)
 		#lib.scraper.Scraper('getdetails', None, None, json.dumps({'mbid' : 'f27ec8db-af05-4f36-916e-3d57f91ecf5e'}), None)
 		#lib.scraper.Scraper('getdetails', None, None, json.dumps({'mbid' : '0d21b01f-21f2-419b-8d98-4158ba0c0aa4'}), None)
-		lib.scraper.Scraper('getdetails', None, None, json.dumps({'mbid' : '678d88b2-87b0-403b-b63d-5da7465aecc3'}), None)
+		#lib.scraper.Scraper('getdetails', None, None, json.dumps({'mbid' : '678d88b2-87b0-403b-b63d-5da7465aecc3'}), None)
+		lib.scraper.Scraper('getdetails', None, None, json.dumps({'mbid' : '2251b277-2dfb-4cf1-83f3-27e29f902440'}), None)
+		
 	
 		
 	#raise 1

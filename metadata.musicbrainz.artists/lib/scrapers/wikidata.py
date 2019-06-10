@@ -40,10 +40,12 @@ def lookups(retw1, locale, *args):
 	
 def _getv(retw1, pval):
 	return (
-		dat['mainsnak']['datavalue']['value']
+		dat1
 		for res in  retw1['entities'].values()
 		for dat in res.get('claims', {}).get(pval, {})
 		if dat
+		for dat1 in [dat.get('mainsnak', {}).get('datavalue', {}).get('value', None)]
+		if dat1
 	  )
 
 

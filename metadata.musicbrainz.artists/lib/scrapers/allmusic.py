@@ -69,7 +69,9 @@ def allmusic_artistdetails(url, locale):
 		for item in albumlist:
 			albumdata = {}
 			albuminfo = item.find('td', {'class':'title'})
-			albumdata['title'] = albuminfo.find('a').get_text()
+			ttl = albuminfo.find('a')
+			if ttl:
+				albumdata['title'] = ttl.get_text()
 			yr = item.find('td', {'class':'year'})
 			if yr:
 				albumdata['year'] = yr.get_text().strip()
