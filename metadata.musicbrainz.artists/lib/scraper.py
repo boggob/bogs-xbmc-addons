@@ -129,8 +129,6 @@ class Scraper(object):
 		for site in ranked:
 			for k, v in details.get(site, {}).items():
 				if SETTINGS['fields'].get(k, True):
-					log("$$$$ {}".format(SETTINGS['fields']))
-					
 					result_[k].append(v) 
 				else:
 					log("skipping: {} {}".format(site, k))
