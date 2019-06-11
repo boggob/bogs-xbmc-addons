@@ -32,6 +32,9 @@ msgctxt "#30102"
 msgid "Update artist name field"
 msgstr ""
 
+msgctxt "#30103"
+msgid "The timeout for web requests"
+msgstr ""
 
 
 msgctxt "#30200"
