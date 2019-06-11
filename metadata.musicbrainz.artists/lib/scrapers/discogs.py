@@ -34,7 +34,7 @@ def discogs_artistfind(artist):
 
 
 def discogs_artistdetails_(param, locale):
-	dcid = int(param.rsplit('/', 1)[1])
+	dcid = int(param.rsplit('/', 1)[-1])
 
 	artistresults = discogs_artistdetails(dcid)
 	albumresults = discogs_artistalbums(dcid)

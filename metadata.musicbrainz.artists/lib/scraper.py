@@ -66,7 +66,8 @@ class Scraper(object):
 
 			# we have a discogs id
 			elif dcid:
-				result = self.get_details(discogs.SCAPER.getdetails, dcid, details)
+				result = self.get_details(discogs.SCAPER.getdetails, str(dcid), details)
+				delay.append(discogs.SCAPER.getdetails.wait)
 				# discogs allow 1 api per second. this query requires 2 discogs api call
 			
 			log(json.dumps(details))

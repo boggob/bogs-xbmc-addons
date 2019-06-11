@@ -18,11 +18,15 @@ try:
 	VERSION		= xbmcaddon.Addon().getAddonInfo('version')		
 	SETTINGS	= {
 					'language'		: xbmcaddon.Addon().getSetting('lang').lower(),
+					'misc'			: {
+										'timeout'	: int(xbmcaddon.Addon().getSetting('timeout')),
+					
+									  },					
 					'fields'		: {
 										'albums'	: xbmcaddon.Addon().getSetting('use_albums') == "true",
 										'artist'	: xbmcaddon.Addon().getSetting('use_artist') == "true"
 					
-									},
+									  },
 					'ranking'		: {
 						'wikidata'		: convert(xbmcaddon.Addon().getSetting('wikidata')),
 						'musicbrainz'	: convert(xbmcaddon.Addon().getSetting('musicbrainz')),
@@ -154,6 +158,10 @@ except ImportError:
 	
 	SETTINGS	= {
 					'language'		: 'en',
+					'misc'			: {
+										'timeout'	: 10,
+					
+									  },										
 					'fields'		: {
 										'albums'	: False,
 										'artist'	: True

@@ -7,6 +7,7 @@ import urllib
 from lib.url_get		import get_data
 from lib.assorted		import make_multimap
 from lib.scrapers.utils import ScraperType, Action
+from lib.alphabet_detector import AlphabetDetector
 
 
 URL_MUSICBRAINZ			= 'https://musicbrainz.org/ws/2/artist/%s'
@@ -16,6 +17,7 @@ URL_MUSICBRAINZDETAILS	= '%s?inc=url-rels+release-groups&type=album&fmt=json'
 URL_MB_RELEASE			= u"http://musicbrainz.org/ws/2/artist/{}?fmt=json&inc=ratings+artist-rels+url-rels+aliases+release-groups+release-group-rels"
 URL_WIKI				= u"https://{}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
 
+AD						= AlphabetDetector()
 
 
 def get_sub(data, **kwargs):
@@ -27,17 +29,34 @@ def get_sub(data, **kwargs):
 	return None
 
 def artist_name(artist, locale):
-	name = next(
-				(
-					alias['name']
-					for alias in artist.get('aliases', [])
-					if alias.get('type', None) == "Artist name"
-					if alias.get('locale', None) == locale
-				),
-				None
-			)
+	if AD.only_alphabet_chars(artist['name'], "LATIN"):
+		return artist
+	else:
+		#find localisation
+		name1 = next(
+					(
+						alias
+						for alias in artist.get('aliases', [])
+						if alias.get('type', None) == "Artist name"
+						if alias.get('locale', None) == locale
+					),
+					None
+				)
 
-	return name or artist['sort-name']
+		#find any latin based localisation
+		name2 = next(
+					(
+						alias
+						for alias in artist.get('aliases', [])
+						if alias.get('type', None) == "Artist name"
+						if AD.only_alphabet_chars(alias['name'], "LATIN")
+					),
+					None
+				)
+
+
+
+	return name1 or name2 or artist
 
 
 def musicbrainz_artistfind(artist):
@@ -72,7 +91,9 @@ def musicbrainz_arstistdetails(mbid, locale = 'en'):
 	ret		= get_data(URL_MB_RELEASE.format(mbid).encode('utf-8'), True)
 
 	artistdata = {}
-	artistdata['artist']		= artist_name(ret, locale)
+	artistdata['artist']		= artist_name(ret, locale)['name']
+	artistdata['sortname']		= artist_name(ret, locale)['sort-name']
+	
 	artistdata['mbartistid']	= ret['id']
 	if ret['type']:
 		artistdata['type'] 			= ret['type']
