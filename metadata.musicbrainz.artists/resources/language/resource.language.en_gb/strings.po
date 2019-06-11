@@ -36,6 +36,10 @@ msgctxt "#30103"
 msgid "The timeout for web requests"
 msgstr ""
 
+msgctxt "#30104"
+msgid "Use the sort Musicbrainz name for the artist name"
+msgstr ""
+
 
 msgctxt "#30200"
 msgid "Data preference ranking (lower numbers have greater priority)"

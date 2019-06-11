@@ -2,6 +2,7 @@
 <settings>
 	<setting label="30100" type="lsep"/>
 	<setting label="30103" type="number" id="timeout" default="10"/>
+	<setting label="30104" type="bool" id="sortname" default="false"/>
 	<setting label="30001" type="labelenum" id="lang" default="EN" values="CN|DE|EN|ES|FR|HU|IL|IT|JP|NL|NO|PL|PT|RU|SE"/>
 	<setting label="30101" type="bool" id="use_albums" default="true"/>
 	<setting label="30102" type="bool" id="use_artist" default="true"/>

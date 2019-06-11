@@ -4,10 +4,11 @@ import collections
 import pprint
 import urllib
 
-from lib.url_get		import get_data
-from lib.assorted		import make_multimap
-from lib.scrapers.utils import ScraperType, Action
-from lib.alphabet_detector import AlphabetDetector
+from lib.alphabet_detector	import AlphabetDetector
+from lib.assorted			import make_multimap
+from lib.platform			import SETTINGS
+from lib.scrapers.utils 	import ScraperType, Action
+from lib.url_get			import get_data
 
 
 URL_MUSICBRAINZ			= 'https://musicbrainz.org/ws/2/artist/%s'
@@ -91,7 +92,7 @@ def musicbrainz_arstistdetails(mbid, locale = 'en'):
 	ret		= get_data(URL_MB_RELEASE.format(mbid).encode('utf-8'), True)
 
 	artistdata = {}
-	artistdata['artist']		= artist_name(ret, locale)['name']
+	artistdata['artist']		= artist_name(ret, locale)['sort-name' if SETTINGS['misc']['sortname'] else 'name']
 	artistdata['sortname']		= artist_name(ret, locale)['sort-name']
 	
 	artistdata['mbartistid']	= ret['id']

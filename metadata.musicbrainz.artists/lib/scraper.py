@@ -9,9 +9,12 @@ import time
 from lib.nfo import nfo_geturl
 from lib.platform				import log, SETTINGS, sleep, return_details, return_search, return_nfourl, return_resolved
 
-import lib.scrapers.musicbrainz as musicbrainz
+
 import lib.scrapers.allmusic	as allmusic
 import lib.scrapers.discogs		as discogs
+import lib.scrapers.fanarttv	as fanarttv
+import lib.scrapers.musicbrainz as musicbrainz
+import lib.scrapers.theaudiodb	as theaudiodb
 import lib.scrapers.wikidata	as wikidata
 
 
@@ -44,7 +47,7 @@ class Scraper(object):
 			# we have a musicbrainz id
 			if mbid:
 				threads	= []
-				for scraper in [musicbrainz.SCAPER.getdetails,]:					
+				for scraper in [musicbrainz.SCAPER.getdetails, theaudiodb.SCAPER.getdetails, fanarttv.SCAPER.getdetails]:
 					t,d 	= self.get_details_thread(scraper, mbid, details)
 					threads.append(t)
 					delay.append(d)

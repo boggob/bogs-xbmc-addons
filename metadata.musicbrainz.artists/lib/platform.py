@@ -20,6 +20,7 @@ try:
 					'language'		: xbmcaddon.Addon().getSetting('lang').lower(),
 					'misc'			: {
 										'timeout'	: int(xbmcaddon.Addon().getSetting('timeout')),
+										'sortname'	: xbmcaddon.Addon().getSetting('sortname') == "true",
 					
 									  },					
 					'fields'		: {
@@ -160,6 +161,7 @@ except ImportError:
 					'language'		: 'en',
 					'misc'			: {
 										'timeout'	: 10,
+										'sortname'	: True,
 					
 									  },										
 					'fields'		: {
