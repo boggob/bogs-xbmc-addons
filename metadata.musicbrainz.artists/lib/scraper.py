@@ -38,7 +38,6 @@ class Scraper(object):
 					break
 		# return info using artistname / id's
 		elif action == 'getdetails':
-			print "$$$", url
 			url__	= json.loads(url)
 			mbid	= url__.get('mbid', '')
 			dcid	= url__.get('dcid', '')

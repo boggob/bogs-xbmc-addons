@@ -37,7 +37,7 @@ try:
 						'fanarttv'		: convert(xbmcaddon.Addon().getSetting('fanarttv'))
 					}
 				}
-					
+
 	
 	def sleep(tm):
 		xbmc.sleep(int(tm * 1000))
@@ -153,7 +153,7 @@ except ImportError:
 	LOGFATAL	= 6
 	
 	def log(msg, severity = LOGNOTICE):
-		print msg
+		print(msg)
 		
 	VERSION		= 1.0
 	
@@ -185,12 +185,12 @@ except ImportError:
 
 
 	def return_nfourl(item):
-		print item
+		pass
 	def return_resolved(item):
-		print item
+		pass
 
 	def return_details(item):
-		print item
+		pass
 		
 	def return_search(data):
-		print data
+		pass

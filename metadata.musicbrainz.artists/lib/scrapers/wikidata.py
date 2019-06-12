@@ -1,7 +1,11 @@
 # -*- coding: UTF-8 -*-
 
 import hashlib
-import urllib2
+
+try:
+	from urllib.parse import quote_plus as url_quote
+except:
+	from urllib import quote_plus as url_quote
 
 from lib.scrapers.utils	import ScraperType, Action
 from lib.url_get		import get_data
@@ -54,7 +58,7 @@ def wikidata_arstistdetails(url, locale = 'en'):
 	id_		= url.split('/')[-1]
 	retw1	= get_data(URL_WIKID.format(id_), True)
 	wikip	= next((v['title'] for res in  retw1['entities'].values() for k, v in res['sitelinks'].items() if k == '{}wiki'.format(locale) ), '')
-	wikip1 	= urllib2.quote(wikip.encode('UTF-8'))
+	wikip1 	= url_quote(wikip.encode('UTF-8'))
 	retw	= get_data(URL_WIKI.format(locale, wikip1), True) if wikip1 else {}
 	wikid	= next(([v['extract']] for v in  retw['query']['pages'].values()), []) if wikip1 else []
 

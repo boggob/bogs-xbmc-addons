@@ -12,6 +12,7 @@ AUDIODBDISCOGRAPHY = 'discography-mb.php?s=%s'
 
 def theaudiodb_artistdetails(mbid, locale):
 	data	= get_data(AUDIODBURL % (AUDIODBKEY, AUDIODBDETAILS % mbid), True)
+	locale_	= locale.upper()
 
 	if data.get('artists',[]):
 		item = data['artists'][0]
@@ -35,62 +36,40 @@ def theaudiodb_artistdetails(mbid, locale):
 			artistdata['moods'] = item['strMood']
 		if item.get('strGender',''):
 			artistdata['gender'] = item['strGender']
-		if item.get('strBiographyEN',''):
-			artistdata['biographyEN'] = item['strBiographyEN']
-		if item.get('strBiographyDE',''):
-			artistdata['biographyDE'] = item['strBiographyDE']
-		if item.get('strBiographyFR',''):
-			artistdata['biographyFR'] = item['strBiographyFR']
-		if item.get('strBiographyCN',''):
-			artistdata['biographyCN'] = item['strBiographyCN']
-		if item.get('strBiographyIT',''):
-			artistdata['biographyIT'] = item['strBiographyIT']
-		if item.get('strBiographyJP',''):
-			artistdata['biographyJP'] = item['strBiographyJP']
-		if item.get('strBiographyRU',''):
-			artistdata['biographyRU'] = item['strBiographyRU']
-		if item.get('strBiographyES',''):
-			artistdata['biographyES'] = item['strBiographyES']
-		if item.get('strBiographyPT',''):
-			artistdata['biographyPT'] = item['strBiographyPT']
-		if item.get('strBiographySE',''):
-			artistdata['biographySE'] = item['strBiographySE']
-		if item.get('strBiographyNL',''):
-			artistdata['biographyNL'] = item['strBiographyNL']
-		if item.get('strBiographyHU',''):
-			artistdata['biographyHU'] = item['strBiographyHU']
-		if item.get('strBiographyNO',''):
-			artistdata['biographyNO'] = item['strBiographyNO']
-		if item.get('strBiographyIL',''):
-			artistdata['biographyIL'] = item['strBiographyIL']
-		if item.get('strBiographyPL',''):
-			artistdata['biographyPL'] = item['strBiographyPL']
+			
+			
+		if item.get('strBiography' + locale_,''):
+			artistdata['biography'] = item['strBiography' + locale_]
 		if item.get('strMusicBrainzID',''):
 			artistdata['mbartistid'] = item['strMusicBrainzID']
 		if item.get('strArtistFanart',''):
 			fanart = []
-			fanartdata = {}
-			fanartdata['image'] = item['strArtistFanart']
-			fanartdata['preview'] = item['strArtistFanart'] + '/preview'
+			fanartdata = {
+				'image' 	: item['strArtistFanart'],
+				'preview' 	: item['strArtistFanart'] + '/preview'
+			}
 			fanart.append(fanartdata)
 			if item['strArtistFanart2']:
-				fanartdata = {}
-				fanartdata['image'] = item['strArtistFanart2']
-				fanartdata['preview'] = item['strArtistFanart2'] + '/preview'
+				fanartdata = {
+					'image'		: item['strArtistFanart2'],
+					'preview'	: item['strArtistFanart2'] + '/preview'
+				}
 				fanart.append(fanartdata)
 				if item['strArtistFanart3']:
-					fanartdata = {}
-					fanartdata['image'] = item['strArtistFanart3']
-					fanartdata['preview'] = item['strArtistFanart3'] + '/preview'
+					fanartdata = {
+						'image'		: item['strArtistFanart3'],
+						'preview'	: item['strArtistFanart3'] + '/preview'
+					}
 					fanart.append(fanartdata)
 			artistdata['fanart'] = fanart
 		if item.get('strArtistThumb',''):
-			thumbs = []
-			thumbdata = {}
-			thumbdata['image'] = item['strArtistThumb']
-			thumbdata['preview'] = item['strArtistThumb'] + '/preview'
-			thumbdata['aspect'] = 'thumb'
-			thumbs.append(thumbdata)
+			thumbs = [
+				{
+					'image'		: item['strArtistThumb'],
+					'preview'	: item['strArtistThumb'] + '/preview',
+					'aspect'	: 'thumb'
+				}
+			]
 			artistdata['thumb'] = thumbs
 		if item.get('strArtistLogo',''):
 			artistdata['clearlogo'] = item['strArtistLogo']
