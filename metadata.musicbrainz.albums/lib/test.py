@@ -30,7 +30,9 @@ if __name__ == "__main__":
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '5ef9848e-0a05-4729-9a99-8ff3f645275b', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '', 'artist': u'Yann Tiersen', 'album' : u'Le Fabuleux Destin d’Amélie Poulain', 'dcalbumid': ''}), None)
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '', 'artist': '', 'album' : '', 'dcalbumid': '497852'}), None)
-		lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '2e0542d1-5c0b-4600-ab77-64870cc619de', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
+		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '2e0542d1-5c0b-4600-ab77-64870cc619de', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
+		lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '22ee7fae-b30a-4c69-9119-ab895901a898', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
+		
 		
 		
 		#raise 1

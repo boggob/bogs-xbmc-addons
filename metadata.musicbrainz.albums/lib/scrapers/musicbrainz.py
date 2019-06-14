@@ -183,18 +183,10 @@ def musicbrainz_albumdetails(mbid, locale = 'en', seperator = u'/'):
 								  
 	if imgs:	
 		albumdata['thumb'] 		= (
-									(albumdata['thumb'] or []) 
+									(albumdata.get('thumb', []) or []) 
 									+ 
-									[
-										{
-											'image'			: i,
-											'preview'		: i,
-											'aspect'		: 'thumb'	
-										}
-										
-										for i in imgs
-									]
-								)								  
+									list(imgs)
+								  )								  
 	if covers.get('back'):
 		albumdata["back"]		= URL_COVER_ARCHV.format(mbid, 'back')
 	
