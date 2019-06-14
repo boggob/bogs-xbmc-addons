@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <settings>
-	<category label="30000">
-		<setting label="30001" type="labelenum" id="lang" default="EN" values="CN|DE|EN|ES|FR|HU|IL|IT|JP|NL|NO|PL|PT|RU|SE"/>
-		<setting label="30003" type="labelenum" id="genre" default="theaudiodb" values="allmusic|discogs|theaudiodb"/>
-		<setting label="30004" type="labelenum" id="style" default="theaudiodb" values="allmusic|discogs|theaudiodb"/>
-		<setting label="30005" type="labelenum" id="mood" default="theaudiodb" values="allmusic|theaudiodb"/>
-		<setting label="30006" type="labelenum" id="theme" default="theaudiodb" values="allmusic|theaudiodb"/>
-		<setting label="30007" type="labelenum" id="rating" default="musicbrainz" values="allmusic|discogs|musicbrainz|theaudiodb"/>
-	</category>
-	<category label="33063">
-		<setting label="30101" type="enum" id="usediscogs" default="0" lvalues="30102|30103"/>
-	</category>
+	<setting label="30100" type="lsep"/>
+	<setting label="30103" type="number" id="timeout" default="10"/>
+	<setting label="30104" type="bool" id="sortname" default="false"/>
+	<setting label="30001" type="labelenum" id="lang" default="EN" values="CN|DE|EN|ES|FR|HU|IL|IT|JP|NL|NO|PL|PT|RU|SE"/>
+
+	
+	<setting label="30200" type="lsep"/>
+	<setting label="30003" type="labelenum" id="musicbrainz" default="2" values="1|2|3|4|5|6"/>	
+	<setting label="30002" type="labelenum" id="wikidata" default="1" values="1|2|3|4|5|6|disable"/>
+	<setting label="30004" type="labelenum" id="discogs" default="3" values="1|2|3|4|5|6|disable"/>
+	<setting label="30005" type="labelenum" id="allmusic" default="4" values="1|2|3|4|5|6|disable"/>
+	<setting label="30006" type="labelenum" id="theaudiodb" default="5" values="1|2|3|4|5|6|disable"/>
+	<setting label="30007" type="labelenum" id="fanarttv" default="6" values="1|2|3|4|5|6|disable"/>
+	<setting label="30008" type="labelenum" id="coverarchive" default="disable" values="1|2|3|4|5|6|disable"/>
+	
 </settings>

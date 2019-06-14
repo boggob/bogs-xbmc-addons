@@ -4,17 +4,37 @@ import json
 
 try:
 	import xbmc
+	from xbmc import LOGDEBUG, LOGINFO, LOGNOTICE, LOGWARNING, LOGERROR, LOGFATAL
 	import xbmcaddon
 	import xbmcgui
 	import xbmcplugin
 	
-	def log(msg):
-		xbmc.log(msg, xbmc.LOGWARNING)
+	def log(msg, severity = LOGNOTICE):
+		xbmc.log(msg, severity)
+	
+	def convert(val):
+		return int(val) if val != 'disable' else -1
 		
-		
-	VERSION		= xbmcaddon.Addon().getAddonInfo('version')	
-	USE_DISCOGS	= xbmcaddon.Addon().getSetting('usediscogs') == '1'
-	LANG		= xbmcaddon.Addon().getSetting('lang').lower()
+	VERSION		= xbmcaddon.Addon().getAddonInfo('version')		
+	SETTINGS	= {
+					'language'		: xbmcaddon.Addon().getSetting('lang').lower(),
+					'misc'			: {
+										'timeout'	: int(xbmcaddon.Addon().getSetting('timeout')),
+										'sortname'	: xbmcaddon.Addon().getSetting('sortname') == "true",
+					
+									  },					
+					'fields'		: {
+					
+									  },
+					'ranking'		: {
+						'wikidata'		: convert(xbmcaddon.Addon().getSetting('wikidata')),
+						'musicbrainz'	: convert(xbmcaddon.Addon().getSetting('musicbrainz')),
+						'discogs'		: convert(xbmcaddon.Addon().getSetting('discogs')),
+						'allmusic'		: convert(xbmcaddon.Addon().getSetting('allmusic')),
+						'theaudiodb'	: convert(xbmcaddon.Addon().getSetting('theaudiodb')),
+						'fanarttv'		: convert(xbmcaddon.Addon().getSetting('fanarttv'))
+					}
+				}
 	
 	def sleep(tm):
 		xbmc.sleep(int(tm * 1000))
@@ -154,12 +174,39 @@ try:
 
 	 
 except ImportError:
-	def log(msg):
-		print msg
+	LOGDEBUG	= 1
+	LOGINFO		= 2
+	LOGNOTICE	= 3
+	LOGWARNING	= 4
+	LOGERROR	= 5
+	LOGFATAL	= 6
+	
+	def log(msg, severity = LOGNOTICE):
+		print (msg)
 		
 	VERSION		= 1.0
-	USE_DISCOGS	= True
-	LANG		= 'en'
+	
+	SETTINGS	= {
+					'language'		: 'en',
+					'misc'			: {
+										'timeout'	: 10,
+										'sortname'	: True,
+					
+									  },										
+					'fields'		: {
+					
+									},					
+					'ranking'		: {
+						'wikidata'		: 1,
+						'musicbrainz'	: 2,
+						'discogs'		: 3,
+						'allmusic'		: 4,
+						'theaudiodb'	: 5,
+						'fanarttv'		: 6
+					}
+				}
+				
+				
 	sleep		= time.sleep
 	
 
@@ -167,12 +214,12 @@ except ImportError:
 		return result
 
 	def return_nfourl(item):
-		print item
+		pass
 	def return_resolved(item):
-		print item
+		pass
 
 	def return_details(item):
-		print item
+		pass
 		
 	def return_search(data):
-		print data
+		pass

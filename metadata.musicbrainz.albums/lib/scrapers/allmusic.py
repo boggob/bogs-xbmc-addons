@@ -2,16 +2,26 @@
 
 import time
 import datetime
-import urllib
 
-from bs4 import BeautifulSoup
+try:
+	from urllib.parse import quote_plus as url_quote
+except:
+	from urllib import quote_plus as url_quote
 
-from lib.url_get	import get_data
-from lib.utils		import ALLMUSICURL, ALLMUSICSEARCH
+
+from bs4				import BeautifulSoup
+
+from lib.url_get		import get_data
+from lib.scrapers.utils import ScraperType, Action
+
+ALLMUSICURL		= 'https://www.allmusic.com/%s'
+ALLMUSICSEARCH	= 'search/albums/%s+%s'
+ALLMUSICDETAILS	= '%s/releases'
+
 
 
 def allmusic_albumfind(artist, album):
-	url		= ALLMUSICURL % (ALLMUSICSEARCH % (urllib.quote_plus(artist), urllib.quote_plus(album)))
+	url		= ALLMUSICURL % (ALLMUSICSEARCH % (url_quote(artist), url_quote(album)))
 	data	= get_data(url, False)
 	soup = BeautifulSoup(data, 'html.parser')
 	albums = []
@@ -45,7 +55,20 @@ def allmusic_albumfind(artist, album):
 		albums.append(albumdata)
 	return albums
 
-def allmusic_albumdetails(data):
+def allmusic_albumdetails(param, locale = "en"):
+	found = allmusic_albumfind(param[0], param[1])
+	if found:
+		# get details
+		url = ALLMUSICDETAILS % found[0]['url']
+	else:
+		return
+
+	data = get_data(url, False)
+	if not data:
+		return
+
+	
+
 	soup = BeautifulSoup(data, 'html.parser')
 	albumdata = {}
 	releasedata = soup.find("div", {"class":"release-date"})
@@ -54,7 +77,7 @@ def allmusic_albumdetails(data):
 		if len(dateformat) > 4:
 			try:
 				albumdata['releasedate'] = datetime.datetime(*(time.strptime(dateformat, '%B %d, %Y')[0:3])).strftime('%Y-%m-%d')
-			except:
+			except Exception:
 				albumdata['releasedate'] = datetime.datetime(*(time.strptime(dateformat, '%B, %Y')[0:2])).strftime('%Y-%m')
 		else:
 			albumdata['releasedate'] = releasedata.find('span').get_text()
@@ -119,3 +142,8 @@ def allmusic_albumdetails(data):
 		thumbs.append(thumbdata)
 		albumdata['thumb'] = thumbs
 	return albumdata
+
+SCAPER = ScraperType(
+			Action('allmusic', allmusic_albumfind, 1),
+			Action('allmusic', allmusic_albumdetails, 1),
+		)

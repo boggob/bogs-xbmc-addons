@@ -1,19 +1,23 @@
 # -*- coding: UTF-8 -*-
+import collections
 import json
 import time
 import _strptime # https://bugs.python.org/issue7980
-from threading import Thread
 
-from lib.theaudiodb import theaudiodb_albumdetails
-from lib.musicbrainz import musicbrainz_albumfind, musicbrainz_albumart, musicbrainz_albumdetails
-from lib.discogs import discogs_albumfind, discogs_albumdetails
-from lib.allmusic import allmusic_albumfind, allmusic_albumdetails
-from lib.fanarttv import fanarttv_albumart
+
+from lib.awaiter	import Awaiter
+import lib.scrapers.allmusic	as allmusic
+import lib.scrapers.discogs		as discogs
+import lib.scrapers.fanarttv	as fanarttv
+import lib.scrapers.musicbrainz as musicbrainz
+import lib.scrapers.theaudiodb	as theaudiodb
+#import lib.scrapers.wikidata	as wikidata
+
 
 from lib.nfo import nfo_geturl
 
 
-from lib.platform				import log, USE_DISCOGS, LANG, sleep, user_prefs, return_details, return_search, return_nfourl, return_resolved
+from lib.platform				import log, SETTINGS, sleep, return_details, return_search, return_nfourl, return_resolved
 
 
 
@@ -28,59 +32,83 @@ class Scraper(object):
 		# search for artist name / album title matches
 		elif action == 'find':
 			# both musicbrainz and discogs allow 1 api per second. this query requires 1 musicbrainz api call and optionally 1 discogs api call
-			return_search(
-				musicbrainz_albumfind(artist, album)
-				or
-				discogs_albumfind(artist, album)
-				or
-				allmusic_albumfind(artist, album)
-			)
-			self.wait(start, 1)	
+			for finder in [musicbrainz.SCAPER1.find, discogs.SCAPER.find, discogs.SCAPER.find] :
+				res = finder.function(artist, album)
+				if res:
+					return_search(res)
+					self.wait(finder.wait, 1)
+					break
+			
 		# return info using artistname / albumtitle / id's
 		elif action == 'getdetails':
-			details = {}
+			
 			url = json.loads(url)
 			artist = url['artist'].encode('utf-8')
 			album = url['album'].encode('utf-8')
 			mbid = url.get('mbalbumid', '')
 			dcid = url.get('dcalbumid', '')
 			mbreleasegroupid = url.get('mbreleasegroupid', '')
-			threads = []
+			
+			
+			delay	= []
 			scrapers = []
+			details = {}
+			
 			# we have a musicbrainz album id, but no musicbrainz releasegroupid
-			if mbid and not mbreleasegroupid:
-				for item in [[mbid, 'musicbrainz'], [mbid, 'coverarchive']]:
-					thread = Thread(target = self.get_details, args = (item[0], item[1], details))
-					threads.append(thread)
-					thread.start()
+			if mbid and  mbreleasegroupid:
+				scrapers = [
+					Awaiter(self.get_details, musicbrainz.SCAPER1.getdetails, mbid, details),
+					Awaiter(self.get_details, theaudiodb.SCAPER.getdetails, mbreleasegroupid, details),
+					Awaiter(self.get_details, fanarttv.SCAPER.getdetails, mbreleasegroupid, details),
+					Awaiter(self.get_details, musicbrainz.SCAPER2.getdetails, mbid, details),
+					Awaiter(self.get_details, allmusic.SCAPER.getdetails, [artist, album], details),
+					Awaiter(self.get_details, discogs.SCAPER.getdetails, [artist, album, dcid], details),
+				]
+				
+			# we have a discogs id and artistname and albumtitle
+			elif mbid and  not mbreleasegroupid:
+				scrapers			= [
+										Awaiter(self.get_details, musicbrainz.SCAPER1.getdetails, mbid, details),
+										Awaiter(self.get_details, musicbrainz.SCAPER2.getdetails, mbid, details)
+									]
+			
+			
 				# wait for musicbrainz to finish
-				threads[0].join()
+				scrapers[0].data()
 				# check if we have a result:
 				if 'musicbrainz' in details:
 					# get the info we need to start the other scrapers
 					artist				= details['musicbrainz']['artist_description'].encode('utf-8')
 					album				= details['musicbrainz']['album'].encode('utf-8')
 					mbreleasegroupid	= details['musicbrainz']['mbreleasegroupid']
-					scrapers			= [[mbreleasegroupid, 'theaudiodb'], [mbreleasegroupid, 'fanarttv'], [[artist, album], 'allmusic']] + ([[artist, album, dcid], 'discogs'] if USE_DISCOGS else [])
-			# we have a discogs id and artistname and albumtitle
-			elif dcid:
-				# discogs allows 1 api per second. this query requires 1 discogs api call
-				scrapers = [[[artist, album, dcid], 'discogs'], [[artist, album], 'allmusic']]
+					scrapers			+= [
+												Awaiter(self.get_details, theaudiodb.SCAPER.getdetails, mbreleasegroupid, details),
+												Awaiter(self.get_details, fanarttv.SCAPER.getdetails, mbreleasegroupid, details),
+												Awaiter(self.get_details, allmusic.SCAPER.getdetails, [artist, album], details),
+												Awaiter(self.get_details, discogs.SCAPER.getdetails, [artist, album, dcid], details),
+											]
 
 			else:
-				scrapers = [[mbid, 'musicbrainz'], [mbreleasegroupid, 'theaudiodb'], [mbreleasegroupid, 'fanarttv'], [mbid, 'coverarchive'], [[artist, album], 'allmusic']] + ([[artist, album, dcid], 'discogs'] if USE_DISCOGS else [])
+				# discogs allows 1 api per second. this query requires 1 discogs api call
+				scrapers = [
+							Awaiter(self.get_details, allmusic.SCAPER.getdetails, [artist, album], details),
+							Awaiter(self.get_details, discogs.SCAPER.getdetails, [artist, album, dcid], details),
+					]
 				
+				
+			#wait for results	
 			for item in scrapers:
-				thread = Thread(target = self.get_details, args = (item[0], item[1], details))
-				threads.append(thread)
-				thread.start()
+				delay.append(item.data() or 0.0)
 				
-			for thread in threads:
-				thread.join()
-			result = self.compile_results(details)
+			log(json.dumps(details))
+				
+			result	= self.compile_results(details)
+
+			log(json.dumps(result))
+
 			return_details(result)
 				
-			self.wait(start, 2)
+			self.wait(start, max(delay))
 		# extract the mbid from the provided musicbrainz url
 		elif action == 'NfoUrl':
 			mbid = nfo_geturl(nfo)
@@ -104,44 +132,47 @@ class Scraper(object):
 		item['mbalbumid'] = mbid
 		item['mbreleasegroupid'] = ''
 		return item
+		
+	
 
-
-	def get_details(self, param, site, details):
-		#bypass all other options for now
-		if site == 'musicbrainz':
-			albumresults = musicbrainz_albumdetails(param)
-			if not albumresults:
-				return
-			details[site] = albumresults
-			return details
+	def get_details(self, scraper, param, details):
+		if not param:
+			return 0
+		elif SETTINGS['ranking'].get(scraper.name, 100) < 0:
+			log("skipping: {}".format(scraper.name))
+			return 0
 		else:
-			return details		
+			albumresults = scraper.function(param, locale =  SETTINGS['language'])
+			if albumresults:
+				details[scraper.name] = albumresults
+
+			return scraper.wait
+
 
 	def compile_results(self, details):
-		result = {}
-		thumbs = []
-		extras = []
-		# merge metadata results, start with the least accurate sources
-		for site in ['discogs', 'allmusic', 'theaudiodb', 'musicbrainz', 'coverarchive', 'fanarttv']:
+		ranked	= sorted(details, key = lambda k : SETTINGS['ranking'].get(k, 100))
+		log(json.dumps(ranked))
+
+		#order the results
+		result_	= collections.defaultdict(list)
+		for site in ranked:
 			for k, v in details.get(site, {}).items():
-				result[k] = v
-				if k == 'thumb':
-					thumbs.append(v)
-				if k == 'extras':
-					extras.append(v)
-
-		# use musicbrainz artist list as they provide mbid's, these can be passed to the artist scraper
-		if 'musicbrainz' in details:
-			result['artist'] = details['musicbrainz']['artist']
-			
-		# provide artwork from all scrapers for getthumb / getfanart option
-		if result:
-			# the order for extra art does not matter
-			result['thumb'] = (
-								[item for thumblist in reversed(thumbs) for item in thumblist] +
-								[item for thumblist in extras for item in thumblist]
-							  )
-			
-		#data = self.user_prefs(details, result)
+				if SETTINGS['fields'].get(k, True):
+					if k == 'description':
+						result_[k].append(u"{}from: {}\n{}".format('*' * 80, site, v)) 
+					else:
+						result_[k].append(v) 
+				else:
+					log("skipping: {} {}".format(site, k))
+		
+		#return top ranking
+		result	= {}	
+		for k, v in result_.items():
+			if k == 'description':
+				result[k] = "\n\n".join(result_[k])
+			elif k not in ('thumb', 'fanart', 'extras'):
+				result[k] = result_[k][0]
+			else:
+				result[k] = [ii for i in result_[k] for ii in i]
+				
 		return result
-

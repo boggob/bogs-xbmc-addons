@@ -5,14 +5,22 @@
 import collections
 import hashlib
 
-import pprint
+
 import time
-import urllib
-import urllib2
+try:
+	from urllib.parse import quote_plus as url_quote
+except:
+	from urllib import quote_plus as url_quote
 
-from lib.url_get	import get_data
-from lib.utils		import MUSICBRAINZURL, MUSICBRAINZSEARCH
 
+from lib.assorted		import make_multimap, merge_multimap
+from lib.url_get		import get_data
+from lib.scrapers.utils import ScraperType, Action
+
+
+MUSICBRAINZURL		= 'https://musicbrainz.org/ws/2/release/%s'
+MUSICBRAINZSEARCH	= '?query=release:"%s"%%20AND%%20(artistname:"%s"%%20OR%%20artist:"%s")&fmt=json'
+MUSICBRAINZART		= 'https://coverartarchive.org/release/%s'
 
 URL_MB_RELEASE	= u"https://musicbrainz.org/ws/2/release/{}?fmt=json&inc=genres+release-groups+artists+artist-credits+labels+ratings+recording-level-rels+recordings+artist-rels+place-rels+url-rels+work-rels+area-rels+release-group-rels+aliases"
 URL_MB_RELEASEG	= u"http://musicbrainz.org/ws/2/release-group?release={}&fmt=json&inc=genres+artist-credits+ratings+artist-rels+place-rels+url-rels+area-rels"
@@ -24,48 +32,9 @@ IMG_URL			= u"https://upload.wikimedia.org/wikipedia/commons/{}/{}{}/{}"
 
 
 
-def make_multimap(it, cls=list):
-	items = collections.defaultdict(cls)
-	func = "append" if cls is list else "add"
-	for k, v in it:
-		getattr(items[k], func)(v)
-	return items
-
-def merge_multimap(*args, **kwargs):
-	"""
-	Merges multiple multimaps into one by concatenating the results, all mmap values should be of the same type (either set or list)
-
-	:param args: mmaps
-	:param kwargs: if the key word of func is supplied this will be used for unifying the values of the mmaps
-	:return: Unified mmap of the concatenated results
-	"""
-	types = {
-		type(val)
-		for map_ in args
-		for val in map_.itervalues()
-	}
-
-	if len(types) > 1:
-		raise ValueError("Multiple value types detected {}".format(types))
-	elif len(types) < 1 :
-		return {}
-	else:
-		type_	= list(types)[0]
-		prop	= (lambda a,b: a.union(b)) if issubclass(type_, set) else (lambda a,b: a + b)
-		func	= kwargs.get("func", prop)
-
-		out		= collections.defaultdict(type_)
-		for map_ in args:
-			for k, v in map_.iteritems():
-				out[k] = func(out[k], v)
-		return out
-
-
-
-
 
 def get_sub(data, **kwargs):
-	for key, func in kwargs.iteritems():
+	for key, func in kwargs.items():
 		curr = data
 		x = curr.get(key, NotImplementedError)
 		if x != NotImplementedError and isinstance(x, collections.Mapping):
@@ -91,7 +60,7 @@ def artist_name(artist, locale):
 	
 
 def musicbrainz_albumfind(artist_, album):
-	url		= MUSICBRAINZURL % (MUSICBRAINZSEARCH % (urllib.quote_plus(album), urllib.quote_plus(artist_), urllib.quote_plus(artist_)))
+	url		= MUSICBRAINZURL % (MUSICBRAINZSEARCH % (url_quote(album), url_quote(artist_), url_quote(artist_)))
 	result	= get_data(url, True)
 	albums	= []
 	for item in result.get('releases',[]):
@@ -123,9 +92,10 @@ def musicbrainz_albumfind(artist_, album):
 		albums.append(albumdata)
 	return albums
 
-def musicbrainz_albumdetails(mbid, seperator = u'/', locale = 'en', wiki = False):
+def musicbrainz_albumdetails(mbid, locale = 'en', seperator = u'/'):
 	ret		= get_data(URL_MB_RELEASE.format(mbid).encode('utf-8'), True)
 	time.sleep(1)
+
 	retg	= get_data(URL_MB_RELEASEG.format(mbid).encode('utf-8'), True)['release-groups']
 			
 	recordings = [
@@ -230,7 +200,7 @@ def musicbrainz_albumdetails(mbid, seperator = u'/', locale = 'en', wiki = False
 	
 	
 	
-	return albumdata if not wiki else wikid
+	return albumdata
 	
 		
 
@@ -238,7 +208,7 @@ def wikidata(url, locale = 'en'):
 	id_		= url.split('/')[-1]
 	retw1	= get_data(URL_WIKID.format(id_), True)
 	wikip	= next((v['title'] for res in  retw1['entities'].values() for k, v in res['sitelinks'].items() if k == '{}wiki'.format(locale) ), '')
-	wikip1 	= urllib2.quote(wikip.encode('UTF-8'))
+	wikip1 	= url_quote(wikip.encode('UTF-8'))
 	retw	= get_data(URL_WIKI.format(locale, wikip1), True) if wikip1 else {}
 	wikid	= next(([v['extract']] for v in  retw['query']['pages'].values()), []) if wikip1 else []
 	
@@ -267,7 +237,10 @@ def wikidata(url, locale = 'en'):
 	
 
 
-def musicbrainz_albumart(data):
+def musicbrainz_albumart(mbid, locale = "en"):
+	url = MUSICBRAINZART % (mbid)
+	data	= get_data(url, True)	
+
 	albumdata = {}
 	thumbs = []
 	extras = []
@@ -307,19 +280,13 @@ def musicbrainz_albumart(data):
 	return albumdata
 
 
-if __name__ == "__main__":
+SCAPER1 = ScraperType(
+			Action('musicbrainz', musicbrainz_albumfind, 1),
+			Action('musicbrainz', musicbrainz_albumdetails, 1),
+		)
 
 
-	#pprint.pprint(musicbrainz_albumdetails('be4dfc70-fb62-3589-aeb4-4680cea68c50'))
-	#pprint.pprint(musicbrainz_albumdetails('033ab928-e9c7-443d-86dc-5d18393e97b9'))
-	#pprint.pprint(musicbrainz_albumdetails('9787a825-5dab-4c89-943d-4b142a03cb56'))
-	#pprint.pprint(musicbrainz_albumdetails('a8976979-398a-4d03-9998-c24455885151'))
-	#pprint.pprint(musicbrainz_albumdetails('2a06e2db-5d86-4294-8388-3109e6228963'))
-	#pprint.pprint(musicbrainz_albumdetails('2a018799-55cb-43f1-a0ae-4a54a319d768'))
-	#pprint.pprint(musicbrainz_albumdetails('fd14a4e3-f39a-4fef-afba-36ab8d22902b'))
-	#pprint.pprint(musicbrainz_albumdetails('1bb8e966-cc02-3b98-92c3-16c0cbc9cb1b'))
-	#pprint.pprint(musicbrainz_albumdetails('72995c3c-db08-4a2d-8823-f5d718b78c3d'))
-	pprint.pprint(musicbrainz_albumdetails('35e0a764-99cd-4ecf-af94-96375cb0f9af'))
-	#pprint.pprint(musicbrainz_albumdetails('5ef9848e-0a05-4729-9a99-8ff3f645275b'))
-	
-	#raise 1
+SCAPER2 = ScraperType(
+			Action('coverarchive', None, 0),
+			Action('coverarchive', musicbrainz_albumart, 2),
+		)

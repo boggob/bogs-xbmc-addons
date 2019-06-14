@@ -1,12 +1,24 @@
 # -*- coding: UTF-8 -*-
 
-import urllib
+try:
+	from urllib.parse import quote_plus as url_quote
+except:
+	from urllib import quote_plus as url_quote
 
-from lib.url_get	import get_data
-from lib.utils		import DISCOGSURL, DISCOGSSEARCH, DISCOGSKEY , DISCOGSSECRET
+
+from lib.url_get		import get_data
+from lib.scrapers.utils	import ScraperType, Action
+
+
+DISCOGSKEY		= 'zACPgktOmNegwbwKWMaC'
+DISCOGSSECRET	= 'wGuSOeMtfdkQxtERKQKPquyBwExSHdQq'
+DISCOGSURL		= 'https://api.discogs.com/%s'
+DISCOGSSEARCH	= 'database/search?release_title=%s&type=release&artist=%s&page=1&per_page=100&key=%s&secret=%s'
+DISCOGSDETAILS	= 'releases/%i?key=%s&secret=%s'
+
 
 def discogs_albumfind(artist, album):
-	url		= DISCOGSURL % (DISCOGSSEARCH % (urllib.quote_plus(album), urllib.quote_plus(artist), DISCOGSKEY , DISCOGSSECRET))
+	url		= DISCOGSURL % (DISCOGSSEARCH % (url_quote(album), url_quote(artist), DISCOGSKEY , DISCOGSSECRET))
 	data	= get_data(url, True)
 
 	albums = []
@@ -31,7 +43,24 @@ def discogs_albumfind(artist, album):
 			albums.append(albumdata)
 	return albums
 
-def discogs_albumdetails(data):
+def discogs_albumdetails(params, locale = "en"):
+	artist, album, dcid	= params
+	if not dcid:
+		found = discogs_albumfind(artist, album)
+		if found:
+			# get details
+			dcid = found[0]['dcalbumid']
+		else:
+			return
+	else:
+		dcid = int(dcid)
+		
+	url = DISCOGSURL % (DISCOGSDETAILS % (dcid, DISCOGSKEY, DISCOGSSECRET))
+	data = get_data(url, True)
+	if not data:
+		return
+
+
 	albumdata = {}
 	albumdata['album'] = data['title']
 	if 'styles' in data:
@@ -58,4 +87,10 @@ def discogs_albumdetails(data):
 			thumbdata['aspect'] = 'thumb'
 			thumbs.append(thumbdata)
 		albumdata['thumb'] = thumbs
+		
 	return albumdata
+
+SCAPER = ScraperType(
+			Action('discogs', discogs_albumfind, 1),
+			Action('discogs', discogs_albumdetails, 1),
+		)
