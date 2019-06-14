@@ -7,7 +7,7 @@ from lib.platform import log, VERSION, LOGERROR, SETTINGS
 
 
 
-def get_data(url, json_):
+def get_data(url, use_json, ignore_404 = False):
 	log(url)
 	useragent = {'User-Agent': 'Intergral Artists Scraper/{} ( http://kodi.tv )'.format(VERSION) }
 	try:
@@ -15,16 +15,19 @@ def get_data(url, json_):
 	except Timeout:
 		log('request timed out', LOGERROR)
 		raise
+	
 	if response.status_code == 503:
 		log('server unavailable', LOGERROR)
-		raise
+		response.raise_for_status()
 	elif response.status_code == 429:
 		log('too many requests', LOGERROR)
-		raise
-	if json_:
-		try:
-			return response.json()
-		except Exception:
-			return
+		response.raise_for_status()
+	elif response.status_code == 404 and ignore_404:
+		return None
+	elif response.status_code :
+		response.raise_for_status()
+
+	if use_json:
+		return response.json()
 	else:
 		return response.text

@@ -17,7 +17,7 @@ if __name__ == "__main__":
 	with open(r'd:\temp\out.txt', 'w' ) as outh:
 		sys.stdout = outh
 
-		lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : 'be4dfc70-fb62-3589-aeb4-4680cea68c50', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
+		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : 'be4dfc70-fb62-3589-aeb4-4680cea68c50', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '033ab928-e9c7-443d-86dc-5d18393e97b9', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '9787a825-5dab-4c89-943d-4b142a03cb56', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : 'a8976979-398a-4d03-9998-c24455885151', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
@@ -30,6 +30,8 @@ if __name__ == "__main__":
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '5ef9848e-0a05-4729-9a99-8ff3f645275b', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '', 'artist': u'Yann Tiersen', 'album' : u'Le Fabuleux Destin d’Amélie Poulain', 'dcalbumid': ''}), None)
 		#lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '', 'artist': '', 'album' : '', 'dcalbumid': '497852'}), None)
+		lib.scraper.Scraper('getdetails', None, None, None, json.dumps({'mbalbumid' : '2e0542d1-5c0b-4600-ab77-64870cc619de', 'artist': '', 'album' : '', 'dcalbumid': ''}), None)
+		
 		
 		#raise 1
 			

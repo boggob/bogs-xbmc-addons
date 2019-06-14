@@ -239,7 +239,9 @@ def wikidata(url, locale = 'en'):
 
 def musicbrainz_albumart(mbid, locale = "en"):
 	url = MUSICBRAINZART % (mbid)
-	data	= get_data(url, True)	
+	data	= get_data(url, True, True)	
+	if not data:
+		return {}
 
 	albumdata = {}
 	thumbs = []
