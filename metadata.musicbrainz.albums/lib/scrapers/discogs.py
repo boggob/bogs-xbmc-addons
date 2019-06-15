@@ -2,7 +2,7 @@
 
 try:
 	from urllib.parse import quote_plus as url_quote
-except:
+except ImportError:
 	from urllib import quote_plus as url_quote
 
 

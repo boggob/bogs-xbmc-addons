@@ -7,7 +7,9 @@ FANARTVKEY = 'ed4b784f97227358b31ca4dd966a04f1'
 FANARTVURL = 'https://webservice.fanart.tv/v3/music/%s?api_key=%s'
 
 def fanarttv_artistart(mbid, locale):
-	data	= get_data(FANARTVURL % (mbid, FANARTVKEY), True)
+	data	= get_data(FANARTVURL % (mbid, FANARTVKEY), True, True)
+	if not data:
+		return {}
 
 	artistdata = {}
 	extras = []

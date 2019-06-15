@@ -8,7 +8,7 @@ FANARTVURL = 'https://webservice.fanart.tv/v3/music/albums/%s?api_key=%s'
 
 def fanarttv_albumart(param, locale = "en"):
 	url = FANARTVURL % (param, FANARTVKEY)
-	data = get_data(url, True)
+	data = get_data(url, True, True)
 	if not data:
 		return
 

@@ -1,11 +1,9 @@
 # -*- coding: UTF-8 -*-
-
-import time
 import datetime
 
 try:
 	from urllib.parse import quote_plus as url_quote
-except:
+except ImportError:
 	from urllib import quote_plus as url_quote
 
 
@@ -23,7 +21,8 @@ ALLMUSICDETAILS	= '%s/releases'
 def allmusic_albumfind(artist, album):
 	url		= ALLMUSICURL % (ALLMUSICSEARCH % (url_quote(artist), url_quote(album)))
 	data	= get_data(url, False)
-	soup = BeautifulSoup(data, 'html.parser')
+	soup	= BeautifulSoup(data, 'html.parser')
+	
 	albums = []
 	for item in soup.find_all('li', {'class':'album'}):
 		coverdata = item.find('div', {'class':'cover'})
@@ -68,19 +67,19 @@ def allmusic_albumdetails(param, locale = "en"):
 		return
 
 	
-
-	soup = BeautifulSoup(data, 'html.parser')
-	albumdata = {}
-	releasedata = soup.find("div", {"class":"release-date"})
+	soup		= BeautifulSoup(data, 'html.parser')
+	albumdata	= {}
+	releasedata	= soup.find("div", {"class":"release-date"})
 	if releasedata:
 		dateformat = releasedata.find('span').get_text()
 		if len(dateformat) > 4:
 			try:
-				albumdata['releasedate'] = datetime.datetime(*(time.strptime(dateformat, '%B %d, %Y')[0:3])).strftime('%Y-%m-%d')
+				albumdata['releasedate'] = datetime.datetime.strptime(dateformat, '%B %d, %Y').strftime('%Y-%m-%d')
 			except Exception:
-				albumdata['releasedate'] = datetime.datetime(*(time.strptime(dateformat, '%B, %Y')[0:2])).strftime('%Y-%m')
+				albumdata['releasedate'] = datetime.datetime.strptime(dateformat, '%B, %Y').strftime('%Y-%m')
 		else:
-			albumdata['releasedate'] = releasedata.find('span').get_text()
+			albumdata['releasedate'] = dateformat
+			
 	genredata = soup.find("div", {"class":"genre"})
 	if genredata:
 		genrelist = genredata.find_all('a')

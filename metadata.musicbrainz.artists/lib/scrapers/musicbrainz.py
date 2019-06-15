@@ -29,7 +29,7 @@ def get_sub(data, **kwargs):
 			return func(x)
 	return None
 
-def artist_name(artist, locale):
+def artist_name_(artist, locale):
 	if AD.only_alphabet_chars(artist['name'], "LATIN"):
 		return artist
 	else:
@@ -55,9 +55,14 @@ def artist_name(artist, locale):
 					None
 				)
 
-
-
 	return name1 or name2 or artist
+
+def clean_hyphen(s):	
+	return s.replace(u'\u2010', '-')
+	
+def artist_name(artist, locale, sortname= True):	
+	ret = artist_name_(artist, locale)
+	return ret and clean_hyphen(ret['sort-name' if sortname else 'name'])
 
 
 def musicbrainz_artistfind(artist):
@@ -92,8 +97,8 @@ def musicbrainz_arstistdetails(mbid, locale = 'en'):
 	ret		= get_data(URL_MB_RELEASE.format(mbid).encode('utf-8'), True)
 
 	artistdata = {}
-	artistdata['artist']		= artist_name(ret, locale)['sort-name' if SETTINGS['misc']['sortname'] else 'name']
-	artistdata['sortname']		= artist_name(ret, locale)['sort-name']
+	artistdata['artist']		= clean_hyphen( artist_name(ret, locale, SETTINGS['misc']['sortname']) )
+	artistdata['sortname']		= clean_hyphen( artist_name(ret, locale, True) )
 	
 	artistdata['mbartistid']	= ret['id']
 	if ret['type']:
@@ -132,15 +137,3 @@ SCAPER = ScraperType(
 			Action('musicbrainz', musicbrainz_artistfind, 1),
 			Action('musicbrainz', musicbrainz_arstistdetails, 1),
 		)
-
-
-
-if __name__ == "__main__":
-
-
-	#pprint.pprint(musicbrainz_arstistdetails('24f1766e-9635-4d58-a4d4-9413f9f98a4c'))
-	pprint.pprint(musicbrainz_arstistdetails('fd14da1b-3c2d-4cc8-9ca6-fc8c62ce6988'))
-
-
-	#raise 1
-

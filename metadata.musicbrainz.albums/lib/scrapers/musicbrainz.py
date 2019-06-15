@@ -1,21 +1,17 @@
 # -*- coding: UTF-8 -*-
-
-# -*- coding: UTF-8 -*-
-
 import collections
 import hashlib
 
-
-import time
 try:
 	from urllib.parse import quote_plus as url_quote
-except:
+except ImportError:
 	from urllib import quote_plus as url_quote
 
-
-from lib.assorted		import make_multimap, merge_multimap
-from lib.url_get		import get_data
-from lib.scrapers.utils import ScraperType, Action
+from lib.alphabet_detector	import AlphabetDetector
+from lib.assorted			import make_multimap, merge_multimap
+from lib.awaiter			import Awaiter
+from lib.url_get			import get_data
+from lib.scrapers.utils 	import ScraperType, Action
 
 
 MUSICBRAINZURL		= 'https://musicbrainz.org/ws/2/release/%s'
@@ -30,7 +26,7 @@ URL_COVER_ARCHV	= u"http://coverartarchive.org/release/{}/{}"
 IMG_URL			= u"https://upload.wikimedia.org/wikipedia/commons/{}/{}{}/{}"
 
 
-
+AD				= AlphabetDetector()
 
 
 def get_sub(data, **kwargs):
@@ -41,18 +37,39 @@ def get_sub(data, **kwargs):
 			return func(x)
 	return None
 
-def artist_name(artist, locale):
-	name = next(
-				(
-					alias['name'] 
-					for alias in artist.get('aliases', []) 
-					if alias.get('type', None) == "Artist name" 
-					if alias.get('locale', None) == locale
-				),
-				None
-			)
-			
-	return name or artist['sort-name']
+def artist_name_(artist, locale):
+	if AD.only_alphabet_chars(artist['name'], "LATIN"):
+		return artist
+	else:
+		#find localisation
+		name1 = next(
+					(
+						alias
+						for alias in artist.get('aliases', [])
+						if alias.get('type', None) == "Artist name"
+						if alias.get('locale', None) == locale
+					),
+					None
+				)
+
+		#find any latin based localisation
+		name2 = next(
+					(
+						alias
+						for alias in artist.get('aliases', [])
+						if alias.get('type', None) == "Artist name"
+						if AD.only_alphabet_chars(alias['name'], "LATIN")
+					),
+					None
+				)
+	return name1 or name2 or artist
+
+def clean_hyphen(s):	
+	return s.replace(u'\u2010', '-')
+	
+def artist_name(artist, locale, sortname= True):	
+	ret = artist_name_(artist, locale)
+	return ret and clean_hyphen(ret['sort-name' if sortname else 'name'])
 
 
 
@@ -93,21 +110,22 @@ def musicbrainz_albumfind(artist_, album):
 	return albums
 
 def musicbrainz_albumdetails(mbid, locale = 'en', seperator = u'/'):
-	ret		= get_data(URL_MB_RELEASE.format(mbid).encode('utf-8'), True)
-	time.sleep(1)
-
-	retg	= get_data(URL_MB_RELEASEG.format(mbid).encode('utf-8'), True)['release-groups']
-			
+	ret_	= Awaiter(get_data, URL_MB_RELEASE.format(mbid).encode('utf-8'), True)
+	retg_	= Awaiter(get_data, URL_MB_RELEASEG.format(mbid).encode('utf-8'), True)
+	
+	ret		= ret_.data()
+	retg	= retg_.data()['release-groups']
+	
 	recordings = [
 					u"{}.{} {}: {}\n{}".format(	
 						media_idx + 1, 
 						track['position'], 
-						", ".join(artist_name(a['artist'], locale) for a in track['artist-credit']),
+						", ".join(artist_name(a['artist'], locale, True) for a in track['artist-credit']),
 						track['title'],
 						u"\n".join(sorted(
 							u"  {}:{} {}: {}".format( rel['begin'] or "-", rel['end']  or "-",  rel['type'], rel_t ) 
 							for rel in track['recording']['relations'] 
-							for rel_t in [get_sub(rel, artist = lambda n: artist_name(n, locale), work = lambda n: n['title'], place = lambda n: n['name'])]
+							for rel_t in [get_sub(rel, artist = lambda n: artist_name(n, locale, True), work = lambda n: n['title'], place = lambda n: n['name'])]
 							if rel_t is not None
 						))
 					)
@@ -122,19 +140,16 @@ def musicbrainz_albumdetails(mbid, locale = 'en', seperator = u'/'):
 			)
 	
 	if urls.get('wikidata'):
-		wikis			= sorted( urls.get('wikidata'))
-		wikid, release_date, imgs = wikidata(wikis[0], locale)
+		wikid, release_date, imgs	= wikidata(sorted( urls.get('wikidata') )[0], locale)
 	else:
-		release_date	= None
-		wikid			= []
-		imgs			= []
+		wikid, release_date, imgs	= [], None, []
 		
 	release_date_				= release_date or next(retr['first-release-date'] for retr in retg )	
 
 
 	albumdata = {}
-	albumdata['album'] = ret['title']
-	albumdata['mbalbumid'] = ret['id']
+	albumdata['album']		= ret['title']
+	albumdata['mbalbumid']	= ret['id']
 	if ret.get('release-group',''):
 		albumdata['mbreleasegroupid'] = ret['release-group']['id']
 		if ret['release-group']['rating'] and ret['release-group']['rating']['value']:
@@ -150,18 +165,17 @@ def musicbrainz_albumdetails(mbid, locale = 'en', seperator = u'/'):
 	if ret.get('label-info','') and ret['label-info'][0].get('label','') and ret['label-info'][0]['label'].get('name',''):
 		albumdata['label'] = ret['label-info'][0]['label']['name']
 	if ret.get('artist-credit'):
-		artists = []
-		artistdisp = ''
-		for artist in ret['artist-credit']:
-			artistdata = {}
-			artistdata['artist'] = artist['name']
-			artistdata['mbartistid'] = artist['artist']['id']
-			artistdata['artistsort'] = artist['artist']['sort-name']
-			artistdisp = artistdisp + artist['name']
-			artistdisp = artistdisp + artist.get('joinphrase', '')
-			artists.append(artistdata)
-		albumdata['artist'] = artists
-		albumdata['artist_description'] = artistdisp
+		albumdata['artist']				= [
+											{
+												'mbartistid'	: artist['artist']['id'],											
+												'artist'		: clean_hyphen( artist_a['name'] ),
+												'artistsort'	: clean_hyphen( artist_a['sort-name'] )
+											}
+											for artist in ret['artist-credit']
+											for artist_a in [artist_name_(artist['artist'], locale)]
+										  ]
+		
+		albumdata['artist_description']	= clean_hyphen( u"".join(artist.get('name', '') +  artist.get('joinphrase', '') for artist in ret['artist-credit']) )
 		
 	albumdata['description']	= u"\n\n".join(wikid +  [u"\n\n".join(recordings)])
 	albumdata['genre'] 			= seperator.join(n for c, n in sorted(((r['count'], r['name'])  for retr in retg for r in retr['genres']), reverse = True) )
@@ -193,6 +207,9 @@ def musicbrainz_albumdetails(mbid, locale = 'en', seperator = u'/'):
 	
 	
 	return albumdata
+
+
+
 	
 		
 
@@ -276,11 +293,11 @@ def musicbrainz_albumart(mbid, locale = "en"):
 
 SCAPER1 = ScraperType(
 			Action('musicbrainz', musicbrainz_albumfind, 1),
-			Action('musicbrainz', musicbrainz_albumdetails, 1),
+			Action('musicbrainz', musicbrainz_albumdetails, 2),
 		)
 
 
 SCAPER2 = ScraperType(
 			Action('coverarchive', None, 0),
-			Action('coverarchive', musicbrainz_albumart, 2),
+			Action('coverarchive', musicbrainz_albumart, 1),
 		)
