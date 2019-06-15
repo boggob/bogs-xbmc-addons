@@ -58,9 +58,9 @@ class Scraper(object):
 			if mbid and  mbreleasegroupid:
 				scrapers = [
 					Awaiter(self.get_details, musicbrainz.SCAPER1.getdetails, mbid, details),
+					Awaiter(self.get_details, musicbrainz.SCAPER2.getdetails, mbid, details),
 					Awaiter(self.get_details, theaudiodb.SCAPER.getdetails, mbreleasegroupid, details),
 					Awaiter(self.get_details, fanarttv.SCAPER.getdetails, mbreleasegroupid, details),
-					Awaiter(self.get_details, musicbrainz.SCAPER2.getdetails, mbid, details),
 					Awaiter(self.get_details, allmusic.SCAPER.getdetails, [artist, album], details),
 					Awaiter(self.get_details, discogs.SCAPER.getdetails, [artist, album, dcid], details),
 				]
@@ -89,7 +89,6 @@ class Scraper(object):
 											]
 
 			else:
-				# discogs allows 1 api per second. this query requires 1 discogs api call
 				scrapers = [
 							Awaiter(self.get_details, allmusic.SCAPER.getdetails, [artist, album], details),
 							Awaiter(self.get_details, discogs.SCAPER.getdetails, [artist, album, dcid], details),

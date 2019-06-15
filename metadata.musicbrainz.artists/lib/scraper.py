@@ -2,11 +2,11 @@
 
 import collections
 import json
-from threading import Thread
+
 import time
 
-
-from lib.nfo import nfo_geturl
+from lib.awaiter				import Awaiter
+from lib.nfo					import nfo_geturl
 from lib.platform				import log, SETTINGS, sleep, return_details, return_search, return_nfourl, return_resolved
 
 
@@ -42,29 +42,26 @@ class Scraper(object):
 			mbid	= url__.get('mbid', '')
 			dcid	= url__.get('dcid', '')
 			details = {}
+			
 			delay	= []
 			# we have a musicbrainz id
 			if mbid:
-				threads	= []
-				for scraper in [musicbrainz.SCAPER.getdetails, theaudiodb.SCAPER.getdetails, fanarttv.SCAPER.getdetails]:
-					t,d 	= self.get_details_thread(scraper, mbid, details)
-					threads.append(t)
-					delay.append(d)
+				scrapers		=  [
+									Awaiter(self.get_details, musicbrainz.SCAPER.getdetails, mbid, details),
+									Awaiter(self.get_details, theaudiodb.SCAPER.getdetails, mbid, details),
+									Awaiter(self.get_details, fanarttv.SCAPER.getdetails, mbid, details)
+								]
 
 				# wait for musicbrainz to finish
-				threads[0].join()
+				scrapers[0].data()
 
 				# check if we have a result:
-				for scraper in [allmusic.SCAPER.getdetails, discogs.SCAPER.getdetails, wikidata.SCAPER.getdetails]:
+				for scraper	in [allmusic.SCAPER.getdetails, discogs.SCAPER.getdetails, wikidata.SCAPER.getdetails]:
 					url_	= next(iter(details.get('musicbrainz', {}).get('urls', {}).get(scraper.name, [])), None)
-					t,d 	= self.get_details_thread(scraper, url_, details)
-					threads.append(t)
-					delay.append(d)
-					
+					scrapers.append(Awaiter(self.get_details, scraper, url_, details))
 
-				for thread in threads:
-					if thread:
-						thread.join()
+				for scraper in scrapers:
+					delay.append(scraper.data() or 0)
 
 			# we have a discogs id
 			elif dcid:
@@ -100,26 +97,19 @@ class Scraper(object):
 			'mbartistid' : mbid
 		}
 		return item
-
-
-	def get_details_thread(self, scraper, param, details):
-		if not param:
-			return None, 0
-		elif SETTINGS['ranking'].get(scraper.name, 100) < 0:
-			log("skipping: {}".format(scraper.name))
-			return None, 0
-		else:
-			thread = Thread(target = self.get_details, args = (scraper, param, details))
-			thread.start()
-			return thread, scraper.wait
-		
 	
 
 	def get_details(self, scraper, param, details):
-		albumresults = scraper.function(param, locale =  SETTINGS['language'])
-		if albumresults:
-			details[scraper.name] = albumresults
-		return details
+		if not param:
+			return 0
+		elif SETTINGS['ranking'].get(scraper.name, 100) < 0:
+			log("skipping: {}".format(scraper.name))
+			return 0
+		else:
+			albumresults = scraper.function(param, locale =  SETTINGS['language'])
+			if albumresults:
+				details[scraper.name] = albumresults
+			return scraper.wait
 			
 
 
