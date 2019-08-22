@@ -56,7 +56,7 @@ class Scraper(object):
 
 		for title, path, url in [
 			("Programs",	"menu_shows2",	"http://www.sbs.com.au/api/video_programlist/?upcoming=1"),
-			("Last Chance",	"menu_shows",	"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-video-lastchance?form=json&count=true&byCategories=Section%2FPrograms,Drama%7CComedy%7CDocumentary%7CArts%7CEntertainment%7CFood%7CFactual%7CMovies&sort=expirationDate%7Casc&range=1-200"),
+			("Last Chance",	"menu_shows",	"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-video-lastchance?form=json&count=true&byCategories=Section%2FPrograms,Drama%7CComedy%7CDocumentary%7CArts%7CEntertainment%7CFood%7CFactual%7CMovies&sort=expirationDate%7Casc&range=1-2000"),
 
 		]:
 			rec  =  {
@@ -95,7 +95,7 @@ class Scraper(object):
 		for title, url in (
 			[ 	(
 					"Movie: {}".format(child["title"]),
-					"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&range=1-12&byCategories=Film,Section/Programs&byRatings=&facets=1&byCustomValue={collections}{%s}" % (urllib.quote_plus(child["title"]))
+					"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&range=1-12&byCategories=Film,Section/Programs&byRatings=&facets=1&byCustomValue={collections}{%s}&range=1-5000" % (urllib.quote_plus(child["title"]))
 				)
 				for top in jsres.get("sitenav", [])
 				if top and top["title"] == "Movies"
@@ -126,7 +126,7 @@ class Scraper(object):
 		for mtch in soup.findAll('div', {"data-content-type":"video"}):
 			print mtch["data-filter"]
 			#"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&byCustomValue={%s}{%s}" % (section["title"].lower(), child["title"])
-			url = "http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&byCategories=Section%2FPrograms,Film,{}".format(urllib.quote_plus(mtch["data-filter"]))
+			url = "http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&byCategories=Section%2FPrograms,Film,{}&range=1-5000".format(urllib.quote_plus(mtch["data-filter"]))
 			self._menu_shows({"url" : url})
 
 
