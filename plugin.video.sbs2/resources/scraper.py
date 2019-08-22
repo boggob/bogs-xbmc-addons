@@ -150,7 +150,7 @@ class Scraper(object):
 				"still"			: sorted(entry["media$thumbnails"], key = lambda e: e["plfile$height"])[-1]["plfile$downloadUrl"].replace("\\", "") if entry["media$thumbnails"] else None,
 				"url"			: 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"].split('/')[-1]),
 				"info"			: {
-					"Country "	: entry.get("pl1$countryOfOrigin", "?"),
+					"country"	: entry.get("pl1$countryOfOrigin", "?"),
 					"plot"		: entry["description"],
 					"duration"	: "%s" % ((hours * 60) + minutes),
 					#"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)),
