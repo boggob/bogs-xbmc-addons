@@ -150,7 +150,7 @@ class Scraper(object):
 				"still"			: sorted(entry["media$thumbnails"], key = lambda e: e["plfile$height"])[-1]["plfile$downloadUrl"].replace("\\", "") if entry["media$thumbnails"] else None,
 				"url"			: 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"].split('/')[-1]),
 				"info"			: {
-					"country"	: entry.get("pl1$countryOfOrigin", "?"),
+					"Country "	: entry.get("pl1$countryOfOrigin", "?"),
 					"plot"		: entry["description"],
 					"duration"	: "%s" % ((hours * 60) + minutes),
 					#"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)),
@@ -194,9 +194,14 @@ class Scraper(object):
 				except Exception, e:
 					return datetime.datetime.fromtimestamp( 0).isoformat()
 				
-				
-			
-			date	= entry.get("seasons", [{"seasonStartDate" : conv_date( entry.get('media$availableDate', 0)), "seasonEndDate" : conv_date( entry.get('media$expirationDate', 0))}])[0]
+			date	= ( 
+						entry.get("seasons", []) 
+						or 
+						[{
+							"seasonStartDate" : conv_date( entry.get('media$availableDate', 0)), 
+							"seasonEndDate" : conv_date( entry.get('media$expirationDate', 0))
+						}] 
+					  )[0]
 			enc		= entry.get("media$content") and entry["media$content"][0]["plfile$assetTypes"] == ['Encrypted']
 			rec  =  {
 				"content"			: ({entry.get("genre", None), entry.get("type", None)} - {None}) | set(entry.get("collections",[])),
