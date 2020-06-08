@@ -55,7 +55,7 @@ class Scraper(object):
 		print  jsres.get("sitenav", [])
 
 		for title, path, url in [
-			("Programs",	"menu_shows2",	"http://www.sbs.com.au/api/video_programlist/?upcoming=1"),
+			("Programs",	"menu_shows2",	"http://www.sbs.com.au/api/video_programlist/?range=1-1000"),
 			("Last Chance",	"menu_shows",	"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-video-lastchance?form=json&count=true&byCategories=Section%2FPrograms,Drama%7CComedy%7CDocumentary%7CArts%7CEntertainment%7CFood%7CFactual%7CMovies&sort=expirationDate%7Casc&range=1-2000"),
 
 		]:
