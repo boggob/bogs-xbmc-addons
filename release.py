@@ -77,13 +77,13 @@ def main(dest_path):
 	copy(top, dest_path, "addons.xml.md5")
 	
 	try:
-		print "chaning to:", top
+		print "changing to:", top
 		os.chdir(top)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)
 
-		print "chaning to:", dest_path
+		print "changing to:", dest_path
 		os.chdir(dest_path)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
@@ -91,4 +91,4 @@ def main(dest_path):
 	except subprocess.CalledProcessError as e:
 		print "Exception on process, rc=", e.returncode, "output=", e.output		
 		raise	
-main(r'D:\files\xbmc\denis\bogs-kodi-release')	
+main(r'D:\files\xbmc\bogs-kodi-release')	
