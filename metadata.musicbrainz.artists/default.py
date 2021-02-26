@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import sys
 import urllib
-import urlparse
+import urllib.parse as urlparse
 from lib.scraper import Scraper
 
 

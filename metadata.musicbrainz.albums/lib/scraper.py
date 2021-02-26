@@ -41,7 +41,6 @@ class Scraper(object):
 			
 		# return info using artistname / albumtitle / id's
 		elif action == 'getdetails':
-			
 			url = json.loads(url)
 			artist = url['artist'].encode('utf-8')
 			album = url['album'].encode('utf-8')

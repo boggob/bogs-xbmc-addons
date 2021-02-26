@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 import sys
 import urllib
-import urlparse
+import urllib.parse as urlparse
 import socket
 from lib.scraper import Scraper
 
@@ -13,6 +13,7 @@ class Main:
 
     def _parse_argv(self):
         params = dict(urlparse.parse_qsl(sys.argv[2].lstrip('?')))
+
         # actions: resolveid, find, getdetails, NfoUrl
         action = params['action']
         # key: musicbrainz id

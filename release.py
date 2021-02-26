@@ -76,12 +76,12 @@ def main(dest_path):
 	copy(top, dest_path, "addons.xml")
 	copy(top, dest_path, "addons.xml.md5")
 	
-	os.chdir(r'D:\files\xbmc\denis\bogs-xbmc-addons')
+	os.chdir(top)
 	print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 	print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
 	print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)
 
-	os.chdir(r'D:\files\xbmc\denis\bogs-kodi-release')
+	os.chdir(dest_path)
 	print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 	print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
 	print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)

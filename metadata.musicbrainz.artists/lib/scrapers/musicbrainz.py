@@ -2,7 +2,7 @@
 
 import collections
 import pprint
-import urllib
+import urllib.parse
 
 from lib.alphabet_detector	import AlphabetDetector
 from lib.assorted			import make_multimap
@@ -66,7 +66,7 @@ def artist_name(artist, locale, sortname= True):
 
 
 def musicbrainz_artistfind(artist):
-	url = URL_MUSICBRAINZ % (URL_MUSICBRAINZSEARCH % urllib.quote_plus(artist))
+	url = URL_MUSICBRAINZ % (URL_MUSICBRAINZSEARCH % urllib.parse.quote_plus(artist))
 	data = get_data(url, True)
 	if not data:
 		return

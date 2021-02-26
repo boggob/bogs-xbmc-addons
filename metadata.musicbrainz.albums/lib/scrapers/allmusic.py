@@ -73,6 +73,7 @@ def allmusic_albumdetails(param, locale = "en"):
 	if releasedata:
 		dateformat = releasedata.find('span').get_text()
 		if len(dateformat) > 4:
+			print("%%", dateformat)
 			try:
 				albumdata['releasedate'] = datetime.datetime.strptime(dateformat, '%B %d, %Y').strftime('%Y-%m-%d')
 			except Exception:
