@@ -77,6 +77,7 @@ def main(dest_path):
 	copy(top, dest_path, "addons.xml.md5")
 	
 	os.chdir(top)
+	
 	try:
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
