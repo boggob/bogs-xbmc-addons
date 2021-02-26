@@ -77,11 +77,13 @@ def main(dest_path):
 	copy(top, dest_path, "addons.xml.md5")
 	
 	try:
+		print "chaning to:", top
 		os.chdir(top)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)
 
+		print "chaning to:", dest_path
 		os.chdir(dest_path)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
