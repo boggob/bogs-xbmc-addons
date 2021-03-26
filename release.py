@@ -75,6 +75,7 @@ def main(dest_path, repo_path):
 	
 	copy(top, dest_path, "addons.xml")
 	copy(top, dest_path, "addons.xml.md5")
+	#repo
 	copy(os.path.split(repo_path)[0], dest_path, os.path.split(repo_path)[-1])
 	
 	try:
