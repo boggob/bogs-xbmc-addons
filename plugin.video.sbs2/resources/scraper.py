@@ -1,9 +1,9 @@
 import	datetime
-import	urllib2, urllib
+import	urllib.request, urllib, urllib.parse
 import	re
 import	os, os.path
 from	time import  strftime, gmtime
-from	BeautifulSoup import BeautifulSoup
+from	bs4 import BeautifulSoup
 
 
 
@@ -14,8 +14,8 @@ def get_str(item):
 
 def geturl(url):
 	#, headers = {"Accept-Encoding":"gzip"}
-	print "getting: %s" % url
-	return  urllib2.urlopen(urllib2.Request(url)).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore')
+	print ("getting: %s" % url)
+	return  urllib.request.urlopen(urllib.request.Request(url)).read().decode('iso-8859-1', 'ignore').encode('ascii', 'ignore').decode("utf-8") 
 
 def jsonc(st):
 	for i,o in (
@@ -34,7 +34,7 @@ def get_date(field):
 
 
 	if isinstance(field, (int, long)):
-		print "^%", field
+		print ("^%", field)
 		return strftime("%d.%m.%Y", gmtime(field))
 	else:
 		return ".".join(field.split('T')[0].split("-")[::-1])
@@ -52,7 +52,7 @@ class Scraper(object):
 
 		res = geturl("http://www.sbs.com.au/ondemandcms/sitenav")
 		jsres = jsonc(res)
-		print  jsres.get("sitenav", [])
+		print  (jsres.get("sitenav", []))
 
 		for title, path, url in [
 			("Programs",	"menu_shows2",	"http://www.sbs.com.au/api/video_programlist/?range=1-1000"),
@@ -95,7 +95,7 @@ class Scraper(object):
 		for title, url in (
 			[ 	(
 					"Movie: {}".format(child["title"]),
-					"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&range=1-12&byCategories=Film,Section/Programs&byRatings=&facets=1&byCustomValue={collections}{%s}&range=1-5000" % (urllib.quote_plus(child["title"]))
+					"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&range=1-12&byCategories=Film,Section/Programs&byRatings=&facets=1&byCustomValue={collections}{%s}&range=1-5000" % (urllib.parse.quote_plus(child["title"]))
 				)
 				for top in jsres.get("sitenav", [])
 				if top and top["title"] == "Movies"
@@ -118,26 +118,26 @@ class Scraper(object):
 
 
 	def movie_shows(self, params):
-		print params
+		print (params)
 		contents = geturl(params["url"])
-		print 	contents
-		soup = BeautifulSoup(contents)
+		print 	(contents)
+		soup = BeautifulSoup(contents, features="html.parser")
 
 		for mtch in soup.findAll('div', {"data-content-type":"video"}):
-			print mtch["data-filter"]
+			print (mtch["data-filter"])
 			#"http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&byCustomValue={%s}{%s}" % (section["title"].lower(), child["title"])
-			url = "http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&byCategories=Section%2FPrograms,Film,{}&range=1-5000".format(urllib.quote_plus(mtch["data-filter"]))
+			url = "http://www.sbs.com.au/api/video_feed/f/Bgtm9B/sbs-section-programs?form=json&count=true&sort=metrics.viewCount.lastDay|desc&byCategories=Section%2FPrograms,Film,{}&range=1-5000".format(urllib.parse.quote_plus(mtch["data-filter"]))
 			self._menu_shows({"url" : url})
 
 
 
 
 	def _menu_shows(self, params):
-		print params
+		print (params)
 		res = geturl(params["url"])
 
 		jsres = jsonc(res)
-		print "%%menu_shows", res
+		print ("%%menu_shows", res)
 
 		out = []
 		for entry in sorted(jsres["entries"], key = lambda x: x["title"]):
@@ -150,7 +150,7 @@ class Scraper(object):
 				"still"			: sorted(entry["media$thumbnails"], key = lambda e: e["plfile$height"])[-1]["plfile$downloadUrl"].replace("\\", "") if entry["media$thumbnails"] else None,
 				"url"			: 'http://www.sbs.com.au/ondemand/video/single/{}?context=web'.format(entry["id"].split('/')[-1]),
 				"info"			: {
-					"Country "	: entry.get("pl1$countryOfOrigin", "?"),
+					"Country"	: entry.get("pl1$countryOfOrigin", "?"),
 					"plot"		: entry["description"],
 					"duration"	: "%s" % ((hours * 60) + minutes),
 					#"date"		: strftime("%d.%m.%Y",gmtime(entry["pubDate"]/1000)),
@@ -164,9 +164,9 @@ class Scraper(object):
 
 			try:
 				rec["info"]["mpaa"]		= entry["media$ratings"][0]['rating']
-			except Exception,e:
+			except Exception as e:
 				rec["info"]["mpaa"]		= '?'
-			print rec
+			print (rec)
 			out.append( rec )
 		self.folders(out)
 
@@ -174,11 +174,11 @@ class Scraper(object):
 		return self._menu_shows(params)
 
 	def menu_shows_prim(self, params):
-		print params
+		print (params)
 		res = geturl(params["url"])
 
 		jsres = jsonc(res)
-		print "%%menu_shows", res
+		print ("%%menu_shows", res)
 
 		out = []
 		for entry in sorted(jsres["entries"], key = lambda x: x["name"]):
@@ -191,7 +191,7 @@ class Scraper(object):
 			def conv_date(date):
 				try:
 					return datetime.datetime.fromtimestamp( date / 1000).isoformat()
-				except Exception, e:
+				except Exception as e:
 					return datetime.datetime.fromtimestamp( 0).isoformat()
 				
 			date	= ( 
@@ -230,9 +230,9 @@ class Scraper(object):
 
 			try:
 				rec["info"]["mpaa"]		= entry["media$ratings"][0]['rating']
-			except Exception,e:
+			except Exception as e:
 				rec["info"]["mpaa"]		= '?'
-			print "%%&", rec
+			print ("%%&", rec)
 			out.append( rec )
 		return out
 
@@ -305,23 +305,23 @@ class Scraper(object):
 			]
 		)
 	
-		print "^^&@", out
+		print ("^^&@", out)
 		self.folders(out)
 
 	def menu_shows3(self, params):
-		print "<!!>", params
+		print ("<!!>", params)
 		out = self.menu_shows_prim(params)
 
 		self.folders([o for o in out if params["name"] in o["content"]])
 
 	def menu_shows_end(self, params):
-		print "<!!>", params
+		print ("<!!>", params)
 		out = self.menu_shows_prim(params)
 
 		self.folders([o for o in out if params["name"] == o["date_end"]])
 
 	def menu_shows_start(self, params):
-		print "<!!>", params
+		print ("<!!>", params)
 		out = self.menu_shows_prim(params)
 
 		self.folders([o for o in out if params["name"] == o["date_start"]])
@@ -337,12 +337,12 @@ class Scraper(object):
 	def _menu_play(self, params, enc = False):
 		enc = True
 
-		print params
+		print (params)
 		contents = geturl(params["url"])
-		print contents
+		print (contents)
 
 
-		search = r'"standard":"([^"]*)"' if not enc else '"([^"]*manifest=m3u[^"]*)"'
+		search = rb'"standard":"([^"]*)"' if not enc else '"([^"]*manifest=m3u[^"]*)"'
 
 		out = {}
 		for mtch in re.findall(search, contents, re.MULTILINE):
@@ -350,7 +350,7 @@ class Scraper(object):
 			if "http:"  not in url and "https:"  not in url:
 				url = "http:" + url
 			contents2 =  geturl(url)
-			print "%smil", contents2
+			print ("%smil", contents2)
 			soup = BeautifulSoup(contents2)
 
 			if contents2.find('.flv') > -1:
@@ -366,7 +366,7 @@ class Scraper(object):
 				else:
 					for item in soup.findAll('video'):
 						subtitles = [(s["src"], s["type"])  for s in item.parent.findAll('textstream')]
-						print "%captions", subtitles
+						print ("%captions", subtitles)
 						subtitle_files = []
 						if subtitles:
 							caption_dir = os.path.join(self.path, 'subtitles')
@@ -385,7 +385,7 @@ class Scraper(object):
 						if not enc:
 							splts	= item["src"].split("/managed/")[1].split(',')[0]
 							tail= splts if splts.endswith(".mp4") else "{}1500K.mp4".format(splts)
-							print "%^^&", item["src"], splts
+							print ("%^^&", item["src"], splts)
 							val		= {
 								"url"				: "http://sbsauvod-f.akamaihd.net/SBS_Production/managed/{}?v=&fp=&r=&g=".format(tail),
 								"name"				: item["title"],
@@ -394,18 +394,18 @@ class Scraper(object):
 						else:
 							splts		= item["src"].split("&")[0]
 							contents3	= geturl(splts)
-							print contents3
+							print (contents3)
 
 							urls		= contents3.strip().split("\n")[1:]
 							urls_p		= [ (urls[i], urls[i+1]) for i in range(0, len(urls), 2)]
-							print urls_p
+							print (urls_p)
 							urls_s		= sorted(
 											(data, url)
 											for comm, url in urls_p
 											for data in [int(comm.split('BANDWIDTH=')[-1].split(',')[0] or 0)]
 										)
 										
-							print "URLS", urls_s
+							print ("URLS", urls_s)
 							url			= urls_s[-1][1]
 
 
@@ -414,7 +414,6 @@ class Scraper(object):
 								"name"				: item["title"],
 								"subtitle_files"	: subtitle_files
 							}
-
 
 						print ("@2"	,  val)
 						if "record" in params:
