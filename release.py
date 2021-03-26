@@ -63,7 +63,7 @@ def module(dest_path, addon):
 	archive(os.path.join(dest_path, addon_name, file_name), addon_top, get_files(addon_path))
 		
 	
-def main(dest_path):
+def main(dest_path, repo_path):
 	top 		= root()
 	
 	addons		= get_files(top, filt =(lambda file, ext: os.path.split(file)[1].lower() == "addon.xml"))
@@ -75,6 +75,7 @@ def main(dest_path):
 	
 	copy(top, dest_path, "addons.xml")
 	copy(top, dest_path, "addons.xml.md5")
+	copy(os.path.split(repo_path)[0], dest_path, os.path.split(repo_path)[-1])
 	
 	try:
 		print "changing to:", top
@@ -82,8 +83,9 @@ def main(dest_path):
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)
-
+		
 		print "changing to:", dest_path
+		
 		os.chdir(dest_path)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
 		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
@@ -91,4 +93,4 @@ def main(dest_path):
 	except subprocess.CalledProcessError as e:
 		print "Exception on process, rc=", e.returncode, "output=", e.output		
 		raise	
-main(r'D:\files\xbmc\bogs-kodi-release')	
+main(r'D:\files\xbmc\bogs-kodi-release', r'D:\files\xbmc\repository.github.bogs-xbmc-addons.zip')	
