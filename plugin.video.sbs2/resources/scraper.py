@@ -28,12 +28,10 @@ def jsonc(st):
 
 
 def get_date(field):
-	if isinstance(field, long):
+	if isinstance(field, int):
 		field = field/1000
 
-
-
-	if isinstance(field, (int, long)):
+	if isinstance(field, (int, float)):
 		print ("^%", field)
 		return strftime("%d.%m.%Y", gmtime(field))
 	else:
