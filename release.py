@@ -94,4 +94,4 @@ def main(dest_path, repo_path):
 	except subprocess.CalledProcessError as e:
 		print "Exception on process, rc=", e.returncode, "output=", e.output		
 		raise	
-main(r'D:\files\xbmc\bogs-kodi-release', r'D:\files\xbmc\repository.github.bogs-xbmc-addons.zip')	
+main(r'D:\files\xbmc\bogs-kodi-release', r'D:\files\xbmc\repository.github.bogs-xbmc-addons.zip')
