@@ -18,8 +18,8 @@ MUSICBRAINZURL		= 'https://musicbrainz.org/ws/2/release/%s'
 MUSICBRAINZSEARCH	= '?query=release:"%s"%%20AND%%20(artistname:"%s"%%20OR%%20artist:"%s")&fmt=json'
 MUSICBRAINZART		= 'https://coverartarchive.org/release/%s'
 
-URL_MB_RELEASE	= u"https://musicbrainz.org/ws/2/release/{}?fmt=json&inc=genres+release-groups+artists+artist-credits+labels+ratings+recording-level-rels+recordings+artist-rels+place-rels+url-rels+work-rels+area-rels+release-group-rels+aliases"
-URL_MB_RELEASEG	= u"http://musicbrainz.org/ws/2/release-group?release={}&fmt=json&inc=genres+artist-credits+ratings+artist-rels+place-rels+url-rels+area-rels"
+URL_MB_RELEASE	= u"https://musicbrainz.org/ws/2/release/{}?fmt=json&inc=genres+release-groups+artists+artist-credits+labels+ratings+recording-level-rels+recordings+artist-rels+place-rels+url-rels+work-rels+area-rels+release-group-rels+aliases+work-level-rels+tags"
+URL_MB_RELEASEG	= u"http://musicbrainz.org/ws/2/release-group?release={}&fmt=json&inc=genres+artist-credits+ratings+artist-rels+place-rels+url-rels+area-rels+tags"
 URL_WIKI		= u"https://{}.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&titles={}"
 URL_WIKID		= u"https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&formatversion=2&props=sitelinks|claims&ids={}"
 URL_COVER_ARCHV	= u"http://coverartarchive.org/release/{}/{}"
@@ -27,6 +27,9 @@ IMG_URL			= u"https://upload.wikimedia.org/wikipedia/commons/{}/{}{}/{}"
 
 
 AD				= AlphabetDetector()
+
+def distinct(items):
+	return collections.OrderedDict( (i, i) for i in items).keys()
 
 
 def get_sub(data, **kwargs):
@@ -138,6 +141,25 @@ def musicbrainz_albumdetails(mbid, locale = 'en', seperator = u'/'):
 				make_multimap( (r['type'] , r['url']['resource'])                    for r in ret['relations']  if r['target-type'] == 'url'),
 				make_multimap( (r['type'] , r['url']['resource'])   for retr in retg for r in retr['relations'] if r['target-type'] == 'url')
 			)
+			
+	recordings_urls = [
+					u"{}.{} {}: {}\n{}".format(	
+						media_idx + 1, 
+						track['position'], 
+						", ".join(artist_name(a['artist'], locale, True) for a in track['artist-credit']),
+						track['title'],
+						u"\n".join(sorted(
+							u"  {}:{} {}: {}".format( rel['begin'] or "-", rel['end']  or "-",  rel['type'], rel_t ) 
+							for rel in track['recording']['relations'] 
+							for rel_t in [get_sub(rel, artist = lambda n: artist_name(n, locale, True), work = lambda n: n['title'], place = lambda n: n['name'])]
+							if rel_t is not None
+						))
+					)
+				
+				for media_idx, media in enumerate(ret['media'])
+				for track in media['tracks']
+				for rel in track['recording']['relations']
+				]			
 	
 	if urls.get('wikidata'):
 		wikid, release_date, imgs	= wikidata(sorted( urls.get('wikidata') )[0], locale)
@@ -178,7 +200,8 @@ def musicbrainz_albumdetails(mbid, locale = 'en', seperator = u'/'):
 		albumdata['artist_description']	= clean_hyphen( u"".join(artist.get('name', '') +  artist.get('joinphrase', '') for artist in ret['artist-credit']) )
 		
 	albumdata['description']	= u"\n\n".join(wikid +  [u"\n\n".join(recordings)])
-	albumdata['genre'] 			= seperator.join(n for c, n in sorted(((r['count'], r['name'])  for retr in retg for r in retr['genres']), reverse = True) )
+	albumdata['genre'] 			= seperator.join( distinct( n for c, n in sorted(((r['count'], r['name']) for retr in retg for i in ('genres', 'tags') for r in retr[i]), reverse = True) ) )
+	#albumdata['genre'] 			= seperator.join(n for c, n in sorted(((r['count'], r['name'])  for retr in retg for r in retr['genres']), reverse = True) )
 	albumdata['year'] 			= release_date_ and release_date_[:4]
 	albumdata['releasedate']	= release_date_
 		

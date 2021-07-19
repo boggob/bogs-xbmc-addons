@@ -1,6 +1,10 @@
 # -*- coding: UTF-8 -*-
 
-import urllib
+try:
+	from urllib.parse import quote_plus as url_quote
+except:
+	from urllib import quote_plus as url_quote
+
 from lib.scrapers.utils	import ScraperType, Action
 from lib.url_get		import get_data
 
@@ -14,7 +18,7 @@ DISCOGSDISCOGRAPHY	= 'artists/%i/releases?sort=format&page=1&per_page=100&key=%s
 
 
 def discogs_artistfind(artist):
-	url = DISCOGSURL % (DISCOGSSEARCH % (urllib.quote_plus(artist), DISCOGSKEY , DISCOGSSECRET))
+	url = DISCOGSURL % (DISCOGSSEARCH % (url_quote(artist), DISCOGSKEY , DISCOGSSECRET))
 	data = get_data(url, True)
 	if not data:
 		return
