@@ -4,6 +4,10 @@ import shutil
 import xml.etree.ElementTree
 import subprocess
 
+def execfile(file_, env_):
+    print (file_)
+    #return exec(open(file_).read())
+
 def get_files(path, filt = (lambda file, ext:True)):
 	out = []
 	for fi in sorted(os.listdir(path)):
@@ -15,8 +19,8 @@ def get_files(path, filt = (lambda file, ext:True)):
 			if filt(fi, ext):
 				try:
 					out.append(os.path.join(path, fi))
-				except Exception,e:
-					print "***", e, fullpath
+				except Exception as e:
+					print ("***", e, fullpath)
 			else:
 				pass
 	return out
@@ -57,7 +61,7 @@ def module(dest_path, addon):
 	addon_path				= os.path.split(addon)[0]
 	addon_top, addon_name 	= os.path.split(addon_path)
 	file_name				= "{}-{}.zip".format(addon_name, version)
-	print addon_path
+	print (addon_path)
 	mkdir(os.path.join(dest_path, os.path.split(addon_path)[1]))
 	
 	archive(os.path.join(dest_path, addon_name, file_name), addon_top, get_files(addon_path))
@@ -70,7 +74,7 @@ def main(dest_path, repo_path):
 	for addon in addons:
 		module(dest_path, addon)
 	
-	print top + r'\md5.py'
+	print (top + r'\md5.py')
 	execfile(top + r'\md5.py', {})
 	
 	copy(top, dest_path, "addons.xml")
@@ -79,19 +83,19 @@ def main(dest_path, repo_path):
 	copy(os.path.split(repo_path)[0], dest_path, os.path.split(repo_path)[-1])
 	
 	try:
-		print "changing to:", top
+		print ("changing to:", top)
 		os.chdir(top)
-		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
-		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
-		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)
+		print (subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True))
+		print (subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True))
+		print (subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True))
 		
-		print "changing to:", dest_path
+		print ("changing to:", dest_path)
 		
 		os.chdir(dest_path)
-		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True)
-		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True)
-		print subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True)
+		print (subprocess.check_output([r"C:\apps\Git\bin\git.exe", "add", "*"], stderr=subprocess.STDOUT, shell=True))
+		print (subprocess.check_output([r"C:\apps\Git\bin\git.exe", "commit", "-m", "'Updated code'"], stderr=subprocess.STDOUT, shell=True))
+		print (subprocess.check_output([r"C:\apps\Git\bin\git.exe", "push"], stderr=subprocess.STDOUT, shell=True))
 	except subprocess.CalledProcessError as e:
-		print "Exception on process, rc=", e.returncode, "output=", e.output		
+		print ("Exception on process, rc=", e.returncode, "output=", e.output)
 		raise	
-main(r'D:\files\xbmc\bogs-kodi-release', r'D:\files\xbmc\repository.github.bogs-xbmc-addons.zip')
+main(r'c:\files\xbmc\bogs-kodi-release', r'c:\files\xbmc\repository.github.bogs-xbmc-addons.zip')

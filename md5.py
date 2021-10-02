@@ -1,16 +1,17 @@
 import hashlib
-import os.path,sys
+import os.path
+import sys
 import glob
 import pprint
 import re
-import exceptions
+
 
 def main():
 	di	= sys.path[0]
 	
 	addons = {}
 	for fin in sorted(glob.glob(di + "/*")):
-		print fin
+		print (fin)
 		if os.path.isdir(fin) and os.path.abspath(fin) != os.path.abspath(di):
 			try:
 				with open(fin + "/addon.xml", "r") as fi:
@@ -18,7 +19,7 @@ def main():
 #					with ZipFile('spam.zip', 'w') as myzip:
 #						myzip.write('eggs.txt')					
 					
-			except exceptions.IOError, e:
+			except IOError as e:
 				pass
 				
 	pprint.pprint(addons)
