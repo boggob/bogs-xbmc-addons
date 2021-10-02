@@ -5,9 +5,13 @@ import xml.etree.ElementTree
 import subprocess
 
 def execfile(file_, env_):
-    print (file_)
-    #return exec(open(file_).read())
-
+    global_namespace = {
+        "__file__": file_,
+        "__name__": "__main__",
+    }
+    with open(file_) as infile:
+        return exec(infile.read(), global_namespace)
+        
 def get_files(path, filt = (lambda file, ext:True)):
 	out = []
 	for fi in sorted(os.listdir(path)):
